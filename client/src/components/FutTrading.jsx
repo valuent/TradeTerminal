@@ -83,6 +83,12 @@ function FutTrading() {
   // Holds Short position LTPS
   const [bnfShortCallLtp, setBnfShortCallLtp] = useState();
   const [bnfShortPutLtp, setBnfShortPutLtp] = useState();
+  const [refreshExistingOrder, setRefreshExistingOrder] = useState();
+
+  const refreshOpenPos = () => {
+    setRefreshExistingOrder(Math.random()); //
+    console.log(refreshExistingOrder);
+  };
 
   useEffect(() => {
     const niftyLastPrice = tickerData?.filter((data) => {
@@ -454,14 +460,14 @@ function FutTrading() {
         doc?.data()?.putShort?.instrument_token,
       ]);
     });
-  }, []);
+  }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
       niftyLongOrderId?.callLong?.instrument_token,
       niftyLongOrderId?.putShort?.instrument_token,
     ]);
-  }, [niftyLongOrderId]);
+  }, [niftyLongOrderId, refreshExistingOrder]);
 
   const niftyShort = async () => {
     await axios
@@ -563,14 +569,14 @@ function FutTrading() {
         doc?.data()?.callShort?.instrument_token,
       ]);
     });
-  }, []);
+  }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
       niftyShortOrderId?.putLong?.instrument_token,
       niftyShortOrderId?.callShort?.instrument_token,
     ]);
-  }, [niftyShortOrderId]);
+  }, [niftyShortOrderId, refreshExistingOrder]);
 
   const updateOrderBookNifty = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
@@ -844,15 +850,15 @@ function FutTrading() {
         // console.log(niftyLongPutLtp);
         // console.log(niftyShortCallLtp);
 
-        // // if (mtm >= niftyShortOrderId?.tgtPoints) {
-        // //   niftyShortExit();
-        // //   console.log("Nifty Target Reached MTM");
-        // // }
+        if (mtm >= niftyShortOrderId?.tgtPoints) {
+          niftyShortExit();
+          console.log("Nifty Target Reached MTM");
+        }
 
-        // if (mtm <= -niftyShortOrderId?.slPoints) {
-        //   niftyShortExit();
-        //   console.log("Nifty Stoploss Reached MTM");
-        // }
+        if (mtm <= -niftyShortOrderId?.slPoints) {
+          niftyShortExit();
+          console.log("Nifty Stoploss Reached MTM");
+        }
 
         if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
           niftyShortExit();
@@ -969,14 +975,14 @@ function FutTrading() {
         doc?.data()?.putShort?.instrument_token,
       ]);
     });
-  }, []);
+  }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
       bnfLongOrderId?.callLong?.instrument_token,
       bnfLongOrderId?.putShort?.instrument_token,
     ]);
-  }, [bnfLongOrderId]);
+  }, [bnfLongOrderId, refreshExistingOrder]);
 
   const bnfShort = async () => {
     await axios
@@ -1076,14 +1082,14 @@ function FutTrading() {
         doc?.data()?.callShort?.instrument_token,
       ]);
     });
-  }, []);
+  }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
       bnfShortOrderId?.putLong?.instrument_token,
       bnfShortOrderId?.callShort?.instrument_token,
     ]);
-  }, [bnfShortOrderId]);
+  }, [bnfShortOrderId, refreshExistingOrder]);
 
   const updateOrderBookBnf = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
@@ -1301,8 +1307,8 @@ function FutTrading() {
       if (
         bnfLongOrderId?.callLong?.trading_symbol &&
         bnfLongOrderId?.putShort?.trading_symbol &&
-        // bnfLongOrderId?.slPoints &&
-        // bnfLongOrderId?.tgtPoints &&
+        bnfLongOrderId?.slPoints &&
+        bnfLongOrderId?.tgtPoints &&
         bnfLongOrderId?.entryPrice
       ) {
         let sl_level = bnfLongOrderId?.entryPrice - bnfLongOrderId?.slPoints;
@@ -1332,8 +1338,8 @@ function FutTrading() {
       if (
         bnfShortOrderId?.putLong?.trading_symbol &&
         bnfShortOrderId?.callShort?.trading_symbol &&
-        // bnfShortOrderId?.slPoints &&
-        // bnfShortOrderId?.tgtPoints &&
+        bnfShortOrderId?.slPoints &&
+        bnfShortOrderId?.tgtPoints &&
         bnfShortOrderId?.entryPrice
       ) {
         let sl_level = bnfShortOrderId?.entryPrice + bnfShortOrderId?.slPoints;
@@ -1494,6 +1500,20 @@ function FutTrading() {
                   onClick={startStream}
                 >
                   Start Stream
+                </button>
+              </div>
+            )}
+          {isSuccess === "ConnectionSuccessful" &&
+            niftyFutData?.instrument_token &&
+            bnfFutData?.instrument_token &&
+            niftySpotData?.instrument_token &&
+            bnfSpotData?.instrument_token && (
+              <div className="flex justify-end m-1">
+                <button
+                  className="btn btn-accent mr-4 text-black "
+                  onClick={refreshOpenPos}
+                >
+                  Refresh Position
                 </button>
               </div>
             )}
@@ -1839,30 +1859,30 @@ function FutTrading() {
                   {bnfLongCallBuy?.strike}
                   {bnfLongCallBuy?.instrument_type}
                 </div>
-                <div className="text-sm">LTP: {niftyLongCallLtp}</div>
+                <div className="text-sm">LTP: {bnfLongCallLtp}</div>
               </div>
             </div>
             <div className="stats w-full shadow m-3 bg-neutral">
               <div className="stat ">
                 <div className="long text-xs text-slate-400">Short Strikes</div>
 
-                <div className="stat-title">PE Sell</div>
+                <div className="stat-title">PE Buy</div>
                 <div className="font-bold text-xl">
-                  {bnfLongPutSell?.strike}
-                  {bnfLongPutSell?.instrument_type}
+                  {bnfShortPutBuy?.strike}
+                  {bnfShortPutBuy?.instrument_type}
                 </div>
-                <div className="text-sm">LTP: {bnfShortPutLtp}</div>
+                <div className="text-sm">LTP: {bnfLongPutLtp}</div>
               </div>
 
               <div className="stat">
                 <div className="long text-xs text-slate-400">Short Strikes</div>
 
-                <div className="stat-title">CE Buy</div>
+                <div className="stat-title">CE Sell</div>
                 <div className="font-bold text-xl">
-                  {bnfLongCallBuy?.strike}
-                  {bnfLongCallBuy?.instrument_type}
+                  {bnfShortCallSell?.strike}
+                  {bnfShortCallSell?.instrument_type}
                 </div>
-                <div className="text-sm">LTP: {bnfLongCallLtp}</div>
+                <div className="text-sm">LTP: {bnfShortCallLtp}</div>
               </div>
             </div>
           </div>

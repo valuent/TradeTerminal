@@ -8,7 +8,8 @@ function Terminal() {
     <div>
       <SaveExpiries />
       <FutTrading />
-      {/* <hr className="h-[1px] border-0 rounded-lg bg-primary w-full" /> */}
+      {/* <hr className="text-xl m-5 text-center mt-10"></hr> */}
+      {/* <div className="text-xl m-5 text-center mt-10">Hourly Trades</div> */}
       {/* <PositionalSpread /> */}
     </div>
   );

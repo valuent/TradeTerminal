@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 // import schedule from "node-schedule";
 
-function FutTrading() {
+function PositionalSpread() {
   const {
     expiries,
     niftyOptChainData,
@@ -84,6 +84,13 @@ function FutTrading() {
   const [bnfLongCallLtp, setBnfLongCallLtp] = useState();
   const [bnfShortCallLtp, setBnfShortCallLtp] = useState();
 
+  const [refreshExistingOrder, setRefreshExistingOrder] = useState();
+
+  const refreshOpenPos = () => {
+    setRefreshExistingOrder(Math.random()); //
+    console.log(refreshExistingOrder);
+  };
+
   useEffect(() => {
     const niftyLastPrice = tickerData?.filter((data) => {
       return data.instrument_token === niftySpotData?.instrument_token;
@@ -119,6 +126,28 @@ function FutTrading() {
       );
     });
 
+    // BNF
+    const bnfLongPut = tickerData?.filter((data) => {
+      return (
+        data.instrument_token === bnfLongOrderId?.putLong?.instrument_token
+      );
+    });
+    const bnfShortPut = tickerData?.filter((data) => {
+      return (
+        data.instrument_token === bnfLongOrderId?.putShort?.instrument_token
+      );
+    });
+    const bnfLongCall = tickerData?.filter((data) => {
+      return (
+        data.instrument_token === bnfShortOrderId?.callLong?.instrument_token
+      );
+    });
+    const bnfShortCall = tickerData?.filter((data) => {
+      return (
+        data.instrument_token === bnfShortOrderId?.callShort?.instrument_token
+      );
+    });
+
     if (niftyLastPrice.length > 0) {
       setNiftyLtp(niftyLastPrice?.[0]?.last_price);
     }
@@ -146,6 +175,21 @@ function FutTrading() {
     if (niftyShortCall.length > 0) {
       setNiftyShortCallLtp(niftyShortCall?.[0]?.last_price);
     }
+
+    // BNF
+
+    if (bnfLongPut.length > 0) {
+      setBnfLongPutLtp(bnfLongPut?.[0]?.last_price);
+    }
+    if (bnfShortPut.length > 0) {
+      setBnfShortPutLtp(bnfShortPut?.[0]?.last_price);
+    }
+    if (bnfLongCall.length > 0) {
+      setBnfLongCallLtp(bnfLongCall?.[0]?.last_price);
+    }
+    if (bnfShortCall.length > 0) {
+      setBnfShortCallLtp(bnfShortCall?.[0]?.last_price);
+    }
   }, [tickerData]);
 
   useEffect(() => {
@@ -169,7 +213,7 @@ function FutTrading() {
       const niftyLongStrikeSell = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[0] &&
+            data.expiry === expiries?.niftyExpiryDates[1] &&
             data.strike === parseInt(niftyRounded + 50) &&
             data.instrument_type === "PE"
           );
@@ -178,7 +222,7 @@ function FutTrading() {
       const niftyLongStrikeBuy = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[0] &&
+            data.expiry === expiries?.niftyExpiryDates[1] &&
             data.strike === parseInt(niftyRounded - 50) &&
             data.instrument_type === "PE"
           );
@@ -188,7 +232,7 @@ function FutTrading() {
       const niftyShortStrikeSell = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[0] &&
+            data.expiry === expiries?.niftyExpiryDates[1] &&
             data.strike === parseInt(niftyRounded - 50) &&
             data.instrument_type === "CE"
           );
@@ -197,7 +241,7 @@ function FutTrading() {
       const niftyShortStrikeBuy = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[0] &&
+            data.expiry === expiries?.niftyExpiryDates[1] &&
             data.strike === parseInt(niftyRounded + 50) &&
             data.instrument_type === "CE"
           );
@@ -212,14 +256,14 @@ function FutTrading() {
     const bnfStrikeSelect = () => {
       const bnfLongStrikeSell = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[0] &&
+          data.expiry === expiries?.bnfExpiryDates[1] &&
           data.strike === parseInt(bnfRounded + 100) &&
           data.instrument_type === "PE"
         );
       });
       const bnfLongStrikeBuy = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[0] &&
+          data.expiry === expiries?.bnfExpiryDates[1] &&
           data.strike === parseInt(bnfRounded - 100) &&
           data.instrument_type === "PE"
         );
@@ -227,14 +271,14 @@ function FutTrading() {
 
       const bnfShortStrikeSell = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[0] &&
+          data.expiry === expiries?.bnfExpiryDates[1] &&
           data.strike === parseInt(bnfRounded - 100) &&
           data.instrument_type === "CE"
         );
       });
       const bnfShortStrikeBuy = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[0] &&
+          data.expiry === expiries?.bnfExpiryDates[1] &&
           data.strike === parseInt(bnfRounded + 100) &&
           data.instrument_type === "CE"
         );
@@ -249,18 +293,6 @@ function FutTrading() {
     bnfStrikeSelect();
   }, [niftyRounded, bnfRounded]);
 
-  const startStream = () => {
-    socket?.emit("candleToken", [
-      niftySpotData?.instrument_token,
-      bnfSpotData?.instrument_token,
-    ]);
-    socket?.emit("defaultTokens", [
-      niftyFutData?.instrument_token,
-      bnfFutData?.instrument_token,
-      niftySpotData?.instrument_token,
-      bnfSpotData?.instrument_token,
-    ]);
-  };
   socket?.on(niftySpotData?.instrument_token, (data) => {
     setNiftyCandles(data);
   });
@@ -350,7 +382,7 @@ function FutTrading() {
           }
 
           await setDoc(
-            doc(db, "user", "niftyFutLong"),
+            doc(db, "user", "30minNiftyLong"),
             {
               putLong: {
                 order_id: orderId,
@@ -392,7 +424,7 @@ function FutTrading() {
           }
 
           await setDoc(
-            doc(db, "user", "niftyFutLong"),
+            doc(db, "user", "30minNiftyLong"),
             {
               entryPrice: niftyLtp,
               putShort: {
@@ -415,7 +447,7 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "user", "niftyFutLong"), (doc) => {
+    const unsub = onSnapshot(doc(db, "user", "30minNiftyLong"), (doc) => {
       console.log(doc.data());
       setNiftyLongOrderId(doc.data());
 
@@ -424,14 +456,14 @@ function FutTrading() {
         doc?.data()?.putShort?.instrument_token,
       ]);
     });
-  }, []);
+  }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
       niftyLongOrderId?.putLong?.instrument_token,
       niftyLongOrderId?.putShort?.instrument_token,
     ]);
-  }, [niftyLongOrderId]);
+  }, [niftyLongOrderId, refreshExistingOrder]);
 
   const niftyShort = async () => {
     await axios
@@ -458,7 +490,7 @@ function FutTrading() {
           }
 
           await setDoc(
-            doc(db, "user", "niftyFutShort"),
+            doc(db, "user", "30minNiftyShort"),
             {
               callLong: {
                 order_id: orderId,
@@ -500,7 +532,7 @@ function FutTrading() {
           }
 
           await setDoc(
-            doc(db, "user", "niftyFutShort"),
+            doc(db, "user", "30minNiftyShort"),
             {
               entryPrice: niftyLtp,
               callShort: {
@@ -525,7 +557,7 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "user", "niftyFutShort"), (doc) => {
+    const unsub = onSnapshot(doc(db, "user", "30minNiftyShort"), (doc) => {
       console.log(doc.data());
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [
@@ -533,14 +565,14 @@ function FutTrading() {
         doc?.data()?.callShort?.instrument_token,
       ]);
     });
-  }, []);
+  }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
       niftyShortOrderId?.callLong?.instrument_token,
       niftyShortOrderId?.callShort?.instrument_token,
     ]);
-  }, [niftyShortOrderId]);
+  }, [niftyShortOrderId, refreshExistingOrder]);
 
   const updateOrderBookNifty = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
@@ -559,7 +591,7 @@ function FutTrading() {
       });
       if (putLongId.length > 0 && putShortId.length > 0) {
         await setDoc(
-          doc(db, "user", "niftyFutLong"),
+          doc(db, "user", "30minNiftyLong"),
           {
             putLong: {
               order_id: niftyLongOrderId?.putLong?.order_id,
@@ -586,18 +618,18 @@ function FutTrading() {
       let callLongId = response?.data?.filter((order) => {
         return (
           order.order_id === niftyShortOrderId?.callLong?.order_id &&
-          order.status === "REJECTED"
+          order.status === "COMPLETE"
         );
       });
       let callShortId = response?.data?.filter((order) => {
         return (
           order.order_id === niftyShortOrderId?.callShort?.order_id &&
-          order.status === "REJECTED"
+          order.status === "COMPLETE"
         );
       });
       if (callLongId.length > 0 && callShortId.length > 0) {
         await setDoc(
-          doc(db, "user", "niftyFutShort"),
+          doc(db, "user", "30minNiftyShort"),
           {
             callLong: {
               order_id: niftyShortOrderId?.callLong?.order_id,
@@ -626,7 +658,7 @@ function FutTrading() {
       niftyLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "niftyFutLong"),
+        doc(db, "user", "30minNiftyLong"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -637,7 +669,7 @@ function FutTrading() {
       niftyShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "niftyFutShort"),
+        doc(db, "user", "30minNiftyShort"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -654,7 +686,7 @@ function FutTrading() {
       niftyLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "niftyFutLong"),
+        doc(db, "user", "30minNiftyLong"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -665,7 +697,7 @@ function FutTrading() {
       niftyShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "niftyFutShort"),
+        doc(db, "user", "30minNiftyShort"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -689,7 +721,7 @@ function FutTrading() {
         .then(async (response) => {
           console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "niftyFutLong"), {
+            await updateDoc(doc(db, "user", "30minNiftyLong"), {
               putLong: deleteField(),
             });
           }
@@ -702,7 +734,7 @@ function FutTrading() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "niftyFutLong"), {
+            await updateDoc(doc(db, "user", "30minNiftyLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -726,7 +758,7 @@ function FutTrading() {
         .then(async (response) => {
           console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "niftyFutShort"), {
+            await updateDoc(doc(db, "user", "30minNiftyShort"), {
               callLong: deleteField(),
             });
           }
@@ -738,7 +770,7 @@ function FutTrading() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "niftyFutShort"), {
+            await updateDoc(doc(db, "user", "30minNiftyShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -764,32 +796,25 @@ function FutTrading() {
           niftyLongOrderId?.entryPrice + niftyLongOrderId?.tgtPoints;
         let mtm =
           niftyLongPutLtp -
-          niftyShortOrderId?.putLong?.average_price +
-          niftyShortOrderId?.putShort?.average_price -
+          niftyLongOrderId?.putLong?.average_price +
+          niftyLongOrderId?.putShort?.average_price -
           niftyShortPutLtp;
+        console.log(mtm);
+        // console.log(niftyLongCallLtp);
+        // console.log(niftyShortPutLtp);
 
-        if (mtm >= niftyLongOrderId?.tgtPoints) {
-          niftyShortExit();
-          console.log("Nifty Target Reached");
-        }
-
-        if (mtm <= niftyLongOrderId?.slPoints) {
-          niftyShortExit();
-          console.log("Nifty Stoploss Reached");
-        }
-
-        if (niftyLtp >= tgt_level) {
+        if (niftyFutLtp >= tgt_level || mtm >= niftyLongOrderId?.tgtPoints) {
           niftyLongExit();
           console.log("Nifty Target Reached");
         }
-        if (niftyLtp <= sl_level) {
+        if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
           niftyLongExit();
           console.log("Nifty Stoploss Reached");
         }
       }
     };
     niftyLongSLManager();
-  }, [niftyLtp, niftyLongOrderId]);
+  }, [tickerData, niftyLongOrderId]);
 
   useEffect(() => {
     const niftyShortSLManager = () => {
@@ -811,29 +836,36 @@ function FutTrading() {
           niftyShortOrderId?.callShort?.average_price -
           niftyShortCallLtp;
 
+        console.log(mtm);
+        // console.log("SL", sl_level);
+        // console.log("tgt", tgt_level);
+        // console.log(mtm);
+        // console.log(niftyLongPutLtp);
+        // console.log(niftyShortCallLtp);
+
         if (mtm >= niftyShortOrderId?.tgtPoints) {
           niftyShortExit();
-          console.log("Nifty Target Reached");
+          console.log("Nifty Target Reached MTM");
         }
 
-        if (mtm <= niftyShortOrderId?.slPoints) {
+        if (mtm <= -niftyShortOrderId?.slPoints) {
           niftyShortExit();
-          console.log("Nifty Stoploss Reached");
+          console.log("Nifty Stoploss Reached MTM");
         }
 
-        if (niftyLtp <= tgt_level) {
+        if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
           niftyShortExit();
-          console.log("Nifty Target Reached");
+          console.log("Nifty Target Reached LEVEL");
         }
 
-        if (niftyLtp >= sl_level) {
+        if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
           niftyShortExit();
-          console.log("Nifty Stoploss Reached");
+          console.log("Nifty Stoploss Reached LEVEL");
         }
       }
     };
     niftyShortSLManager();
-  }, [niftyLtp, niftyShortOrderId]);
+  }, [tickerData, niftyShortOrderId]);
 
   //BNF
 
@@ -862,7 +894,7 @@ function FutTrading() {
           }
 
           await setDoc(
-            doc(db, "user", "bnfFutLong"),
+            doc(db, "user", "30minBnfLong"),
             {
               putLong: {
                 order_id: orderId,
@@ -904,7 +936,7 @@ function FutTrading() {
           }
 
           await setDoc(
-            doc(db, "user", "bnfFutLong"),
+            doc(db, "user", "30minBnfLong"),
             {
               entryPrice: bnfLtp,
               putShort: {
@@ -927,7 +959,7 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "user", "bnfFutLong"), (doc) => {
+    const unsub = onSnapshot(doc(db, "user", "30minBnfLong"), (doc) => {
       console.log(doc.data());
       setBnfLongOrderId(doc.data());
 
@@ -936,14 +968,14 @@ function FutTrading() {
         doc?.data()?.putShort?.instrument_token,
       ]);
     });
-  }, []);
+  }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
       bnfLongOrderId?.putLong?.instrument_token,
       bnfLongOrderId?.putShort?.instrument_token,
     ]);
-  }, [bnfLongOrderId]);
+  }, [bnfLongOrderId, refreshExistingOrder]);
 
   const bnfShort = async () => {
     await axios
@@ -970,7 +1002,7 @@ function FutTrading() {
           }
 
           await setDoc(
-            doc(db, "user", "bnfFutShort"),
+            doc(db, "user", "30minBnfShort"),
             {
               callLong: {
                 order_id: orderId,
@@ -1012,7 +1044,7 @@ function FutTrading() {
           }
 
           await setDoc(
-            doc(db, "user", "bnfFutShort"),
+            doc(db, "user", "30minBnfShort"),
             {
               entryPrice: bnfLtp,
               callShort: {
@@ -1035,7 +1067,7 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "user", "bnfFutShort"), (doc) => {
+    const unsub = onSnapshot(doc(db, "user", "30minBnfShort"), (doc) => {
       console.log(doc.data());
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [
@@ -1043,14 +1075,14 @@ function FutTrading() {
         doc?.data()?.callShort?.instrument_token,
       ]);
     });
-  }, []);
+  }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
       bnfShortOrderId?.callLong?.instrument_token,
       bnfShortOrderId?.callShort?.instrument_token,
     ]);
-  }, [bnfShortOrderId]);
+  }, [bnfShortOrderId, refreshExistingOrder]);
 
   const updateOrderBookBnf = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
@@ -1070,7 +1102,7 @@ function FutTrading() {
 
       if (putLongId.length > 0 && putShortId.length > 0) {
         await setDoc(
-          doc(db, "user", "bnfFutLong"),
+          doc(db, "user", "30minBnfLong"),
           {
             putLong: {
               order_id: bnfLongOrderId?.putLong?.order_id,
@@ -1097,18 +1129,18 @@ function FutTrading() {
       let callLongId = response?.data?.filter((order) => {
         return (
           order.order_id === bnfShortOrderId?.callLong?.order_id &&
-          order.status === "REJECTED"
+          order.status === "COMPLETE"
         );
       });
       let callShortId = response?.data?.filter((order) => {
         return (
           order.order_id === bnfShortOrderId?.callShort?.order_id &&
-          order.status === "REJECTED"
+          order.status === "COMPLETE"
         );
       });
       if (callLongId.length > 0 && callShortId.length > 0) {
         await setDoc(
-          doc(db, "user", "bnfFutShort"),
+          doc(db, "user", "30minBnfShort"),
           {
             callLong: {
               order_id: bnfShortOrderId?.callLong?.order_id,
@@ -1137,7 +1169,7 @@ function FutTrading() {
       bnfLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "bnfFutLong"),
+        doc(db, "user", "30minBnfLong"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -1148,7 +1180,7 @@ function FutTrading() {
       bnfShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "bnfFutShort"),
+        doc(db, "user", "30minBnfShort"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -1165,7 +1197,7 @@ function FutTrading() {
       bnfLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "bnfFutLong"),
+        doc(db, "user", "30minBnfLong"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -1176,7 +1208,7 @@ function FutTrading() {
       bnfShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "bnfFutShort"),
+        doc(db, "user", "30minBnfShort"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -1201,7 +1233,7 @@ function FutTrading() {
         .then(async (response) => {
           console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "bnfFutLong"), {
+            await updateDoc(doc(db, "user", "30minBnfLong"), {
               putLong: deleteField(),
             });
           }
@@ -1214,7 +1246,7 @@ function FutTrading() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "bnfFutLong"), {
+            await updateDoc(doc(db, "user", "30minBnfLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -1239,7 +1271,7 @@ function FutTrading() {
         .then(async (response) => {
           console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "bnfFutShort"), {
+            await updateDoc(doc(db, "user", "30minBnfShort"), {
               callLong: deleteField(),
             });
           }
@@ -1252,7 +1284,7 @@ function FutTrading() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "bnfFutShort"), {
+            await updateDoc(doc(db, "user", "30minBnfShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -1276,22 +1308,23 @@ function FutTrading() {
         let tgt_level = bnfLongOrderId?.entryPrice + bnfLongOrderId?.tgtPoints;
         let mtm =
           bnfLongPutLtp -
-          bnfShortOrderId?.putLong?.average_price +
-          bnfShortOrderId?.putShort?.average_price -
+          bnfLongOrderId?.putLong?.average_price +
+          bnfLongOrderId?.putShort?.average_price -
           bnfShortPutLtp;
+        console.log(mtm);
 
-        if (bnfLtp >= tgt_level) {
+        if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           bnfLongExit();
           console.log("BankNifty Target Reached");
         }
-        if (bnfLtp <= sl_level) {
+        if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
           bnfLongExit();
           console.log("BankNifty Stoploss Reached");
         }
       }
     };
     bnfLongSLManager();
-  }, [bnfLtp, bnfLongOrderId]);
+  }, [tickerData, bnfLongOrderId]);
 
   useEffect(() => {
     const bnfShortSLManager = () => {
@@ -1312,24 +1345,16 @@ function FutTrading() {
           bnfShortOrderId?.callShort?.average_price -
           bnfShortCallLtp;
 
-        if (mtm >= bnfShortOrderId?.tgtPoints) {
+        console.log("short", mtm);
+
+        if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
           bnfShortExit();
-          console.log("Nifty Target Reached");
+          console.log("BankNifty Target Reached");
         }
 
-        if (mtm <= bnfShortOrderId?.slPoints) {
+        if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
           bnfShortExit();
-          console.log("Nifty Stoploss Reached");
-        }
-
-        if (bnfLtp <= tgt_level) {
-          bnfShortExit();
-          console.log("Nifty Target Reached");
-        }
-
-        if (bnfLtp >= sl_level) {
-          bnfShortExit();
-          console.log("Nifty Stoploss Reached");
+          console.log("BankNifty Stoploss Reached");
         }
       }
     };
@@ -1346,17 +1371,17 @@ function FutTrading() {
         niftyShortOrderId?.entryPrice
       ) {
         if (
-          (niftyLtp > nifty10SMA &&
-            niftyLtp >= niftyShortOrderId?.entryPrice) ||
-          niftyLtp > nifty20SMA
+          (niftyFutLtp > nifty10SMA &&
+            niftyFutLtp >= niftyShortOrderId?.entryPrice) ||
+          niftyFutLtp > nifty20SMA
         ) {
           niftyShortExit();
-          console.log("Exit Done");
+          console.log("NiftyShort Exit Done");
         } else {
-          console.log("SL not hit yet");
+          console.log("NiftyShort SL not hit yet");
         }
       } else {
-        console.log("No positions");
+        console.log("NiftyShort No positions");
       }
     };
     const monitorNiftyLongTrailing = () => {
@@ -1366,16 +1391,17 @@ function FutTrading() {
         niftyLongOrderId?.entryPrice
       ) {
         if (
-          (niftyLtp < nifty10SMA && niftyLtp <= niftyLongOrderId?.entryPrice) ||
-          niftyLtp < nifty20SMA
+          (niftyFutLtp < nifty10SMA &&
+            niftyFutLtp <= niftyLongOrderId?.entryPrice) ||
+          niftyFutLtp < nifty20SMA
         ) {
           niftyLongExit();
-          console.log("Exit Done");
+          console.log("NiftyLong Exit Done");
         } else {
-          console.log("SL not hit yet");
+          console.log("NiftyLong SL not hit yet");
         }
       } else {
-        console.log("No positions");
+        console.log("NiftyLong No positions");
       }
     };
 
@@ -1386,16 +1412,16 @@ function FutTrading() {
         bnfShortOrderId?.entryPrice
       ) {
         if (
-          (bnfLtp > bnf10SMA && bnfLtp >= bnfShortOrderId?.entryPrice) ||
-          bnfLtp > bnf20SMA
+          (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
+          bnfFutLtp > bnf20SMA
         ) {
           bnfShortExit();
-          console.log("Exit Done");
+          console.log("BnfShort Exit Done");
         } else {
-          console.log("SL not hit yet");
+          console.log("BnfShort SL not hit yet");
         }
       } else {
-        console.log("No positions");
+        console.log("BnfShort No positions");
       }
     };
     const monitorBnfLongTrailing = () => {
@@ -1405,16 +1431,16 @@ function FutTrading() {
         bnfLongOrderId?.entryPrice
       ) {
         if (
-          (bnfLtp < bnf10SMA && bnfLtp <= bnfLongOrderId?.entryPrice) ||
-          bnfLtp < bnf20SMA
+          (bnfFutLtp < bnf10SMA && bnfFutLtp <= bnfLongOrderId?.entryPrice) ||
+          bnfFutLtp < bnf20SMA
         ) {
           bnfLongExit();
-          console.log("Exit Done");
+          console.log("BnfLong Exit Done");
         } else {
-          console.log("SL not hit yet");
+          console.log("BnfLong SL not hit yet");
         }
       } else {
-        console.log("No positions");
+        console.log("BnfLong No positions");
       }
     };
 
@@ -1444,305 +1470,649 @@ function FutTrading() {
   // console.log(formatDate(date));
   return (
     <>
-      {/* <h1>{JSON.stringify(expiries)}</h1> */}
-      {/* {niftyRounded}:{bnfRounded} */}
+      <div className="w-full h-max p-2">
+        <div className="innerNav w-full h-full bg-neutral rounded-2xl shadow-lg flex justify-between">
+          <div className="nifty flex items-center">
+            <div className="m-3 ml-6">
+              Nifty Expiry: {expiries?.niftyExpiryDates[1]?.slice(0, 10)} ||
+              Strike Expiry: {niftyShortCallSell?.expiry.slice(0, 10)} ||
+              Quantity: {niftyQty}
+            </div>
+          </div>
+          {isSuccess === "ConnectionSuccessful" &&
+            niftyFutData?.instrument_token &&
+            bnfFutData?.instrument_token &&
+            niftySpotData?.instrument_token &&
+            bnfSpotData?.instrument_token && (
+              <div className="flex justify-end m-1">
+                <button
+                  className="btn btn-accent mr-4 text-black "
+                  onClick={refreshOpenPos}
+                >
+                  Refresh Position
+                </button>
+              </div>
+            )}
+          <div className="bnf flex items-center">
+            <div className="m-3 mr-6">
+              BNF Expiry: {expiries?.bnfExpiryDates[1]?.slice(0, 10)} || Strike
+              Expiry: {bnfShortCallSell?.expiry.slice(0, 10)} || Quantity:{" "}
+              {bnfQty}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="strikes flex flex-row justify-evenly items-center w-full ">
+        <div className="niftySection self-start">
+          <div className="Strikes flex justify-between ">
+            <div className="stats w-full shadow bg-neutral m-3">
+              <div className="stat ">
+                <div className="long text-xs text-slate-400">Long Strikes</div>
+                <div className="stat-title">PE Sell</div>
+                <div className="font-bold text-xl">
+                  {niftyLongPutSell?.strike}
+                  {niftyLongPutSell?.instrument_type}
+                </div>
+                <div className="text-sm">LTP: {niftyShortPutLtp}</div>
+              </div>
 
-      {isSuccess === "ConnectionSuccessful" &&
-        niftyFutData?.instrument_token &&
-        bnfFutData?.instrument_token &&
-        niftySpotData?.instrument_token &&
-        bnfSpotData?.instrument_token && (
-          <button
-            className="m-auto left-0 right-0 w-40 top-16 absolute btn btn-primary text-white btn-lg"
-            onClick={startStream}
-          >
-            Start Stream
-          </button>
-        )}
-      <div className="text-center mt-3 text-xl">30 Mins Spread</div>
-      <div className="flex justify-evenly w-full h-full ">
-        <div className="nifty w-full h-full flex flex-col items-center justify-start p-2 ">
-          <p>NIFTY</p>
-          Selected Expiry: {expiries?.niftyExpiryDates[0]?.slice(0, 10)}
-          <div className="strikeSelected w-full text-center">
-            Strikes: {niftyShortCallSell?.expiry.slice(0, 10)}
-          </div>
-          <hr className="h-[1px] border-0 rounded-lg bg-primary w-2/5" />
-          <div className="w-full text-center mt-3">Long Strikes</div>
-          <div className="strikes flex">
-            <div className="call mx-2">
-              PE Sell: {niftyLongPutSell?.strike}
-              {niftyLongPutSell?.instrument_type} <br />
-              LTP:
-              {niftyShortPutLtp}
+              <div className="stat">
+                <div className="long text-xs text-slate-400">Long Strikes</div>
+
+                <div className="stat-title">PE Buy</div>
+                <div className="font-bold text-xl">
+                  {niftyLongPutBuy?.strike}
+                  {niftyLongPutBuy?.instrument_type}
+                </div>
+                <div className="text-sm">LTP: {niftyLongPutLtp}</div>
+              </div>
             </div>
-            <div className="put mx-2">
-              PE Buy: {niftyLongPutBuy?.strike}
-              {niftyLongPutBuy?.instrument_type} <br />
-              LTP: {niftyLongPutLtp}
-            </div>
-          </div>
-          <hr className="h-[1px] border-0 rounded-lg bg-primary w-2/5" />
-          <div className="w-full text-center mt-3">Short Strikes</div>
-          <div className="strikes flex">
-            <div className="call mx-2">
-              CE Sell: {niftyShortCallSell?.strike}
-              {niftyShortCallSell?.instrument_type}
-              <br />
-              LTP:
-              {niftyShortCallLtp}
-            </div>
-            <div className="put mx-2">
-              CE Buy: {niftyShortCallBuy?.strike}
-              {niftyShortCallBuy?.instrument_type}
-              <br />
-              LTP:
-              {niftyLongCallLtp}
+
+            <div className="stats w-full shadow m-3 bg-neutral">
+              <div className="stat ">
+                <div className="long text-xs text-slate-400">Short Strikes</div>
+                <div className="stat-title">CE Sell</div>
+                <div className="font-bold text-xl">
+                  {niftyShortCallSell?.strike}
+                  {niftyShortCallSell?.instrument_type}
+                </div>
+                <div className="text-sm">LTP: {niftyShortCallLtp}</div>
+              </div>
+
+              <div className="stat">
+                <div className="long text-xs text-slate-400">Short Strikes</div>
+
+                <div className="stat-title">CE Buy</div>
+                <div className="font-bold text-xl">
+                  {niftyShortCallBuy?.strike}
+                  {niftyShortCallBuy?.instrument_type}
+                </div>
+                <div className="text-sm">LTP: {niftyLongCallLtp}</div>
+              </div>
             </div>
           </div>
-          <hr className="h-[1px] border-0 rounded-lg bg-primary w-2/5" />
-          <div className="prices w-full flex justify-evenly mt-3">
-            <div>Spot: {niftyLtp}</div>
-            <div>Fut: {niftyFutLtp}</div>
+          {/* SPOT AND FUT */}
+          <div className="ltps flex justify-between ">
+            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
+              <div className="stat overflow-hidden">
+                <div className="stat-title">Spot</div>
+                <div className="font-bold text-xl">{niftyLtp}</div>
+              </div>
+
+              <div className="stat overflow-hidden">
+                <div className="stat-title">Future</div>
+                <div className="font-bold text-xl">{niftyFutLtp}</div>
+              </div>
+            </div>
+            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
+              <div className="stat overflow-hidden">
+                <div className="stat-title">10 SMA</div>
+                <div className="font-bold text-xl">{nifty10SMA}</div>
+              </div>
+
+              <div className="stat overflow-hidden">
+                <div className="stat-title">20 SMA</div>
+                <div className="font-bold text-xl">{nifty20SMA}</div>
+              </div>
+            </div>
           </div>
-          <div className="prices w-full flex justify-evenly mt-3">
-            <div>10 SMA: {nifty10SMA}</div>
-            <div>20 SMA: {nifty20SMA}</div>
-          </div>
-          <div className="entryBtns flex justify-evenly w-full mt-5">
+
+          {/*  */}
+          {/* ENTRY BUTTONS */}
+          {/*  */}
+
+          <div className="entryButtons flex w-full justify-between">
             <button
-              className="btn btn-md w-32 btn-primary text-white"
+              className="btn btn-secondary text-white w-48 m-3 "
               onClick={niftyLong}
             >
-              Long Entry
+              Long Nifty
             </button>
             <button
-              className="btn btn-md w-32 btn-primary text-white"
+              className="short btn btn-secondary text-white w-48 m-3"
               onClick={niftyShort}
             >
-              Short Entry
+              Short Nifty
             </button>
           </div>
-          <div className="exitBtns  flex justify-evenly w-full mt-10">
+
+          {/*  */}
+          {/* EXIT BUTTONS */}
+          {/*  */}
+
+          <div className="exitButtons flex w-full justify-between">
             <button
-              className="btn btn-md w-32 btn-primary text-white"
+              className="btn  text-white w-48 m-3"
               onClick={niftyLongExit}
             >
-              Long Exit
+              Exit Long Nifty
             </button>
             <button
-              className="btn btn-md w-32 btn-primary text-white"
+              className="short btn  text-white w-48 m-3"
               onClick={niftyShortExit}
             >
-              Short Exit
+              Exit Short Nifty
             </button>
           </div>
-          <button
-            className="btn btn-primary text-white w-3/5 mt-4"
-            onClick={updateOrderBookNifty}
-          >
-            Refresh Order Book
-          </button>
-          <div className="sltg mt-3 flex justify-between w-3/5">
+
+          {/*  */}
+          {/* REFRESH ORDER */}
+          {/*  */}
+
+          <div className="refreshOrder w-full p-3">
+            <button
+              className="btn btn-secondary w-full text-white"
+              onClick={updateOrderBookNifty}
+            >
+              Refresh Order Book Nifty
+            </button>
+          </div>
+
+          {/*  */}
+          {/* SL TGT SETTER */}
+          {/*  */}
+
+          <div className="setSLTGT w-full flex justify-between p-3 pt-0">
             <div className="setSl">
               <input
                 type="number"
                 id="niftySl"
-                className="input input-bordered input-md w-28"
+                className="input input-bordered input-md w-32"
               />
               <button
-                className="btn btn-primary mx-1"
+                className="btn btn-secondary text-white mx-1"
                 onClick={() => {
                   let sl = document.getElementById("niftySl").value;
                   niftySetSL(sl);
                 }}
               >
-                SL
+                SL Nifty
               </button>
             </div>
             <div className="setTgt ">
               <input
                 type="number"
                 id="niftyTgt"
-                className="input input-bordered input-md w-28"
+                className="input input-bordered input-md w-32"
               />
               <button
-                className="btn btn-primary mx-1"
+                className="btn btn-secondary text-white mx-1"
                 onClick={() => {
                   let tgt = document.getElementById("niftyTgt").value;
                   niftySetTG(tgt);
                 }}
               >
-                TGT
+                TGT Nifty
               </button>
             </div>
           </div>
-          <span className="mt-3">Open Position</span>
-          <hr className="h-[1px] border-0 rounded-lg bg-primary w-2/5" />
-          <div className="openPositions m-2 w-3/5 ">
-            <br />
-            Long : {niftyShortOrderId?.callLong?.trading_symbol}
-            {niftyLongOrderId?.putLong?.trading_symbol}
-            <br />
-            Short : {niftyShortOrderId?.callShort?.trading_symbol}
-            {niftyLongOrderId?.putShort?.trading_symbol}
-            <br /> Pnl:{" "}
-            <span>
-              {(niftyLongPutLtp -
-                niftyLongOrderId?.putLong?.average_price +
-                niftyLongOrderId?.putShort?.average_price -
-                niftyShortPutLtp) *
-                niftyQty}
-            </span>
-            <span>
-              {(niftyLongCallLtp -
-                niftyShortOrderId?.callLong?.average_price +
-                niftyShortOrderId?.callShort?.average_price -
-                niftyShortCallLtp) *
-                niftyQty}
-            </span>
+
+          {/*  */}
+          {/* POSITION CARD*/}
+          {/*  */}
+
+          <div className="openPosition p-2">
+            <div className="card w-full bg-base-200 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title">Open Position</h2>
+                {/*  */}
+                {/* Long POSITION */}
+                {/*  */}
+                {niftyLongOrderId?.entryPrice &&
+                  niftyLongOrderId?.putLong?.trading_symbol &&
+                  niftyLongOrderId?.putShort?.trading_symbol && (
+                    <div className="long flex flex-col items-center">
+                      <div className="stats shadow mb-3 mt-3">
+                        <div className="stat">
+                          <div className="stat-title">Direction</div>
+                          <div className="font-bold text-xl">Long</div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Entry Price</div>
+                          <div className="font-bold text-xl">
+                            {niftyLongOrderId?.entryPrice}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="stats shadow mb-3">
+                        <div className="stat">
+                          <div className="stat-title">Buy Strike</div>
+                          <div className="font-bold text-xl">
+                            {niftyLongOrderId?.putLong?.trading_symbol}
+                          </div>
+                          <div className="stat-desc">
+                            PNL:{" "}
+                            {(
+                              (niftyLongPutLtp -
+                                niftyLongOrderId?.putLong?.average_price) *
+                              niftyQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Sell Strike</div>
+                          <div className="font-bold text-xl">
+                            {niftyLongOrderId?.putShort?.trading_symbol}
+                          </div>
+                          <div className="stat-desc">
+                            PNL:{" "}
+                            {(
+                              (niftyLongOrderId?.putShort?.average_price -
+                                niftyShortPutLtp) *
+                              niftyQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="stats shadow">
+                        <div className="stat">
+                          <div className="stat-title">Total</div>
+                          <div className="font-bold text-xl">
+                            {(
+                              (niftyLongPutLtp -
+                                niftyLongOrderId?.callPut?.average_price +
+                                niftyLongOrderId?.putShort?.average_price -
+                                niftyShortPutLtp) *
+                              niftyQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                {/*  */}
+                {/* SHORT POSITION */}
+                {/*  */}
+                {niftyShortOrderId?.entryPrice &&
+                  niftyShortOrderId?.callLong?.trading_symbol &&
+                  niftyShortOrderId?.callShort?.trading_symbol && (
+                    <div className="short flex flex-col items-center">
+                      <div className="stats shadow mb-3 mt-3">
+                        <div className="stat">
+                          <div className="stat-title">Direction</div>
+                          <div className="font-bold text-xl">Short</div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Entry Price</div>
+                          <div className="font-bold text-xl">
+                            {niftyShortOrderId?.entryPrice}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="stats shadow mb-3">
+                        <div className="stat">
+                          <div className="stat-title">Buy Strike</div>
+                          <div className="font-bold text-xl">
+                            {niftyShortOrderId?.callLong?.trading_symbol}
+                          </div>
+                          <div className="stat-desc">
+                            PNL:
+                            {(
+                              (niftyLongCallLtp -
+                                niftyShortOrderId?.callLong?.average_price) *
+                              niftyQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Sell Strike</div>
+                          <div className="font-bold text-xl">
+                            {niftyShortOrderId?.callShort?.trading_symbol}
+                          </div>
+                          <div className="stat-desc">
+                            PNL:
+                            {(
+                              (niftyShortOrderId?.callShort?.average_price -
+                                niftyShortCallLtp) *
+                              niftyQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="stats shadow">
+                        <div className="stat">
+                          <div className="stat-title">Total</div>
+                          <div className="font-bold text-xl">
+                            {(
+                              (niftyLongCallLtp -
+                                niftyShortOrderId?.callLong?.average_price +
+                                niftyShortOrderId?.callShort?.average_price -
+                                niftyShortCallLtp) *
+                              niftyQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
           </div>
         </div>
-        <div className="nifty w-full h-full flex flex-col items-center justify-start p-2 ">
-          <p>BANK NIFTY</p>
-          Selected Expiry: {expiries?.bnfExpiryDates[0]?.slice(0, 10)}
-          <div className="strikeSelected w-full text-center">
-            Strikes: {bnfShortCallSell?.expiry.slice(0, 10)}
-          </div>
-          <hr className="h-[1px] border-0 rounded-lg bg-primary w-2/5" />
-          <div className="w-full text-center mt-3">Long Strikes</div>
-          <div className="strikes flex">
-            <div className="call mx-2">
-              PE Sell: {bnfLongPutSell?.strike}
-              {bnfLongPutSell?.instrument_type} <br />
-              LTP:
-              {bnfShortPutLtp}
+        {/*  */}
+        {/* BNF  */}
+        {/*  */}
+        <div className="bnfSection self-start">
+          <div className="Strikes flex justify-between">
+            <div className="stats w-full shadow bg-neutral m-3">
+              <div className="stat ">
+                <div className="long text-xs text-slate-400">Long Strikes</div>
+
+                <div className="stat-title">PE Sell</div>
+                <div className="font-bold text-xl">
+                  {bnfLongPutSell?.strike}
+                  {bnfLongPutSell?.instrument_type}
+                </div>
+                <div className="text-sm">LTP: {bnfShortPutLtp}</div>
+              </div>
+
+              <div className="stat">
+                <div className="long text-xs text-slate-400">Long Strikes</div>
+
+                <div className="stat-title">PE Buy</div>
+                <div className="font-bold text-xl">
+                  {bnfLongPutBuy?.strike}
+                  {bnfLongPutBuy?.instrument_type}
+                </div>
+                <div className="text-sm">LTP: {bnfLongPutLtp}</div>
+              </div>
             </div>
-            <div className="put mx-2">
-              PE Buy: {bnfLongPutBuy?.strike}
-              {bnfLongPutBuy?.instrument_type} <br />
-              LTP: {bnfLongPutLtp}
+            <div className="stats w-full shadow m-3 bg-neutral">
+              <div className="stat ">
+                <div className="long text-xs text-slate-400">Short Strikes</div>
+
+                <div className="stat-title">CE Sell</div>
+                <div className="font-bold text-xl">
+                  {bnfShortCallSell?.strike}
+                  {bnfShortCallSell?.instrument_type}
+                </div>
+                <div className="text-sm">LTP: {bnfShortCallLtp}</div>
+              </div>
+
+              <div className="stat">
+                <div className="long text-xs text-slate-400">Short Strikes</div>
+
+                <div className="stat-title">CE Buy</div>
+                <div className="font-bold text-xl">
+                  {bnfShortCallBuy?.strike}
+                  {bnfShortCallBuy?.instrument_type}
+                </div>
+                <div className="text-sm">LTP: {bnfLongCallLtp}</div>
+              </div>
             </div>
           </div>
-          <hr className="h-[1px] border-0 rounded-lg bg-primary w-2/5" />
-          <div className="w-full text-center mt-3">Short Strikes</div>
-          <div className="strikes flex">
-            <div className="call mx-2">
-              CE Sell: {bnfShortCallSell?.strike}
-              {bnfShortCallSell?.instrument_type}
-              <br />
-              LTP:
-              {bnfShortCallLtp}
+          {/* SPOT AND FUT */}
+          <div className="ltps flex justify-between ">
+            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
+              <div className="stat overflow-hidden">
+                <div className="stat-title">Spot</div>
+                <div className="font-bold text-xl">{bnfLtp}</div>
+              </div>
+
+              <div className="stat overflow-hidden">
+                <div className="stat-title">Future</div>
+                <div className="font-bold text-xl">{bnfFutLtp}</div>
+              </div>
             </div>
-            <div className="put mx-2">
-              CE Buy: {bnfShortCallBuy?.strike}
-              {bnfShortCallBuy?.instrument_type}
-              <br />
-              LTP:
-              {bnfLongCallLtp}
+            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
+              <div className="stat overflow-hidden">
+                <div className="stat-title">10 SMA</div>
+                <div className="font-bold text-xl">{bnf10SMA}</div>
+              </div>
+
+              <div className="stat overflow-hidden">
+                <div className="stat-title">20 SMA</div>
+                <div className="font-bold text-xl">{bnf20SMA}</div>
+              </div>
             </div>
           </div>
-          <hr className="h-[1px] border-0 rounded-lg bg-primary w-2/5" />
-          <div className="prices w-full flex justify-evenly mt-3">
-            <div>Spot: {bnfLtp}</div>
-            <div>Fut: {bnfFutLtp}</div>
-          </div>
-          <div className="prices w-full flex justify-evenly mt-3">
-            <div>10 SMA: {bnf10SMA}</div>
-            <div>20 SMA: {bnf20SMA}</div>
-          </div>
-          <div className="entryBtns flex justify-evenly w-full mt-5">
+          {/*  */}
+          {/* ENTRY BUTTONS */}
+          {/*  */}
+
+          <div className="entryButtons flex w-full justify-between">
             <button
-              className="btn btn-md w-32 btn-primary text-white"
+              className="btn btn-secondary text-white w-48 m-3"
               onClick={bnfLong}
             >
-              Long Entry
+              Long Bank Nifty
             </button>
             <button
-              className="btn btn-md w-32 btn-primary text-white"
+              className="short btn btn-secondary text-white w-48 m-3"
               onClick={bnfShort}
             >
-              Short Entry
+              Short Bank Nifty
             </button>
           </div>
-          <div className="exitBtns  flex justify-evenly w-full mt-10">
-            <button
-              className="btn btn-md w-32 btn-primary text-white"
-              onClick={bnfLongExit}
-            >
-              Long Exit
+
+          {/*  */}
+          {/* EXIT BUTTONS */}
+          {/*  */}
+
+          <div className="exitButtons flex w-full justify-between">
+            <button className="btn  text-white w-48 m-3" onClick={bnfLongExit}>
+              Exit Long Bank Nifty
             </button>
             <button
-              className="btn btn-md w-32 btn-primary text-white"
+              className="short btn  text-white w-48 m-3"
               onClick={bnfShortExit}
             >
-              Short Exit
+              Exit Short Bank Nifty
             </button>
           </div>
-          <button
-            className="btn btn-primary text-white w-3/5 mt-4"
-            onClick={updateOrderBookBnf}
-          >
-            Refresh Order Book
-          </button>
-          <div className="sltg mt-3 flex justify-between w-3/5">
+
+          {/*  */}
+          {/* REFRESH ORDER */}
+          {/*  */}
+
+          <div className="refreshOrder w-full p-3">
+            <button
+              className="btn btn-secondary w-full text-white"
+              onClick={updateOrderBookBnf}
+            >
+              Refresh Order Book Bank Nifty
+            </button>
+          </div>
+
+          {/*  */}
+          {/* SL TGT SETTER */}
+          {/*  */}
+
+          <div className="setSLTGT w-full flex justify-between p-3 pt-0">
             <div className="setSl">
               <input
                 type="number"
                 id="bnfSl"
-                className="input input-bordered input-md w-28"
+                className="input input-bordered input-md w-32"
               />
               <button
-                className="btn btn-primary mx-1"
+                className="btn btn-secondary  mx-1 text-white"
                 onClick={() => {
                   let sl = document.getElementById("bnfSl").value;
                   bnfSetSL(sl);
                 }}
               >
-                SL
+                SL Bank Nifty
               </button>
             </div>
             <div className="setTgt ">
               <input
                 type="number"
                 id="bnfTgt"
-                className="input input-bordered input-md w-28"
+                className="input input-bordered input-md w-32"
               />
               <button
-                className="btn btn-primary mx-1"
+                className="btn btn-secondary text-white mx-1"
                 onClick={() => {
                   let tgt = document.getElementById("bnfTgt").value;
                   bnfSetTG(tgt);
                 }}
               >
-                TGT
+                TGT Bank Nifty
               </button>
             </div>
           </div>
-          <span className="mt-3">Open Position</span>
-          <hr className="h-[1px] border-0 rounded-lg bg-primary w-2/5" />
-          <div className="openPositions m-2 w-3/5 ">
-            <br />
-            Long : {bnfShortOrderId?.callLong?.trading_symbol}
-            {bnfLongOrderId?.putLong?.trading_symbol}
-            <br />
-            Short : {bnfShortOrderId?.callShort?.trading_symbol}
-            {bnfLongOrderId?.putShort?.trading_symbol}
-            <br /> Pnl:{" "}
-            <span>
-              {(bnfLongPutLtp -
-                bnfLongOrderId?.putLong?.average_price +
-                bnfLongOrderId?.putShort?.average_price -
-                bnfShortPutLtp) *
-                bnfQty}
-            </span>
-            <span>
-              {(bnfLongCallLtp -
-                bnfShortOrderId?.callLong?.average_price +
-                bnfShortOrderId?.callShort?.average_price -
-                bnfShortCallLtp) *
-                bnfQty}
-            </span>
+
+          {/*  */}
+          {/* POSITION CARD*/}
+          {/*  */}
+
+          <div className="openPosition p-2">
+            <div className="card w-full bg-base-200 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title">Open Position</h2>
+                {/*  */}
+                {/* Long POSITION */}
+                {/*  */}
+                {bnfLongOrderId?.entryPrice &&
+                  bnfLongOrderId?.putLong?.trading_symbol &&
+                  bnfLongOrderId?.putShort?.trading_symbol && (
+                    <div className="long flex flex-col items-center">
+                      <div className="stats shadow mb-3 mt-3">
+                        <div className="stat">
+                          <div className="stat-title">Direction</div>
+                          <div className="font-bold text-xl">Long</div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Entry Price</div>
+                          <div className="font-bold text-xl">
+                            {bnfLongOrderId?.entryPrice}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="stats shadow mb-3">
+                        <div className="stat">
+                          <div className="stat-title">Buy Strike</div>
+                          <div className="font-bold text-xl">
+                            {bnfLongOrderId?.putLong?.trading_symbol}
+                          </div>
+                          <div className="stat-desc">
+                            PNL:
+                            {(
+                              (bnfLongPutLtp -
+                                bnfLongOrderId?.putLong?.average_price) *
+                              bnfQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Sell Strike</div>
+                          <div className="font-bold text-xl">
+                            {bnfLongOrderId?.putShort?.trading_symbol}
+                          </div>
+                          <div className="stat-desc">
+                            PNL:{" "}
+                            {(
+                              (bnfLongOrderId?.putShort?.average_price -
+                                bnfShortPutLtp) *
+                              bnfQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="stats shadow">
+                        <div className="stat">
+                          <div className="stat-title">Total</div>
+                          <div className="font-bold text-xl">
+                            {(
+                              (bnfLongPutLtp -
+                                bnfLongOrderId?.putLong?.average_price +
+                                bnfLongOrderId?.putShort?.average_price -
+                                bnfShortPutLtp) *
+                              bnfQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                {/*  */}
+                {/* SHORT POSITION */}
+                {/*  */}
+                {bnfShortOrderId?.entryPrice &&
+                  bnfShortOrderId?.callLong?.trading_symbol &&
+                  bnfShortOrderId?.callShort?.trading_symbol && (
+                    <div className="short flex flex-col items-center">
+                      <div className="stats shadow mb-3 mt-3">
+                        <div className="stat">
+                          <div className="stat-title">Direction</div>
+                          <div className="font-bold text-xl">Short</div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Entry Price</div>
+                          <div className="font-bold text-xl">
+                            {bnfShortOrderId?.entryPrice}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="stats shadow mb-3">
+                        <div className="stat">
+                          <div className="stat-title">Buy Strike</div>
+                          <div className="font-bold text-xl">
+                            {bnfShortOrderId?.callLong?.trading_symbol}
+                          </div>
+                          <div className="stat-desc">
+                            PNL:
+                            {(
+                              (bnfLongCallLtp -
+                                bnfShortOrderId?.callLong?.average_price) *
+                              bnfQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Sell Strike</div>
+                          <div className="font-bold text-xl">
+                            {bnfShortOrderId?.callShort?.trading_symbol}
+                          </div>
+                          <div className="stat-desc">
+                            PNL:
+                            {(
+                              (bnfShortOrderId?.callShort?.average_price -
+                                bnfShortCallLtp) *
+                              bnfQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="stats shadow">
+                        <div className="stat">
+                          <div className="stat-title">Total</div>
+                          <div className="font-bold text-xl">
+                            {(
+                              (bnfLongCallLtp -
+                                bnfShortOrderId?.callLong?.average_price +
+                                bnfShortOrderId?.callShort?.average_price -
+                                bnfShortCallLtp) *
+                              bnfQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1750,4 +2120,4 @@ function FutTrading() {
   );
 }
 
-export default FutTrading;
+export default PositionalSpread;

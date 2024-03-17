@@ -127,6 +127,19 @@ app.get("/api/orderInfo", async (req, res) => {
   }
 });
 
-http: app.listen(port, () => {
+app.get("/api/histData", async (req, res) => {
+  let token = 9372418;
+  let interval = "60minute";
+  let from = "2024-03-12";
+  let to = "2024-03-18";
+  try {
+    let data = await kite.getHistoricalData(token, interval, from, to);
+    res.send(data);
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
