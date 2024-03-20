@@ -1551,7 +1551,7 @@ function FutTrading() {
                   {niftyShortPutBuy?.strike}
                   {niftyShortPutBuy?.instrument_type}
                 </div>
-                <div className="text-sm">LTP: {niftyShortPutLtp}</div>
+                <div className="text-sm">LTP: {niftyLongPutLtp}</div>
               </div>
 
               <div className="stat">
@@ -1562,7 +1562,7 @@ function FutTrading() {
                   {niftyShortCallSell?.strike}
                   {niftyShortCallSell?.instrument_type}
                 </div>
-                <div className="text-sm">LTP: {niftyLongCallLtp}</div>
+                <div className="text-sm">LTP: {niftyShortCallLtp}</div>
               </div>
             </div>
           </div>
