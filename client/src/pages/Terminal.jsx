@@ -8,9 +8,9 @@ function Terminal() {
     <div>
       <SaveExpiries />
       <FutTrading />
-      {/* <hr className="text-xl m-5 text-center mt-10"></hr> */}
-      {/* <div className="text-xl m-5 text-center mt-10">Hourly Trades</div> */}
-      {/* <PositionalSpread /> */}
+      {/* <hr className="text-xl m-5 text-center mt-10"></hr>
+      <div className="text-xl m-5 text-center mt-10">30 Mins Trades</div>
+      <PositionalSpread /> */}
     </div>
   );
 }

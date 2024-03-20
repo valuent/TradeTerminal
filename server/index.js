@@ -11,11 +11,10 @@ app.use(express.json());
 app.use(cors());
 
 const limiter = rateLimit({
-  windowMs: 5000, // 15 minutes
-  limit: 2, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-  standardHeaders: "draft-7", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-  // store: ... , // Redis, Memcached, etc. See below.
+  windowMs: 1000,
+  limit: 4,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
 });
 
 const apiKey = process.env.APIKEY;
@@ -131,14 +130,17 @@ app.get("/api/histData", async (req, res) => {
   let token = 9372418;
   let interval = "60minute";
   let from = "2024-03-12";
-  let to = "2024-03-18";
+  let to = "2024-03-19";
   try {
     let data = await kite.getHistoricalData(token, interval, from, to);
+
     res.send(data);
   } catch (error) {
     console.log(error.message);
   }
 });
+
+console.log(Date.now() + 5);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

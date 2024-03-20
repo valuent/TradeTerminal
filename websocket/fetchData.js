@@ -6,16 +6,6 @@ dbconnection.connectToDb();
 
 // Function to fetch data from MongoDB for the last 2 hours
 const fetchData = async (insToken) => {
-  // Get the current timestamp
-  const now = new Date();
-  let twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-
-  twoHoursAgo = DateTime.fromJSDate(twoHoursAgo, { zone: "utc" })
-    .setZone("Asia/Kolkata")
-    .toISO({ includeOffset: false }); // Timestamp for 2 hours ago
-
-  // Fetch data from MongoDB for the last 2 hours
-
   let data = await tickData
     // .where("exchange_time")
     // .gte(twoHoursAgo)

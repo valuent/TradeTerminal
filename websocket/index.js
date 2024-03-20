@@ -5,7 +5,7 @@ const KiteTicker = require("kiteconnect").KiteTicker;
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dbconnection = require("./dbconnection");
-const { fetchData, fetchData1hr } = require("./fetchData");
+const { fetchData } = require("./fetchData");
 require("dotenv").config();
 const tickData = require("./schema");
 const schedule = require("node-schedule");
@@ -40,9 +40,9 @@ const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
 
 var now = new Date();
 var start = new Date();
-start.setHours(0, 15, 0);
+start.setHours(9, 15, 0);
 var end = new Date();
-end.setHours(23, 30, 0);
+end.setHours(15, 30, 0);
 
 const startFetchJob = (instTokenArray) => {
   const job = schedule.scheduleJob("*/5 * * * *", () => {
@@ -69,36 +69,36 @@ const startSLMonitor = () => {
   });
 };
 
-const startFetchJob1hr = (instTokenArray) => {
-  const rule = new schedule.RecurrenceRule();
-  rule.minute = 15; // Run at the 15th minute of every hour
-  rule.hour = [9, 10, 11, 12, 13, 14, 15]; // Run from 9 AM to 3 PM
+// const startFetchJob1hr = (instTokenArray) => {
+//   const rule = new schedule.RecurrenceRule();
+//   rule.minute = 15; // Run at the 15th minute of every hour
+//   rule.hour = [9, 10, 11, 12, 13, 14, 15]; // Run from 9 AM to 3 PM
 
-  // Schedule the function
-  const job = schedule.scheduleJob(rule, function () {
-    if (now >= start && now <= end) {
-      instTokenArray?.forEach(async (token) => {
-        let candle = await fetchData1hr(token);
-        io.emit(`1Hr${token}`, candle);
-        console.log(candle);
-        now = new Date();
-      });
-    } else {
-      console.log("No candles market closed");
-    }
-  });
-};
+//   // Schedule the function
+//   const job = schedule.scheduleJob(rule, function () {
+//     if (now >= start && now <= end) {
+//       instTokenArray?.forEach(async (token) => {
+//         let candle = await fetchData1hr(token);
+//         io.emit(`1Hr${token}`, candle);
+//         console.log(candle);
+//         now = new Date();
+//       });
+//     } else {
+//       console.log("No candles market closed");
+//     }
+//   });
+// };
 
-const startSLMonitor1hr = () => {
-  const rule = new schedule.RecurrenceRule();
-  rule.minute = 15; // Run at the 15th minute of every hour
-  rule.hour = [9, 10, 11, 12, 13, 14, 15]; // Run from 9 AM to 3 PM
-  const job = schedule.scheduleJob(rule, function () {
-    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
-    now = new Date();
-    io.emit("checkSl1Hr", now.getMinutes());
-  });
-};
+// const startSLMonitor1hr = () => {
+//   const rule = new schedule.RecurrenceRule();
+//   rule.minute = 15; // Run at the 15th minute of every hour
+//   rule.hour = [9, 10, 11, 12, 13, 14, 15]; // Run from 9 AM to 3 PM
+//   const job = schedule.scheduleJob(rule, function () {
+//     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
+//     now = new Date();
+//     io.emit("checkSl1Hr", now.getMinutes());
+//   });
+// };
 
 io.on("connection", (socket) => {
   console.log("Client connected");
@@ -164,8 +164,6 @@ io.on("connection", (socket) => {
     console.log(data);
     startFetchJob(data);
     startSLMonitor();
-    startFetchJob1hr(data);
-    startSLMonitor1hr();
   });
 });
 

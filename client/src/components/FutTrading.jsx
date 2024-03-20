@@ -789,7 +789,7 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const niftyLongSLManager = () => {
+    const niftyLongSLManager = async () => {
       if (
         niftyLongOrderId?.callLong?.trading_symbol &&
         niftyLongOrderId?.putShort?.trading_symbol &&
@@ -811,12 +811,12 @@ function FutTrading() {
         // console.log(niftyShortPutLtp);
 
         if (niftyFutLtp >= tgt_level || mtm >= niftyLongOrderId?.tgtPoints) {
-          niftyLongExit();
-          console.log("Nifty Target Reached");
+          await niftyLongExit();
+          console.log("Nifty Target Reached MTM");
         }
         if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
-          niftyLongExit();
-          console.log("Nifty Stoploss Reached");
+          await niftyLongExit();
+          console.log("Nifty Stoploss Reached MTM");
         }
       }
     };
@@ -824,7 +824,7 @@ function FutTrading() {
   }, [tickerData, niftyLongOrderId]);
 
   useEffect(() => {
-    const niftyShortSLManager = () => {
+    const niftyShortSLManager = async () => {
       if (
         niftyShortOrderId?.putLong?.trading_symbol &&
         niftyShortOrderId?.callShort?.trading_symbol &&
@@ -850,23 +850,13 @@ function FutTrading() {
         // console.log(niftyLongPutLtp);
         // console.log(niftyShortCallLtp);
 
-        if (mtm >= niftyShortOrderId?.tgtPoints) {
-          niftyShortExit();
-          console.log("Nifty Target Reached MTM");
-        }
-
-        if (mtm <= -niftyShortOrderId?.slPoints) {
-          niftyShortExit();
-          console.log("Nifty Stoploss Reached MTM");
-        }
-
         if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
-          niftyShortExit();
+          await niftyShortExit();
           console.log("Nifty Target Reached LEVEL");
         }
 
         if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
-          niftyShortExit();
+          await niftyShortExit();
           console.log("Nifty Stoploss Reached LEVEL");
         }
       }
@@ -1303,7 +1293,7 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const bnfLongSLManager = () => {
+    const bnfLongSLManager = async () => {
       if (
         bnfLongOrderId?.callLong?.trading_symbol &&
         bnfLongOrderId?.putShort?.trading_symbol &&
@@ -1321,11 +1311,11 @@ function FutTrading() {
         console.log(mtm);
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
-          bnfLongExit();
+          await bnfLongExit();
           console.log("BankNifty Target Reached");
         }
         if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
-          bnfLongExit();
+          await bnfLongExit();
           console.log("BankNifty Stoploss Reached");
         }
       }
@@ -1334,7 +1324,7 @@ function FutTrading() {
   }, [tickerData, bnfLongOrderId]);
 
   useEffect(() => {
-    const bnfShortSLManager = () => {
+    const bnfShortSLManager = async () => {
       if (
         bnfShortOrderId?.putLong?.trading_symbol &&
         bnfShortOrderId?.callShort?.trading_symbol &&
@@ -1355,12 +1345,12 @@ function FutTrading() {
         console.log("short", mtm);
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
-          bnfShortExit();
+          await bnfShortExit();
           console.log("BankNifty Target Reached");
         }
 
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
-          bnfShortExit();
+          await bnfShortExit();
           console.log("BankNifty Stoploss Reached");
         }
       }
@@ -1371,7 +1361,7 @@ function FutTrading() {
   const [nextCheck, setNextCheck] = useState();
 
   useEffect(() => {
-    const monitorNiftyShortTrailing = () => {
+    const monitorNiftyShortTrailing = async () => {
       if (
         niftyShortOrderId?.putLong?.trading_symbol &&
         niftyShortOrderId?.callShort?.trading_symbol &&
@@ -1382,7 +1372,7 @@ function FutTrading() {
             niftyFutLtp >= niftyShortOrderId?.entryPrice) ||
           niftyFutLtp > nifty20SMA
         ) {
-          niftyShortExit();
+          await niftyShortExit();
           console.log("NiftyShort Exit Done");
         } else {
           console.log("NiftyShort SL not hit yet");
@@ -1391,7 +1381,7 @@ function FutTrading() {
         console.log("NiftyShort No positions");
       }
     };
-    const monitorNiftyLongTrailing = () => {
+    const monitorNiftyLongTrailing = async () => {
       if (
         niftyLongOrderId?.callLong?.trading_symbol &&
         niftyLongOrderId?.putShort?.trading_symbol &&
@@ -1402,7 +1392,7 @@ function FutTrading() {
             niftyFutLtp <= niftyLongOrderId?.entryPrice) ||
           niftyFutLtp < nifty20SMA
         ) {
-          niftyLongExit();
+          await niftyLongExit();
           console.log("NiftyLong Exit Done");
         } else {
           console.log("NiftyLong SL not hit yet");
@@ -1412,7 +1402,7 @@ function FutTrading() {
       }
     };
 
-    const monitorBnfShortTrailing = () => {
+    const monitorBnfShortTrailing = async () => {
       if (
         bnfShortOrderId?.putLong?.trading_symbol &&
         bnfShortOrderId?.callShort?.trading_symbol &&
@@ -1422,7 +1412,7 @@ function FutTrading() {
           (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
           bnfFutLtp > bnf20SMA
         ) {
-          bnfShortExit();
+          await bnfShortExit();
           console.log("BnfShort Exit Done");
         } else {
           console.log("BnfShort SL not hit yet");
@@ -1431,7 +1421,7 @@ function FutTrading() {
         console.log("BnfShort No positions");
       }
     };
-    const monitorBnfLongTrailing = () => {
+    const monitorBnfLongTrailing = async () => {
       if (
         bnfLongOrderId?.callLong?.trading_symbol &&
         bnfLongOrderId?.putShort?.trading_symbol &&
@@ -1441,7 +1431,7 @@ function FutTrading() {
           (bnfFutLtp < bnf10SMA && bnfFutLtp <= bnfLongOrderId?.entryPrice) ||
           bnfFutLtp < bnf20SMA
         ) {
-          bnfLongExit();
+          await bnfLongExit();
           console.log("BnfLong Exit Done");
         } else {
           console.log("BnfLong SL not hit yet");
