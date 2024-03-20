@@ -316,7 +316,7 @@ function FutTrading() {
     const nifty10SMA = () => {
       let sumOf9Candles = 0;
       let nifty10SMAval;
-      niftyCandles?.slice(0, 9).forEach((candle) => {
+      niftyCandles?.slice(-9).forEach((candle) => {
         sumOf9Candles = sumOf9Candles + candle.close;
       });
       nifty10SMAval = parseFloat(
@@ -327,7 +327,7 @@ function FutTrading() {
     const nifty20SMA = () => {
       let sumOf19Candles = 0;
       let nifty20SMAval;
-      niftyCandles?.slice(0, 19).forEach((candle) => {
+      niftyCandles?.slice(-19).forEach((candle) => {
         sumOf19Candles = sumOf19Candles + candle.close;
         // console.log(sumOf19Candles);
       });
@@ -339,7 +339,7 @@ function FutTrading() {
     const bnf10SMA = () => {
       let sumOf9Candles = 0;
       let bnf10SMAval;
-      bnfCandles?.slice(0, 9).forEach((candle) => {
+      bnfCandles?.slice(-9).forEach((candle) => {
         sumOf9Candles = sumOf9Candles + candle.close;
       });
       bnf10SMAval = parseFloat(((sumOf9Candles + bnfFutLtp) / 10).toFixed(2));
@@ -348,7 +348,7 @@ function FutTrading() {
     const bnf20SMA = () => {
       let sumOf19Candles = 0;
       let bnf20SMAval;
-      bnfCandles?.slice(0, 19).forEach((candle) => {
+      bnfCandles?.slice(-19).forEach((candle) => {
         sumOf19Candles = sumOf19Candles + candle.close;
       });
       bnf20SMAval = parseFloat(((sumOf19Candles + bnfFutLtp) / 20).toFixed(2));

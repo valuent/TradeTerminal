@@ -77,11 +77,14 @@ function App() {
   useEffect(() => {
     if (tokenAvailable !== null && socket == null) {
       const newSocket = io.connect("http://localhost:3001", {
-        timeout: 999999999999999,
+        timeout: 99999999,
       }); // Replace with your server URL
       newSocket.on("connect", () => {
         console.log("Socket connected");
         setSocket(newSocket);
+      });
+      newSocket.on("connect_error", (err) => {
+        console.log(`connect_error due to ${err.message}`);
       });
     }
   }, [tokenAvailable]);

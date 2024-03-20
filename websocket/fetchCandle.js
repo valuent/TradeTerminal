@@ -1,6 +1,7 @@
-const tickData = require("./schema");
+const tickData = require("./models/schema");
 const { DateTime } = require("luxon");
 const dbconnection = require("./dbconnection");
+const candleData = require("./models/minCandleSchema");
 
 dbconnection.connectToDb();
 
@@ -13,7 +14,7 @@ const fetchData = async (insToken) => {
     .where("instrument_token")
     .equals(insToken)
     .sort({ _id: -1 })
-    .limit(15000);
+    .limit(1000);
 
   const candlesticks = [];
   let currentCandlestick = null;
@@ -27,7 +28,7 @@ const fetchData = async (insToken) => {
 
     const roundedIST = istTime
       .startOf("minute")
-      .minus({ minutes: istTime.minute % 5 }).ts;
+      .minus({ minutes: istTime.minute % 1 }).ts;
 
     if (currentCandlestick !== roundedIST) {
       currentCandlestick = roundedIST;
@@ -36,13 +37,17 @@ const fetchData = async (insToken) => {
           .setZone("Asia/Kolkata")
           .toISO({ includeOffset: false })
       );
+      // console.log(candlesticks);
     }
   });
 
   var candles = [];
 
-  candlesticks.forEach((stick) => {
-    let candleEndTime = DateTime.fromISO(stick).plus({ minutes: 5 }).toISO();
+  candlesticks.forEach(async (stick) => {
+    let candleEndTime = DateTime.fromISO(stick)
+      .plus({ minutes: 1 })
+      .minus({ seconds: 1 })
+      .toISO();
 
     let matchedTime = data?.filter((tic) => {
       return tic.exchange_time >= stick && tic.exchange_time < candleEndTime;
@@ -68,11 +73,32 @@ const fetchData = async (insToken) => {
     };
 
     candles.push(candleObject);
-    // console.log(sortedData[0]);
+    // console.log(candles[0]);
+    // const candle = new candleData({
+    //   instrument_token: candleObject.instrument_token,
+    //   open_time: candleObject.open_time,
+    //   open: candleObject.open,
+    //   high: candleObject.high,
+    //   low: candleObject.low,
+    //   close: candleObject.close,
+    // });
+    // await candle.save();
+    // console.log("data Saved");
   });
-  // console.log(candles);
-  return candles;
+  // console.log("hey", candles);
+
+  const candle = new candleData({
+    instrument_token: candles[0]?.instrument_token,
+    open_time: candles[0]?.open_time,
+    open: candles[0]?.open,
+    high: candles[0]?.high,
+    low: candles[0]?.low,
+    close: candles[0]?.close,
+  });
+  await candle.save();
+  console.log("Data Added: " + candle);
+  // return candles;
 };
 
-// fetchData([256265, 256265]);
+// fetchData([9372674]);
 module.exports = { fetchData };

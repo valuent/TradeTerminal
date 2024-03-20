@@ -1,20 +1,24 @@
 const express = require("express");
-const http = require("http");
 const socketIo = require("socket.io");
 const KiteTicker = require("kiteconnect").KiteTicker;
-const mongoose = require("mongoose");
 const cors = require("cors");
 const dbconnection = require("./dbconnection");
-const { fetchData } = require("./fetchData");
+const { fetchData } = require("./fetchCandle");
+const { fetchFiveCandle } = require("./fetchFiveCandle");
 require("dotenv").config();
-const tickData = require("./schema");
+const tickData = require("./models/schema");
 const schedule = require("node-schedule");
 const { DateTime } = require("luxon");
+const mongoose = require("mongoose");
+const fiveCandleData = require("./models/fiveMinCandleSchema");
 
 const app = express();
 
-const server = http.createServer(app);
-server.timeout = 0;
+const server = app.listen(3001, () => {
+  console.log("Server running on port 3001");
+  dbconnection.connectToDb();
+});
+
 const io = socketIo(server, {
   cors: {
     origin: "http://localhost:5173",
@@ -23,8 +27,10 @@ const io = socketIo(server, {
   connectTimeout: 50000000, // 25 seconds interval
 });
 app.use(cors());
-let ticker;
 
+dbconnection.connectToDb();
+
+let ticker;
 const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
   let exchTime = DateTime.fromJSDate(exchangeTime, { zone: "utc" })
     .setZone("Asia/Kolkata")
@@ -40,18 +46,59 @@ const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
 
 var now = new Date();
 var start = new Date();
-start.setHours(9, 15, 0);
+start.setHours(0, 15, 0);
 var end = new Date();
-end.setHours(15, 30, 0);
+end.setHours(23, 29, 59);
 
-const startFetchJob = (instTokenArray) => {
+const startFetchJob = async (instTokenArray) => {
+  const job = schedule.scheduleJob("* * * * *", () => {
+    if (now >= start && now <= end) {
+      instTokenArray?.forEach(async (token) => {
+        await fetchData(token);
+
+        now = new Date();
+      });
+    } else {
+      console.log("No candles market closed");
+    }
+  });
+};
+
+const startFiveFetchJob = async (instTokenArray) => {
   const job = schedule.scheduleJob("*/5 * * * *", () => {
     if (now >= start && now <= end) {
       instTokenArray?.forEach(async (token) => {
-        let candle = await fetchData(token);
-        io.emit(token, candle);
-        console.log(candle);
+        await fetchFiveCandle(token);
         now = new Date();
+      });
+    } else {
+      console.log("No candles market closed");
+    }
+  });
+};
+
+const fetchFiveCandleFromDB = async (instTokenArray) => {
+  if (now >= start && now <= end) {
+    instTokenArray?.forEach(async (token) => {
+      let data = await fiveCandleData
+        .where("instrument_token")
+        .equals(token)
+        .sort({ _id: 1 })
+        .limit(100);
+      io.emit(token, data);
+    });
+  } else {
+    console.log("No candles market closed");
+  }
+  const job = schedule.scheduleJob("*/5 * * * *", () => {
+    if (now >= start && now <= end) {
+      instTokenArray?.forEach(async (token) => {
+        let data = await fiveCandleData
+          .where("instrument_token")
+          .equals(token)
+          .sort({ _id: 1 })
+          .limit(100);
+        io.emit(token, data);
       });
     } else {
       console.log("No candles market closed");
@@ -68,37 +115,6 @@ const startSLMonitor = () => {
     // io.emit("checkSl", now.getSeconds());
   });
 };
-
-// const startFetchJob1hr = (instTokenArray) => {
-//   const rule = new schedule.RecurrenceRule();
-//   rule.minute = 15; // Run at the 15th minute of every hour
-//   rule.hour = [9, 10, 11, 12, 13, 14, 15]; // Run from 9 AM to 3 PM
-
-//   // Schedule the function
-//   const job = schedule.scheduleJob(rule, function () {
-//     if (now >= start && now <= end) {
-//       instTokenArray?.forEach(async (token) => {
-//         let candle = await fetchData1hr(token);
-//         io.emit(`1Hr${token}`, candle);
-//         console.log(candle);
-//         now = new Date();
-//       });
-//     } else {
-//       console.log("No candles market closed");
-//     }
-//   });
-// };
-
-// const startSLMonitor1hr = () => {
-//   const rule = new schedule.RecurrenceRule();
-//   rule.minute = 15; // Run at the 15th minute of every hour
-//   rule.hour = [9, 10, 11, 12, 13, 14, 15]; // Run from 9 AM to 3 PM
-//   const job = schedule.scheduleJob(rule, function () {
-//     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
-//     now = new Date();
-//     io.emit("checkSl1Hr", now.getMinutes());
-//   });
-// };
 
 io.on("connection", (socket) => {
   console.log("Client connected");
@@ -163,13 +179,15 @@ io.on("connection", (socket) => {
   socket.on("candleToken", (data) => {
     console.log(data);
     startFetchJob(data);
+    startFiveFetchJob(data);
+    fetchFiveCandleFromDB(data);
     startSLMonitor();
   });
 });
 
 // 109119239;
 
-server.listen(3001, () => {
-  console.log("Server running on port 3001");
-  dbconnection.connectToDb();
-});
+// server.listen(3001, () => {
+//   console.log("Server running on port 3001");
+//   dbconnection.connectToDb();
+// });
