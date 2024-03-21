@@ -1,0 +1,14 @@
+const mongoose = require("mongoose");
+
+const thirtyMinCandleSchema = new mongoose.Schema([
+  {
+    instrument_token: Number,
+    open_time: String,
+    open: Number,
+    high: Number,
+    low: Number,
+    close: Number,
+  },
+]);
+
+module.exports = mongoose.model("thirtyCandleData", thirtyMinCandleSchema);

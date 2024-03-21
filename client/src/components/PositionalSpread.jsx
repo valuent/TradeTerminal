@@ -293,16 +293,12 @@ function PositionalSpread() {
     bnfStrikeSelect();
   }, [niftyRounded, bnfRounded]);
 
-  const getCandleData = () => {};
-
-  socket?.on(niftyFutData?.instrument_token, (data) => {
+  socket?.on(`30min${niftyFutData?.instrument_token}`, (data) => {
     setNiftyCandles(data);
   });
-  socket?.on(bnfFutData?.instrument_token, (data) => {
+  socket?.on(`30min${bnfFutData?.instrument_token}`, (data) => {
     setBnfCandles(data);
   });
-
-  console.log(new Date());
 
   useEffect(() => {
     const nifty10SMA = () => {
@@ -1444,8 +1440,8 @@ function PositionalSpread() {
   });
 
   useEffect(() => {
-    // console.log(niftyCandles?.slice(0, 9));
-    // console.log(bnfCandles?.slice(0, 9));
+    // console.log(niftyCandles?.slice(0, 19));
+    // console.log(bnfCandles?.slice(0, 19));
     // console.log(niftyCandles);
     // console.log(bnfCandles);
     // console.log(nifty10SMA);

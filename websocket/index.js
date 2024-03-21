@@ -5,12 +5,14 @@ const cors = require("cors");
 const dbconnection = require("./dbconnection");
 const { fetchData } = require("./fetchCandle");
 const { fetchFiveCandle } = require("./fetchFiveCandle");
+const { fetchThirtyCandle } = require("./fetchThirtyCandle");
 require("dotenv").config();
 const tickData = require("./models/schema");
 const schedule = require("node-schedule");
 const { DateTime } = require("luxon");
 const mongoose = require("mongoose");
 const fiveCandleData = require("./models/fiveMinCandleSchema");
+const thirtyCandleData = require("./models/thirtyMinCandleSchema");
 
 const app = express();
 
@@ -77,6 +79,19 @@ const startFiveFetchJob = async (instTokenArray) => {
   });
 };
 
+const startThirtyFetchJob = async (instTokenArray) => {
+  const job = schedule.scheduleJob("2 15,45 * * * *", () => {
+    if (now >= start && now <= end) {
+      instTokenArray?.forEach(async (token) => {
+        await fetchThirtyCandle(token);
+        now = new Date();
+      });
+    } else {
+      console.log("No candles market closed");
+    }
+  });
+};
+
 const fetchFiveCandleFromDB = async (instTokenArray) => {
   if (now >= start && now <= end) {
     instTokenArray?.forEach(async (token) => {
@@ -90,7 +105,36 @@ const fetchFiveCandleFromDB = async (instTokenArray) => {
   } else {
     console.log("No candles market closed");
   }
-  const job = schedule.scheduleJob("2 */5 * * * *", () => {
+  const job = schedule.scheduleJob("3 */5 * * * *", () => {
+    if (now >= start && now <= end) {
+      instTokenArray?.forEach(async (token) => {
+        let data = await thirtyCandleData
+          .where("instrument_token")
+          .equals(token)
+          .sort({ _id: -1 })
+          .limit(100);
+        io.emit(token, data);
+      });
+    } else {
+      console.log("No candles market closed");
+    }
+  });
+};
+
+const fetchThirtyCandleFromDB = async (instTokenArray) => {
+  if (now >= start && now <= end) {
+    instTokenArray?.forEach(async (token) => {
+      let data = await thirtyCandleData
+        .where("instrument_token")
+        .equals(token)
+        .sort({ _id: -1 })
+        .limit(100);
+      io.emit(`30min${token}`, data);
+    });
+  } else {
+    console.log("No candles market closed");
+  }
+  const job = schedule.scheduleJob("3 15,45 * * * *", () => {
     if (now >= start && now <= end) {
       instTokenArray?.forEach(async (token) => {
         let data = await fiveCandleData
@@ -98,7 +142,7 @@ const fetchFiveCandleFromDB = async (instTokenArray) => {
           .equals(token)
           .sort({ _id: -1 })
           .limit(50);
-        io.emit(token, data);
+        io.emit(`30min${token}`, data);
       });
     } else {
       console.log("No candles market closed");
@@ -181,6 +225,8 @@ io.on("connection", (socket) => {
     startFetchJob(data);
     startFiveFetchJob(data);
     fetchFiveCandleFromDB(data);
+    startThirtyFetchJob(data);
+    fetchThirtyCandleFromDB(data);
     startSLMonitor();
   });
 });
