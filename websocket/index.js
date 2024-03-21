@@ -24,7 +24,7 @@ const io = socketIo(server, {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
-  connectTimeout: 50000000, // 25 seconds interval
+  connectTimeout: 99999999, // 25 seconds interval
 });
 app.use(cors());
 
@@ -48,7 +48,7 @@ var now = new Date();
 var start = new Date();
 start.setHours(9, 15, 0);
 var end = new Date();
-end.setHours(15, 29, 59);
+end.setHours(15, 29, 59, 900);
 
 const startFetchJob = async (instTokenArray) => {
   const job = schedule.scheduleJob("* * * * *", () => {
@@ -65,7 +65,7 @@ const startFetchJob = async (instTokenArray) => {
 };
 
 const startFiveFetchJob = async (instTokenArray) => {
-  const job = schedule.scheduleJob("*/5 * * * *", () => {
+  const job = schedule.scheduleJob("1 */5 * * * *", () => {
     if (now >= start && now <= end) {
       instTokenArray?.forEach(async (token) => {
         await fetchFiveCandle(token);
@@ -83,21 +83,21 @@ const fetchFiveCandleFromDB = async (instTokenArray) => {
       let data = await fiveCandleData
         .where("instrument_token")
         .equals(token)
-        .sort({ _id: 1 })
+        .sort({ _id: -1 })
         .limit(100);
       io.emit(token, data);
     });
   } else {
     console.log("No candles market closed");
   }
-  const job = schedule.scheduleJob("*/5 * * * *", () => {
+  const job = schedule.scheduleJob("2 */5 * * * *", () => {
     if (now >= start && now <= end) {
       instTokenArray?.forEach(async (token) => {
         let data = await fiveCandleData
           .where("instrument_token")
           .equals(token)
-          .sort({ _id: 1 })
-          .limit(100);
+          .sort({ _id: -1 })
+          .limit(50);
         io.emit(token, data);
       });
     } else {

@@ -96,7 +96,7 @@ const fetchData = async (insToken) => {
     close: candles[0]?.close,
   });
   await candle.save();
-  console.log("Data Added: " + candle);
+  console.log("Data Added 1 min: ", candle);
   // return candles;
 };
 

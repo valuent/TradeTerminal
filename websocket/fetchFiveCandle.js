@@ -13,8 +13,8 @@ const fetchFiveCandle = async (insToken) => {
     // .lte(now)
     .where("instrument_token")
     .equals(insToken)
-    .sort({ _id: 1 })
-    .limit(500);
+    .sort({ _id: -1 })
+    .limit(1000);
 
   const candlesticks = [];
   let currentCandlestick = null;
@@ -73,7 +73,7 @@ const fetchFiveCandle = async (insToken) => {
     };
 
     candles.push(candleObject);
-    // console.log(sortedData);
+    // console.log(sortedData[0]);
     // const candle = new fiveCandleData({
     //   instrument_token: candleObject.instrument_token,
     //   open_time: candleObject.open_time,
@@ -85,7 +85,7 @@ const fetchFiveCandle = async (insToken) => {
     // await candle.save();
     // console.log("data Saved");
   });
-
+  // console.log(candles[1]);
   const candle = new fiveCandleData({
     instrument_token: candles[0]?.instrument_token,
     open_time: candles[0]?.open_time,
@@ -95,7 +95,7 @@ const fetchFiveCandle = async (insToken) => {
     close: candles[0]?.close,
   });
   await candle.save();
-  console.log("Data saved: " + candle);
+  console.log("Data saved 5 Min: ", candle);
   //   return candles;
 };
 

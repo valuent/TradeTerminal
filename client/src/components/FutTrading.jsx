@@ -316,7 +316,7 @@ function FutTrading() {
     const nifty10SMA = () => {
       let sumOf9Candles = 0;
       let nifty10SMAval;
-      niftyCandles?.slice(-9).forEach((candle) => {
+      niftyCandles?.slice(0, 9).forEach((candle) => {
         sumOf9Candles = sumOf9Candles + candle.close;
       });
       nifty10SMAval = parseFloat(
@@ -327,7 +327,7 @@ function FutTrading() {
     const nifty20SMA = () => {
       let sumOf19Candles = 0;
       let nifty20SMAval;
-      niftyCandles?.slice(-19).forEach((candle) => {
+      niftyCandles?.slice(0, 19).forEach((candle) => {
         sumOf19Candles = sumOf19Candles + candle.close;
         // console.log(sumOf19Candles);
       });
@@ -339,7 +339,7 @@ function FutTrading() {
     const bnf10SMA = () => {
       let sumOf9Candles = 0;
       let bnf10SMAval;
-      bnfCandles?.slice(-9).forEach((candle) => {
+      bnfCandles?.slice(0, 9).forEach((candle) => {
         sumOf9Candles = sumOf9Candles + candle.close;
       });
       bnf10SMAval = parseFloat(((sumOf9Candles + bnfFutLtp) / 10).toFixed(2));
@@ -348,7 +348,7 @@ function FutTrading() {
     const bnf20SMA = () => {
       let sumOf19Candles = 0;
       let bnf20SMAval;
-      bnfCandles?.slice(-19).forEach((candle) => {
+      bnfCandles?.slice(0, 19).forEach((candle) => {
         sumOf19Candles = sumOf19Candles + candle.close;
       });
       bnf20SMAval = parseFloat(((sumOf19Candles + bnfFutLtp) / 20).toFixed(2));
@@ -1365,7 +1365,8 @@ function FutTrading() {
       if (
         niftyShortOrderId?.putLong?.trading_symbol &&
         niftyShortOrderId?.callShort?.trading_symbol &&
-        niftyShortOrderId?.entryPrice
+        niftyShortOrderId?.entryPrice &&
+        nextCheck !== null
       ) {
         if (
           (niftyFutLtp > nifty10SMA &&
@@ -1385,7 +1386,8 @@ function FutTrading() {
       if (
         niftyLongOrderId?.callLong?.trading_symbol &&
         niftyLongOrderId?.putShort?.trading_symbol &&
-        niftyLongOrderId?.entryPrice
+        niftyLongOrderId?.entryPrice &&
+        nextCheck !== null
       ) {
         if (
           (niftyFutLtp < nifty10SMA &&
@@ -1406,7 +1408,8 @@ function FutTrading() {
       if (
         bnfShortOrderId?.putLong?.trading_symbol &&
         bnfShortOrderId?.callShort?.trading_symbol &&
-        bnfShortOrderId?.entryPrice
+        bnfShortOrderId?.entryPrice &&
+        nextCheck !== null
       ) {
         if (
           (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
@@ -1425,7 +1428,8 @@ function FutTrading() {
       if (
         bnfLongOrderId?.callLong?.trading_symbol &&
         bnfLongOrderId?.putShort?.trading_symbol &&
-        bnfLongOrderId?.entryPrice
+        bnfLongOrderId?.entryPrice &&
+        nextCheck !== null
       ) {
         if (
           (bnfFutLtp < bnf10SMA && bnfFutLtp <= bnfLongOrderId?.entryPrice) ||
@@ -1462,6 +1466,7 @@ function FutTrading() {
     // console.log(bnf20SMA);
     // console.log(niftyLongPutBuy);
     // console.log(niftyLongOrderId);
+    // console.log(nextCheck == null);
   }, [niftyLongOrderId, niftyLtp]);
 
   // console.log(formatDate(date));
