@@ -1456,8 +1456,8 @@ function FutTrading() {
   });
 
   useEffect(() => {
-    // console.log(niftyCandles?.slice(0, 9));
-    // console.log(bnfCandles?.slice(0, 9));
+    console.log(niftyCandles?.slice(0, 19));
+    console.log(bnfCandles?.slice(0, 19));
     // console.log(niftyCandles);
     // console.log(bnfCandles);
     // console.log(nifty10SMA);

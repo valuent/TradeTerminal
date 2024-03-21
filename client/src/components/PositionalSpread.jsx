@@ -374,7 +374,7 @@ function PositionalSpread() {
           }
 
           await setDoc(
-            doc(db, "user", "niftyFutLong"),
+            doc(db, "user", "30niftyFutLong"),
             {
               callLong: {
                 order_id: orderId,
@@ -416,7 +416,7 @@ function PositionalSpread() {
           }
 
           await setDoc(
-            doc(db, "user", "niftyFutLong"),
+            doc(db, "user", "30niftyFutLong"),
             {
               entryPrice: niftyFutLtp,
               putShort: {
@@ -439,7 +439,7 @@ function PositionalSpread() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "user", "niftyFutLong"), (doc) => {
+    const unsub = onSnapshot(doc(db, "user", "30niftyFutLong"), (doc) => {
       console.log(doc.data());
       setNiftyLongOrderId(doc.data());
 
@@ -482,7 +482,7 @@ function PositionalSpread() {
           }
 
           await setDoc(
-            doc(db, "user", "niftyFutShort"),
+            doc(db, "user", "30niftyFutShort"),
             {
               putLong: {
                 order_id: orderId,
@@ -524,7 +524,7 @@ function PositionalSpread() {
           }
 
           await setDoc(
-            doc(db, "user", "niftyFutShort"),
+            doc(db, "user", "30niftyFutShort"),
             {
               entryPrice: niftyFutLtp,
               callShort: {
@@ -549,7 +549,7 @@ function PositionalSpread() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "user", "niftyFutShort"), (doc) => {
+    const unsub = onSnapshot(doc(db, "user", "30niftyFutShort"), (doc) => {
       console.log(doc.data());
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [
@@ -583,7 +583,7 @@ function PositionalSpread() {
       });
       if (callLongId.length > 0 && putShortId.length > 0) {
         await setDoc(
-          doc(db, "user", "niftyFutLong"),
+          doc(db, "user", "30niftyFutLong"),
           {
             callLong: {
               order_id: niftyLongOrderId?.callLong?.order_id,
@@ -621,7 +621,7 @@ function PositionalSpread() {
       });
       if (putLongId.length > 0 && callShortId.length > 0) {
         await setDoc(
-          doc(db, "user", "niftyFutShort"),
+          doc(db, "user", "30niftyFutShort"),
           {
             putLong: {
               order_id: niftyShortOrderId?.putLong?.order_id,
@@ -650,7 +650,7 @@ function PositionalSpread() {
       niftyLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "niftyFutLong"),
+        doc(db, "user", "30niftyFutLong"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -661,7 +661,7 @@ function PositionalSpread() {
       niftyShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "niftyFutShort"),
+        doc(db, "user", "30niftyFutShort"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -678,7 +678,7 @@ function PositionalSpread() {
       niftyLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "niftyFutLong"),
+        doc(db, "user", "30niftyFutLong"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -689,7 +689,7 @@ function PositionalSpread() {
       niftyShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "niftyFutShort"),
+        doc(db, "user", "30niftyFutShort"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -714,7 +714,7 @@ function PositionalSpread() {
         .then(async (response) => {
           console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "niftyFutLong"), {
+            await updateDoc(doc(db, "user", "30niftyFutLong"), {
               callLong: deleteField(),
             });
           }
@@ -727,7 +727,7 @@ function PositionalSpread() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "niftyFutLong"), {
+            await updateDoc(doc(db, "user", "30niftyFutLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -752,7 +752,7 @@ function PositionalSpread() {
         .then(async (response) => {
           console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "niftyFutShort"), {
+            await updateDoc(doc(db, "user", "30niftyFutShort"), {
               putLong: deleteField(),
             });
           }
@@ -765,7 +765,7 @@ function PositionalSpread() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "niftyFutShort"), {
+            await updateDoc(doc(db, "user", "30niftyFutShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -879,7 +879,7 @@ function PositionalSpread() {
           }
 
           await setDoc(
-            doc(db, "user", "bnfFutLong"),
+            doc(db, "user", "30bnfFutLong"),
             {
               callLong: {
                 order_id: orderId,
@@ -921,7 +921,7 @@ function PositionalSpread() {
           }
 
           await setDoc(
-            doc(db, "user", "bnfFutLong"),
+            doc(db, "user", "30bnfFutLong"),
             {
               entryPrice: bnfFutLtp,
               putShort: {
@@ -944,7 +944,7 @@ function PositionalSpread() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "user", "bnfFutLong"), (doc) => {
+    const unsub = onSnapshot(doc(db, "user", "30bnfFutLong"), (doc) => {
       console.log(doc.data());
       setBnfLongOrderId(doc.data());
 
@@ -987,7 +987,7 @@ function PositionalSpread() {
           }
 
           await setDoc(
-            doc(db, "user", "bnfFutShort"),
+            doc(db, "user", "30bnfFutShort"),
             {
               putLong: {
                 order_id: orderId,
@@ -1029,7 +1029,7 @@ function PositionalSpread() {
           }
 
           await setDoc(
-            doc(db, "user", "bnfFutShort"),
+            doc(db, "user", "30bnfFutShort"),
             {
               entryPrice: bnfFutLtp,
               callShort: {
@@ -1052,7 +1052,7 @@ function PositionalSpread() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "user", "bnfFutShort"), (doc) => {
+    const unsub = onSnapshot(doc(db, "user", "30bnfFutShort"), (doc) => {
       console.log(doc.data());
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [
@@ -1087,7 +1087,7 @@ function PositionalSpread() {
 
       if (callLongId.length > 0 && putShortId.length > 0) {
         await setDoc(
-          doc(db, "user", "bnfFutLong"),
+          doc(db, "user", "30bnfFutLong"),
           {
             callLong: {
               order_id: bnfLongOrderId?.callLong?.order_id,
@@ -1125,7 +1125,7 @@ function PositionalSpread() {
       });
       if (putLongId.length > 0 && callShortId.length > 0) {
         await setDoc(
-          doc(db, "user", "bnfFutShort"),
+          doc(db, "user", "30bnfFutShort"),
           {
             putLong: {
               order_id: bnfShortOrderId?.putLong?.order_id,
@@ -1154,7 +1154,7 @@ function PositionalSpread() {
       bnfLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "bnfFutLong"),
+        doc(db, "user", "30bnfFutLong"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -1165,7 +1165,7 @@ function PositionalSpread() {
       bnfShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "bnfFutShort"),
+        doc(db, "user", "30bnfFutShort"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -1182,7 +1182,7 @@ function PositionalSpread() {
       bnfLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "bnfFutLong"),
+        doc(db, "user", "30bnfFutLong"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -1193,7 +1193,7 @@ function PositionalSpread() {
       bnfShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "user", "bnfFutShort"),
+        doc(db, "user", "30bnfFutShort"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -1218,7 +1218,7 @@ function PositionalSpread() {
         .then(async (response) => {
           console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "bnfFutLong"), {
+            await updateDoc(doc(db, "user", "30bnfFutLong"), {
               callLong: deleteField(),
             });
           }
@@ -1231,7 +1231,7 @@ function PositionalSpread() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "bnfFutLong"), {
+            await updateDoc(doc(db, "user", "30bnfFutLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -1256,7 +1256,7 @@ function PositionalSpread() {
         .then(async (response) => {
           console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "bnfFutShort"), {
+            await updateDoc(doc(db, "user", "30bnfFutShort"), {
               putLong: deleteField(),
             });
           }
@@ -1269,7 +1269,7 @@ function PositionalSpread() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "user", "bnfFutShort"), {
+            await updateDoc(doc(db, "user", "30bnfFutShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),

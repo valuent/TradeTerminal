@@ -48,7 +48,7 @@ const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
 
 var now = new Date();
 var start = new Date();
-start.setHours(9, 15, 0);
+start.setHours(0, 15, 0);
 var end = new Date();
 end.setHours(15, 29, 59, 900);
 
@@ -182,16 +182,16 @@ io.on("connection", (socket) => {
 
       ticks.forEach((tick) => {
         now = new Date();
-        if (now >= start && now <= end) {
-          saveDataToMongo(
-            tick.instrument_token,
-            tick.last_price,
-            tick.exchange_timestamp
-          );
-        } else {
-          console.log("Market Closed");
-          console.log(now);
-        }
+        // if (now >= start && now <= end) {
+        //   saveDataToMongo(
+        //     tick.instrument_token,
+        //     tick.last_price,
+        //     tick.exchange_timestamp
+        //   );
+        // } else {
+        //   console.log("Market Closed");
+        //   console.log(now);
+        // }
       });
     });
   });
