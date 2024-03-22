@@ -87,16 +87,16 @@ const fetchData = async (insToken) => {
   });
   // console.log("hey", candles);
 
-  // const candle = new candleData({
-  //   instrument_token: candles[0]?.instrument_token,
-  //   open_time: candles[0]?.open_time,
-  //   open: candles[0]?.open,
-  //   high: candles[0]?.high,
-  //   low: candles[0]?.low,
-  //   close: candles[0]?.close,
-  // });
-  // await candle.save();
-  // console.log("Data Added 1 min: ", candle);
+  const candle = new candleData({
+    instrument_token: candles[0]?.instrument_token,
+    open_time: candles[0]?.open_time,
+    open: candles[0]?.open,
+    high: candles[0]?.high,
+    low: candles[0]?.low,
+    close: candles[0]?.close,
+  });
+  await candle.save();
+  console.log("Data Added 1 min: ", candle);
   // return candles;
 };
 

@@ -86,16 +86,16 @@ const fetchFiveCandle = async (insToken) => {
     // console.log("data Saved");
   });
   // console.log(candles[1]);
-  // const candle = new fiveCandleData({
-  //   instrument_token: candles[0]?.instrument_token,
-  //   open_time: candles[0]?.open_time,
-  //   open: candles[0]?.open,
-  //   high: candles[0]?.high,
-  //   low: candles[0]?.low,
-  //   close: candles[0]?.close,
-  // });
-  // await candle.save();
-  // console.log("Data saved 5 Min: ", candle);
+  const candle = new fiveCandleData({
+    instrument_token: candles[0]?.instrument_token,
+    open_time: candles[0]?.open_time,
+    open: candles[0]?.open,
+    high: candles[0]?.high,
+    low: candles[0]?.low,
+    close: candles[0]?.close,
+  });
+  await candle.save();
+  console.log("Data saved 5 Min: ", candle);
   //   return candles;
 };
 
