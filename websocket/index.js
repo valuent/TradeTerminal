@@ -50,7 +50,9 @@ var now = new Date();
 var start = new Date();
 start.setHours(9, 15, 0);
 var end = new Date();
-end.setHours(15, 29, 59, 900);
+end.setHours(15, 30, 5);
+var tickEnd = new Date();
+tickEnd.setHours(15, 29, 59, 900);
 
 const startFetchJob = async (instTokenArray) => {
   const job = schedule.scheduleJob("* * * * *", () => {
@@ -171,10 +173,30 @@ io.on("connection", (socket) => {
       api_key: process.env.APIKEY,
       access_token: tokenAvailable,
     });
-    ticker.autoReconnect(true, 1000, 2);
     ticker.connect();
+    ticker.autoReconnect(true, 300, 5);
+
     ticker.on("connect", () => {
-      socket.emit("tickerSuccess", "ConnectionSuccessful");
+      socket.emit("tickerSuccess", `ConnectionSuccessful${now}`);
+    });
+
+    ticker.on("error", (err) => {
+      console.log(err.message);
+    });
+    // ticker.on("disconnect", (err) => {
+    //   console.log(err);
+    // });
+    ticker.on("reconnect", (reconnect_count, reconnect_interval) => {
+      socket.emit("reconnected");
+      console.log(
+        "Reconnecting: attempt - ",
+        reconnect_count,
+        " interval - ",
+        reconnect_interval
+      );
+    });
+    ticker.on("noreconnect ", () => {
+      console.log("Reconnection wasn't Possible please restart the server");
     });
 
     ticker.on("ticks", (ticks) => {
@@ -182,7 +204,7 @@ io.on("connection", (socket) => {
 
       ticks.forEach((tick) => {
         now = new Date();
-        if (now >= start && now <= end) {
+        if (now >= start && now <= tickEnd) {
           saveDataToMongo(
             tick.instrument_token,
             tick.last_price,

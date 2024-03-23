@@ -91,7 +91,7 @@ function App() {
 
   useEffect(() => {
     if (socket && tokenAvailable) {
-      socket.emit("sendToken", tokenAvailable);
+      socket?.emit("sendToken", tokenAvailable);
     }
     socket?.on("tickerSuccess", (data) => {
       console.log("ticker Connected", data);
@@ -99,6 +99,9 @@ function App() {
     });
     socket?.on("ticks", (data) => {
       setTickerData(data);
+    });
+    socket?.on("connect", () => {
+      socket?.emit("sendToken", tokenAvailable);
     });
   }, [socket]);
 

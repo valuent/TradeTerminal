@@ -87,7 +87,7 @@ function PositionalSpread() {
 
   const refreshOpenPos = () => {
     setRefreshExistingOrder(Math.random()); //
-    console.log(refreshExistingOrder);
+    // console.log(refreshExistingOrder);
   };
 
   useEffect(() => {
@@ -359,7 +359,7 @@ function PositionalSpread() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
+          // console.log(res);
           let callLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
@@ -402,7 +402,7 @@ function PositionalSpread() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
+          // console.log(res);
           let putShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
@@ -440,7 +440,9 @@ function PositionalSpread() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "30niftyFutLong"), (doc) => {
-      console.log(doc.data());
+      if (doc.data().order_id) {
+        console.log(doc.data());
+      }
       setNiftyLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -468,11 +470,11 @@ function PositionalSpread() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
           let putLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
+          console.log(putLongId);
           let price;
 
           if (putLongId[0]?.average_price) {
@@ -510,10 +512,10 @@ function PositionalSpread() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
           let callShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
+          console.log(callShortId);
 
           let price;
 
@@ -550,7 +552,9 @@ function PositionalSpread() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "30niftyFutShort"), (doc) => {
-      console.log(doc.data());
+      if (doc.data().order_id) {
+        console.log(doc.data());
+      }
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [
         doc?.data()?.putLong?.instrument_token,
@@ -568,7 +572,7 @@ function PositionalSpread() {
 
   const updateOrderBookNifty = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
-      console.log(response);
+      // console.log(response);
       let callLongId = response?.data?.filter((order) => {
         return (
           order.order_id === niftyLongOrderId?.callLong?.order_id &&
@@ -606,7 +610,7 @@ function PositionalSpread() {
     });
 
     await axios.get(`/api/orderInfo`).then(async (response) => {
-      console.log(response);
+      // console.log(response);
       let putLongId = response?.data?.filter((order) => {
         return (
           order.order_id === niftyShortOrderId?.putLong?.order_id &&
@@ -712,7 +716,7 @@ function PositionalSpread() {
           `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=NRML&order_type=MARKET`
         )
         .then(async (response) => {
-          console.log(response);
+          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "30niftyFutLong"), {
               callLong: deleteField(),
@@ -750,7 +754,7 @@ function PositionalSpread() {
           `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=NRML&order_type=MARKET`
         )
         .then(async (response) => {
-          console.log(response);
+          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "30niftyFutShort"), {
               putLong: deleteField(),
@@ -794,7 +798,7 @@ function PositionalSpread() {
           niftyLongOrderId?.callLong?.average_price +
           niftyLongOrderId?.putShort?.average_price -
           niftyShortPutLtp;
-        console.log(mtm);
+        // console.log(mtm);
         // console.log(niftyLongCallLtp);
         // console.log(niftyShortPutLtp);
 
@@ -831,7 +835,7 @@ function PositionalSpread() {
           niftyShortOrderId?.callShort?.average_price -
           niftyShortCallLtp;
 
-        console.log(mtm);
+        // console.log(mtm);
         // console.log("SL", sl_level);
         // console.log("tgt", tgt_level);
         // console.log(mtm);
@@ -864,7 +868,7 @@ function PositionalSpread() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
+          // console.log(res);
           let callLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
@@ -907,7 +911,7 @@ function PositionalSpread() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
+          // console.log(res);
           let putShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
@@ -945,7 +949,9 @@ function PositionalSpread() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "30bnfFutLong"), (doc) => {
-      console.log(doc.data());
+      if (doc.data().order_id) {
+        console.log(doc.data());
+      }
       setBnfLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -973,11 +979,11 @@ function PositionalSpread() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
           let putLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
+          console.log(putLongId);
           let price;
 
           if (putLongId[0]?.average_price) {
@@ -1015,10 +1021,10 @@ function PositionalSpread() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
           let callShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
+          console.log(callShortId);
 
           let price;
 
@@ -1053,7 +1059,9 @@ function PositionalSpread() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "30bnfFutShort"), (doc) => {
-      console.log(doc.data());
+      if (doc.data().order_id) {
+        console.log(doc.data());
+      }
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [
         doc?.data()?.putLong?.instrument_token,
@@ -1071,7 +1079,7 @@ function PositionalSpread() {
 
   const updateOrderBookBnf = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
-      console.log(response);
+      // console.log(response);
       let callLongId = response?.data?.filter((order) => {
         return (
           order.order_id === bnfLongOrderId?.callLong?.order_id &&
@@ -1110,7 +1118,7 @@ function PositionalSpread() {
     });
 
     await axios.get(`/api/orderInfo`).then(async (response) => {
-      console.log(response);
+      // console.log(response);
       let putLongId = response?.data?.filter((order) => {
         return (
           order.order_id === bnfShortOrderId?.putLong?.order_id &&
@@ -1216,7 +1224,7 @@ function PositionalSpread() {
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=NRML&order_type=MARKET`
         )
         .then(async (response) => {
-          console.log(response);
+          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "30bnfFutLong"), {
               callLong: deleteField(),
@@ -1254,7 +1262,7 @@ function PositionalSpread() {
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=NRML&order_type=MARKET`
         )
         .then(async (response) => {
-          console.log(response);
+          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "30bnfFutShort"), {
               putLong: deleteField(),
@@ -1296,7 +1304,7 @@ function PositionalSpread() {
           bnfLongOrderId?.callLong?.average_price +
           bnfLongOrderId?.putShort?.average_price -
           bnfShortPutLtp;
-        console.log(mtm);
+        // console.log(mtm);
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           await bnfLongExit();
@@ -1330,7 +1338,7 @@ function PositionalSpread() {
           bnfShortOrderId?.callShort?.average_price -
           bnfShortCallLtp;
 
-        console.log("short", mtm);
+        // console.log("short", mtm);
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
           await bnfShortExit();
@@ -1440,6 +1448,15 @@ function PositionalSpread() {
   });
 
   useEffect(() => {
+    refreshOpenPos();
+  }, [isSuccess]);
+
+  // socket?.on("tickerSuccess", () => {
+  //
+  //   console.log("hi");
+  // });
+
+  useEffect(() => {
     // console.log(niftyCandles?.slice(0, 19));
     // console.log(bnfCandles?.slice(0, 19));
     // console.log(niftyCandles);
@@ -1468,7 +1485,7 @@ function PositionalSpread() {
             </div>
           </div>
 
-          {isSuccess === "ConnectionSuccessful" &&
+          {isSuccess &&
             niftyFutData?.instrument_token &&
             bnfFutData?.instrument_token &&
             niftySpotData?.instrument_token &&

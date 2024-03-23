@@ -87,7 +87,7 @@ function FutTrading() {
 
   const refreshOpenPos = () => {
     setRefreshExistingOrder(Math.random()); //
-    console.log(refreshExistingOrder);
+    // console.log(refreshExistingOrder);
   };
 
   useEffect(() => {
@@ -371,7 +371,7 @@ function FutTrading() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
+          // console.log(res);
           let callLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
@@ -414,7 +414,7 @@ function FutTrading() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
+          // console.log(res);
           let putShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
@@ -452,7 +452,9 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFutLong"), (doc) => {
-      console.log(doc.data());
+      if (doc.data().order_id) {
+        console.log(doc.data());
+      }
       setNiftyLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -480,10 +482,10 @@ function FutTrading() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
           let putLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
+          console.log(putLongId);
 
           let price;
 
@@ -522,11 +524,11 @@ function FutTrading() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
           let callShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
+          console.log(callShortId);
           let price;
 
           if (callShortId[0]?.average_price) {
@@ -562,7 +564,9 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFutShort"), (doc) => {
-      console.log(doc.data());
+      if (doc.data().order_id) {
+        console.log(doc.data());
+      }
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [
         doc?.data()?.putLong?.instrument_token,
@@ -580,7 +584,7 @@ function FutTrading() {
 
   const updateOrderBookNifty = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
-      console.log(response);
+      // console.log(response);
       let callLongId = response?.data?.filter((order) => {
         return (
           order.order_id === niftyLongOrderId?.callLong?.order_id &&
@@ -618,7 +622,7 @@ function FutTrading() {
     });
 
     await axios.get(`/api/orderInfo`).then(async (response) => {
-      console.log(response);
+      // console.log(response);
       let putLongId = response?.data?.filter((order) => {
         return (
           order.order_id === niftyShortOrderId?.putLong?.order_id &&
@@ -724,7 +728,7 @@ function FutTrading() {
           `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
-          console.log(response);
+          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "niftyFutLong"), {
               callLong: deleteField(),
@@ -762,7 +766,7 @@ function FutTrading() {
           `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
-          console.log(response);
+          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "niftyFutShort"), {
               putLong: deleteField(),
@@ -806,7 +810,7 @@ function FutTrading() {
           niftyLongOrderId?.callLong?.average_price +
           niftyLongOrderId?.putShort?.average_price -
           niftyShortPutLtp;
-        console.log(mtm);
+        // console.log(mtm);
         // console.log(niftyLongCallLtp);
         // console.log(niftyShortPutLtp);
 
@@ -843,7 +847,7 @@ function FutTrading() {
           niftyShortOrderId?.callShort?.average_price -
           niftyShortCallLtp;
 
-        console.log(mtm);
+        // console.log(mtm);
         // console.log("SL", sl_level);
         // console.log("tgt", tgt_level);
         // console.log(mtm);
@@ -876,7 +880,7 @@ function FutTrading() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
+          // console.log(res);
           let callLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
@@ -919,7 +923,7 @@ function FutTrading() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
+          // console.log(res);
           let putShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
@@ -957,7 +961,9 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfFutLong"), (doc) => {
-      console.log(doc.data());
+      if (doc.data().order_id) {
+        console.log(doc.data());
+      }
       setBnfLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -985,11 +991,11 @@ function FutTrading() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
           let putLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
+          console.log(putLongId);
           let price;
 
           if (putLongId[0]?.average_price) {
@@ -1027,11 +1033,11 @@ function FutTrading() {
         console.log(response);
         let orderId = response.data.order_id;
         await axios.get(`/api/orderInfo`).then(async (res) => {
-          console.log(res);
           let callShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
+          console.log(callShortId);
           let price;
 
           if (callShortId[0]?.average_price) {
@@ -1065,7 +1071,9 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfFutShort"), (doc) => {
-      console.log(doc.data());
+      if (doc.data().order_id) {
+        console.log(doc.data());
+      }
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [
         doc?.data()?.putLong?.instrument_token,
@@ -1083,7 +1091,7 @@ function FutTrading() {
 
   const updateOrderBookBnf = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
-      console.log(response);
+      // console.log(response);
       let callLongId = response?.data?.filter((order) => {
         return (
           order.order_id === bnfLongOrderId?.callLong?.order_id &&
@@ -1122,7 +1130,7 @@ function FutTrading() {
     });
 
     await axios.get(`/api/orderInfo`).then(async (response) => {
-      console.log(response);
+      // console.log(response);
       let putLongId = response?.data?.filter((order) => {
         return (
           order.order_id === bnfShortOrderId?.putLong?.order_id &&
@@ -1228,7 +1236,7 @@ function FutTrading() {
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
-          console.log(response);
+          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "bnfFutLong"), {
               callLong: deleteField(),
@@ -1266,7 +1274,7 @@ function FutTrading() {
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
-          console.log(response);
+          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "bnfFutShort"), {
               putLong: deleteField(),
@@ -1308,7 +1316,7 @@ function FutTrading() {
           bnfLongOrderId?.callLong?.average_price +
           bnfLongOrderId?.putShort?.average_price -
           bnfShortPutLtp;
-        console.log(mtm);
+        // console.log(mtm);
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           await bnfLongExit();
@@ -1342,7 +1350,7 @@ function FutTrading() {
           bnfShortOrderId?.callShort?.average_price -
           bnfShortCallLtp;
 
-        console.log("short", mtm);
+        // console.log("short", mtm);
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
           await bnfShortExit();
@@ -1456,8 +1464,18 @@ function FutTrading() {
   });
 
   useEffect(() => {
-    console.log(niftyCandles?.slice(0, 19));
-    console.log(bnfCandles?.slice(0, 19));
+    refreshOpenPos();
+    startStream();
+  }, [isSuccess]);
+  // socket?.on("tickerSuccess", () => {
+  //   startStream();
+  //   refreshOpenPos();
+  //   console.log("hi");
+  // });
+
+  useEffect(() => {
+    // console.log(niftyCandles?.slice(0, 19));
+    // console.log(bnfCandles?.slice(0, 19));
     // console.log(niftyCandles);
     // console.log(bnfCandles);
     // console.log(nifty10SMA);
@@ -1484,7 +1502,7 @@ function FutTrading() {
               Quantity: {niftyQty}
             </div>
           </div>
-          {isSuccess === "ConnectionSuccessful" &&
+          {isSuccess &&
             niftyFutData?.instrument_token &&
             bnfFutData?.instrument_token &&
             niftySpotData?.instrument_token &&
@@ -1498,7 +1516,7 @@ function FutTrading() {
                 </button>
               </div>
             )}
-          {isSuccess === "ConnectionSuccessful" &&
+          {isSuccess &&
             niftyFutData?.instrument_token &&
             bnfFutData?.instrument_token &&
             niftySpotData?.instrument_token &&
