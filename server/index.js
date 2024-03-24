@@ -126,20 +126,6 @@ app.get("/api/orderInfo", async (req, res) => {
   }
 });
 
-app.get("/api/histData", async (req, res) => {
-  let token = 9372418;
-  let interval = "60minute";
-  let from = "2024-03-12";
-  let to = "2024-03-19";
-  try {
-    let data = await kite.getHistoricalData(token, interval, from, to);
-
-    res.send(data);
-  } catch (error) {
-    console.log(error.message);
-  }
-});
-
 console.log(Date.now() + 5);
 
 app.listen(port, () => {
