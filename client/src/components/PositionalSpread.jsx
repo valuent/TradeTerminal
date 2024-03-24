@@ -1977,14 +1977,14 @@ function PositionalSpread() {
           {/*  */}
 
           <div className="setSLTGT w-full flex justify-between p-3 pt-0">
-            <div className="setSl">
+            <div className="setSl join">
               <input
                 type="number"
                 id="niftySl30m"
-                className="input input-bordered input-md w-32"
+                className="input input-bordered input-md w-32 join-item"
               />
               <button
-                className="btn btn-secondary text-white mx-1"
+                className="btn btn-secondary text-white join-item"
                 onClick={() => {
                   let sl = document.getElementById("niftySl30m").value;
                   niftySetSL(sl);
@@ -1993,14 +1993,14 @@ function PositionalSpread() {
                 SL Nifty
               </button>
             </div>
-            <div className="setTgt ">
+            <div className="setTgt join">
               <input
                 type="number"
                 id="niftyTgt30m"
-                className="input input-bordered input-md w-32"
+                className="input input-bordered input-md w-32 join-item"
               />
               <button
-                className="btn btn-secondary text-white mx-1"
+                className="btn btn-secondary text-white join-item"
                 onClick={() => {
                   let tgt = document.getElementById("niftyTgt30m").value;
                   niftySetTG(tgt);
@@ -2325,14 +2325,14 @@ function PositionalSpread() {
           {/*  */}
 
           <div className="setSLTGT w-full flex justify-between p-3 pt-0">
-            <div className="setSl">
+            <div className="setSl join">
               <input
                 type="number"
                 id="bnfSl30m"
-                className="input input-bordered input-md w-32"
+                className="input input-bordered input-md w-32 join-item"
               />
               <button
-                className="btn btn-secondary  mx-1 text-white"
+                className="btn btn-secondary join-item text-white"
                 onClick={() => {
                   let sl = document.getElementById("bnfSl30m").value;
                   bnfSetSL(sl);
@@ -2341,14 +2341,14 @@ function PositionalSpread() {
                 SL Bank Nifty
               </button>
             </div>
-            <div className="setTgt ">
+            <div className="setTgt join">
               <input
                 type="number"
                 id="bnfTgt30m"
-                className="input input-bordered input-md w-32"
+                className="input input-bordered input-md w-32 join-item"
               />
               <button
-                className="btn btn-secondary text-white mx-1"
+                className="btn btn-secondary text-white join-item"
                 onClick={() => {
                   let tgt = document.getElementById("bnfTgt30m").value;
                   bnfSetTG(tgt);
