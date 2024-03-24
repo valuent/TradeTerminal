@@ -437,6 +437,7 @@ function FutTrading() {
                 instrument_token: parseInt(niftyLongPutSell?.instrument_token),
                 trading_symbol: niftyLongPutSell.tradingsymbol,
               },
+              entryLevel: deleteField(),
             },
             { merge: true }
           )
@@ -452,7 +453,7 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFutLong"), (doc) => {
-      if (doc.data().order_id) {
+      if (doc.data().order_id || doc.data().entryLevel) {
         console.log(doc.data());
       }
       setNiftyLongOrderId(doc.data());
@@ -549,6 +550,7 @@ function FutTrading() {
                 ),
                 trading_symbol: niftyShortCallSell?.tradingsymbol,
               },
+              entryLevel: deleteField(),
             },
             { merge: true }
           )
@@ -564,7 +566,7 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFutShort"), (doc) => {
-      if (doc.data().order_id) {
+      if (doc.data().order_id || doc.data().entryLevel) {
         console.log(doc.data());
       }
       setNiftyShortOrderId(doc.data());
@@ -946,6 +948,7 @@ function FutTrading() {
                 instrument_token: parseInt(bnfLongPutSell?.instrument_token),
                 trading_symbol: bnfLongPutSell.tradingsymbol,
               },
+              entryLevel: deleteField(),
             },
             { merge: true }
           )
@@ -961,7 +964,7 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfFutLong"), (doc) => {
-      if (doc.data().order_id) {
+      if (doc.data().order_id || doc.data().entryLevel) {
         console.log(doc.data());
       }
       setBnfLongOrderId(doc.data());
@@ -1056,6 +1059,7 @@ function FutTrading() {
                 instrument_token: parseInt(bnfShortCallSell?.instrument_token),
                 trading_symbol: bnfShortCallSell?.tradingsymbol,
               },
+              entryLevel: deleteField(),
             },
             { merge: true }
           )
@@ -1071,7 +1075,7 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfFutShort"), (doc) => {
-      if (doc.data().order_id) {
+      if (doc.data().order_id || doc.data().entryLevel) {
         console.log(doc.data());
       }
       setBnfShortOrderId(doc.data());
@@ -1364,9 +1368,10 @@ function FutTrading() {
       }
     };
     bnfShortSLManager();
-  }, [bnfLtp, bnfShortOrderId]);
+  }, [tickerData, bnfShortOrderId]);
 
   const [nextCheck, setNextCheck] = useState();
+  const [nextEntryCheck, setNextEntryCheck] = useState();
 
   useEffect(() => {
     const monitorNiftyShortTrailing = async () => {
@@ -1459,8 +1464,228 @@ function FutTrading() {
     monitorBnfLongTrailing();
   }, [nextCheck]);
 
+  // Nifty levels set
+  const niftySetLongLevel = async (level) => {
+    if (
+      !niftyLongOrderId?.callLong?.trading_symbol &&
+      !niftyLongOrderId?.putShort?.trading_symbol
+    ) {
+      if (level === 0 || !level || level === null) {
+        await setDoc(
+          doc(db, "user", "niftyFutLong"),
+          {
+            entryLevel: deleteField(),
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, "user", "niftyFutLong"),
+          {
+            entryLevel: parseInt(level),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("Trades already open");
+    }
+  };
+  const niftySetShortLevel = async (level) => {
+    if (
+      !niftyShortOrderId?.putLong?.trading_symbol &&
+      !niftyShortOrderId?.callShort?.trading_symbol
+    ) {
+      if (level === 0 || !level || level === null) {
+        await setDoc(
+          doc(db, "user", "niftyFutShort"),
+          {
+            entryLevel: deleteField(),
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, "user", "niftyFutShort"),
+          {
+            entryLevel: parseInt(level),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("Trades already open");
+    }
+  };
+  const bnfSetLongLevel = async (level) => {
+    if (
+      !bnfLongOrderId?.callLong?.trading_symbol &&
+      !bnfLongOrderId?.putShort?.trading_symbol
+    ) {
+      if (level === 0 || !level || level === null) {
+        await setDoc(
+          doc(db, "user", "bnfFutLong"),
+          {
+            entryLevel: deleteField(),
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, "user", "bnfFutLong"),
+          {
+            entryLevel: parseInt(level),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("Trades already open");
+    }
+  };
+  const bnfSetShortLevel = async (level) => {
+    if (
+      !bnfShortOrderId?.putLong?.trading_symbol &&
+      !bnfShortOrderId?.callShort?.trading_symbol
+    ) {
+      if (level === 0 || !level || level === null) {
+        await setDoc(
+          doc(db, "user", "bnfFutShort"),
+          {
+            entryLevel: deleteField(),
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, "user", "bnfFutShort"),
+          {
+            entryLevel: parseInt(level),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("Trades already open");
+    }
+  };
+
+  useEffect(() => {
+    const checkNiftyLongEntry = async () => {
+      if (niftyLongOrderId?.entryLevel) {
+        let entry = niftyLongOrderId?.entryLevel;
+        let lastClose = niftyCandles[0]?.close;
+
+        if (
+          niftyFutLtp > entry &&
+          niftyFutLtp - lastClose <= 28 &&
+          niftyFutLtp > nifty20SMA
+        ) {
+          await niftyLong();
+        } else if (niftyFutLtp < nifty20SMA) {
+          await setDoc(
+            doc(db, "user", "niftyFutLong"),
+            {
+              entryLevel: deleteField(),
+            },
+            { merge: true }
+          );
+        } else {
+          console.log("Entry not met");
+        }
+      } else {
+        console.log("No level set");
+      }
+    };
+    const checkNiftyShortEntry = async () => {
+      if (niftyShortOrderId?.entryLevel) {
+        let entry = niftyShortOrderId?.entryLevel;
+        let lastClose = niftyCandles[0]?.close;
+
+        if (
+          niftyFutLtp < entry &&
+          lastClose - niftyFutLtp <= 28 &&
+          niftyFutLtp < nifty20SMA
+        ) {
+          await niftyShort();
+        } else if (niftyFutLtp > nifty20SMA) {
+          await setDoc(
+            doc(db, "user", "niftyFutShort"),
+            {
+              entryLevel: deleteField(),
+            },
+            { merge: true }
+          );
+        } else {
+          console.log("Entry not met");
+        }
+      } else {
+        console.log("No level set");
+      }
+    };
+    const checkBnfLongEntry = async () => {
+      if (bnfLongOrderId?.entryLevel) {
+        let entry = bnfLongOrderId?.entryLevel;
+        let lastClose = bnfCandles[0]?.close;
+        // setBnfFutLtp(46950);
+        if (
+          bnfFutLtp > entry &&
+          bnfFutLtp - lastClose <= 95 &&
+          bnfFutLtp > bnf20SMA
+        ) {
+          await bnfLong();
+        } else if (bnfFutLtp < bnf20SMA) {
+          await setDoc(
+            doc(db, "user", "bnfFutLong"),
+            {
+              entryLevel: deleteField(),
+            },
+            { merge: true }
+          );
+        } else {
+          console.log("Entry not met");
+        }
+      } else {
+        console.log("No level set");
+      }
+    };
+    const checkBnfShortEntry = async () => {
+      if (bnfShortOrderId?.entryLevel) {
+        let entry = bnfShortOrderId?.entryLevel;
+        let lastClose = bnfCandles[0]?.close;
+
+        if (
+          bnfFutLtp < entry &&
+          lastClose - bnfFutLtp <= 95 &&
+          bnfFutLtp < bnf20SMA
+        ) {
+          await bnfShort();
+        } else if (bnfFutLtp > bnf20SMA) {
+          await setDoc(
+            doc(db, "user", "bnfFutShort"),
+            {
+              entryLevel: deleteField(),
+            },
+            { merge: true }
+          );
+        } else {
+          console.log("Entry not met");
+        }
+      } else {
+        console.log("No level set");
+      }
+    };
+    checkNiftyLongEntry();
+    checkNiftyShortEntry();
+    checkBnfLongEntry();
+    checkBnfShortEntry();
+  }, [nextEntryCheck]);
+
   socket?.on("checkSl", (data) => {
     setNextCheck(data);
+  });
+  socket?.on("checkEntry", (data) => {
+    setNextEntryCheck(data);
   });
 
   useEffect(() => {
@@ -1616,6 +1841,47 @@ function FutTrading() {
           </div>
 
           {/*  */}
+          {/* ENTRY LEVELS*/}
+          {/*  */}
+
+          <div className="setEntryLevels w-full flex justify-between p-3 pt-0">
+            <div className="setLong join">
+              <input
+                type="number"
+                id="niftyLongLevel"
+                className="input input-bordered join-item input-md w-32"
+              />
+              <button
+                className="btn btn-neutral join-item text-white"
+                onClick={() => {
+                  let longLevel =
+                    document.getElementById("niftyLongLevel").value;
+                  niftySetLongLevel(parseInt(longLevel));
+                }}
+              >
+                Nifty Long
+              </button>
+            </div>
+            <div className="setShort join">
+              <input
+                type="number"
+                id="niftyShortLevel"
+                className="input input-bordered join-item input-md w-32"
+              />
+              <button
+                className="btn btn-neutral join-item text-white "
+                onClick={() => {
+                  let shortLevel =
+                    document.getElementById("niftyShortLevel").value;
+                  niftySetShortLevel(parseInt(shortLevel));
+                }}
+              >
+                Nifty Short
+              </button>
+            </div>
+          </div>
+
+          {/*  */}
           {/* ENTRY BUTTONS */}
           {/*  */}
 
@@ -1671,14 +1937,14 @@ function FutTrading() {
           {/*  */}
 
           <div className="setSLTGT w-full flex justify-between p-3 pt-0">
-            <div className="setSl">
+            <div className="setSl join">
               <input
                 type="number"
                 id="niftySl"
-                className="input input-bordered input-md w-32"
+                className="input input-bordered input-md w-32 join-item"
               />
               <button
-                className="btn btn-secondary text-white mx-1"
+                className="btn btn-secondary text-white join-item"
                 onClick={() => {
                   let sl = document.getElementById("niftySl").value;
                   niftySetSL(sl);
@@ -1687,14 +1953,14 @@ function FutTrading() {
                 SL Nifty
               </button>
             </div>
-            <div className="setTgt ">
+            <div className="setTgt join ">
               <input
                 type="number"
                 id="niftyTgt"
-                className="input input-bordered input-md w-32"
+                className="input input-bordered input-md w-32 join-item"
               />
               <button
-                className="btn btn-secondary text-white mx-1"
+                className="btn btn-secondary text-white join-item"
                 onClick={() => {
                   let tgt = document.getElementById("niftyTgt").value;
                   niftySetTG(tgt);
@@ -1924,6 +2190,46 @@ function FutTrading() {
               </div>
             </div>
           </div>
+
+          {/*  */}
+          {/* ENTRY LEVELS*/}
+          {/*  */}
+
+          <div className="setEntryLevels w-full flex justify-between p-3 pt-0">
+            <div className="setLong join">
+              <input
+                type="number"
+                id="bnfLongLevel"
+                className="input input-bordered join-item input-md w-32"
+              />
+              <button
+                className="btn btn-neutral join-item text-white"
+                onClick={() => {
+                  let longLevel = document.getElementById("bnfLongLevel").value;
+                  bnfSetLongLevel(parseInt(longLevel));
+                }}
+              >
+                Bank Nifty Long
+              </button>
+            </div>
+            <div className="setShort join">
+              <input
+                type="number"
+                id="bnfShortLevel"
+                className="input input-bordered join-item input-md w-32"
+              />
+              <button
+                className="btn btn-neutral join-item text-white "
+                onClick={() => {
+                  let shortLevel =
+                    document.getElementById("bnfShortLevel").value;
+                  bnfSetShortLevel(parseInt(shortLevel));
+                }}
+              >
+                Bank Nifty Short
+              </button>
+            </div>
+          </div>
           {/*  */}
           {/* ENTRY BUTTONS */}
           {/*  */}
@@ -1976,15 +2282,15 @@ function FutTrading() {
           {/* SL TGT SETTER */}
           {/*  */}
 
-          <div className="setSLTGT w-full flex justify-between p-3 pt-0">
-            <div className="setSl">
+          <div className="setSLTGT w-full flex justify-between p-3 pt-0 ">
+            <div className="setSl join">
               <input
                 type="number"
                 id="bnfSl"
-                className="input input-bordered input-md w-32"
+                className="input input-bordered input-md w-32 join-item"
               />
               <button
-                className="btn btn-secondary  mx-1 text-white"
+                className="btn btn-secondary join-item text-white"
                 onClick={() => {
                   let sl = document.getElementById("bnfSl").value;
                   bnfSetSL(sl);

@@ -1443,7 +1443,7 @@ function PositionalSpread() {
     monitorBnfLongTrailing();
   }, [nextCheck]);
 
-  socket?.on("checkSl", (data) => {
+  socket?.on("checkSl30m", (data) => {
     setNextCheck(data);
   });
 
@@ -1643,13 +1643,13 @@ function PositionalSpread() {
             <div className="setSl">
               <input
                 type="number"
-                id="niftySl"
+                id="niftySl30m"
                 className="input input-bordered input-md w-32"
               />
               <button
                 className="btn btn-secondary text-white mx-1"
                 onClick={() => {
-                  let sl = document.getElementById("niftySl").value;
+                  let sl = document.getElementById("niftySl30m").value;
                   niftySetSL(sl);
                 }}
               >
@@ -1659,13 +1659,13 @@ function PositionalSpread() {
             <div className="setTgt ">
               <input
                 type="number"
-                id="niftyTgt"
+                id="niftyTgt30m"
                 className="input input-bordered input-md w-32"
               />
               <button
                 className="btn btn-secondary text-white mx-1"
                 onClick={() => {
-                  let tgt = document.getElementById("niftyTgt").value;
+                  let tgt = document.getElementById("niftyTgt30m").value;
                   niftySetTG(tgt);
                 }}
               >
@@ -1949,13 +1949,13 @@ function PositionalSpread() {
             <div className="setSl">
               <input
                 type="number"
-                id="bnfSl"
+                id="bnfSl30m"
                 className="input input-bordered input-md w-32"
               />
               <button
                 className="btn btn-secondary  mx-1 text-white"
                 onClick={() => {
-                  let sl = document.getElementById("bnfSl").value;
+                  let sl = document.getElementById("bnfSl30m").value;
                   bnfSetSL(sl);
                 }}
               >
@@ -1965,13 +1965,13 @@ function PositionalSpread() {
             <div className="setTgt ">
               <input
                 type="number"
-                id="bnfTgt"
+                id="bnfTgt30m"
                 className="input input-bordered input-md w-32"
               />
               <button
                 className="btn btn-secondary text-white mx-1"
                 onClick={() => {
-                  let tgt = document.getElementById("bnfTgt").value;
+                  let tgt = document.getElementById("bnfTgt30m").value;
                   bnfSetTG(tgt);
                 }}
               >
