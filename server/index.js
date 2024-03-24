@@ -39,10 +39,9 @@ app.get("/auth", async (req, res) => {
     const requestToken = req.query.request_token;
     const data = await kite.generateSession(requestToken, apiSecret);
     const accessToken = data?.access_token;
-    ticker_access_token = data?.access_token;
     kite.setAccessToken(accessToken);
     res.cookie("isLoggedIn", "true", { httpOnly: true });
-    res.redirect(`http://localhost:5173/?token=${data.access_token}`);
+    res.redirect(`http://localhost:5173/?token=${data?.access_token}`);
   } catch (error) {
     const requestToken = req.query.request_token;
     res

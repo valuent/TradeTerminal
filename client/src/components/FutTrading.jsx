@@ -214,7 +214,7 @@ function FutTrading() {
       const niftyLongStrikeSell = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[0] &&
+            data.expiry === expiries?.niftyExpiryDates?.[0] &&
             data.strike === parseInt(niftyRounded) &&
             data.instrument_type === "PE"
           );
@@ -223,7 +223,7 @@ function FutTrading() {
       const niftyLongStrikeBuy = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[0] &&
+            data.expiry === expiries?.niftyExpiryDates?.[0] &&
             data.strike === parseInt(niftyRounded) &&
             data.instrument_type === "CE"
           );
@@ -233,7 +233,7 @@ function FutTrading() {
       const niftyShortStrikeSell = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[0] &&
+            data.expiry === expiries?.niftyExpiryDates?.[0] &&
             data.strike === parseInt(niftyRounded) &&
             data.instrument_type === "CE"
           );
@@ -242,7 +242,7 @@ function FutTrading() {
       const niftyShortStrikeBuy = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[0] &&
+            data.expiry === expiries?.niftyExpiryDates?.[0] &&
             data.strike === parseInt(niftyRounded) &&
             data.instrument_type === "PE"
           );
@@ -257,14 +257,14 @@ function FutTrading() {
     const bnfStrikeSelect = () => {
       const bnfLongStrikeSell = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[0] &&
+          data.expiry === expiries?.bnfExpiryDates?.[0] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "PE"
         );
       });
       const bnfLongStrikeBuy = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[0] &&
+          data.expiry === expiries?.bnfExpiryDates?.[0] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "CE"
         );
@@ -272,14 +272,14 @@ function FutTrading() {
 
       const bnfShortStrikeSell = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[0] &&
+          data.expiry === expiries?.bnfExpiryDates?.[0] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "CE"
         );
       });
       const bnfShortStrikeBuy = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[0] &&
+          data.expiry === expiries?.bnfExpiryDates?.[0] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "PE"
         );
@@ -380,8 +380,8 @@ function FutTrading() {
           console.log(callLongId);
           let price;
 
-          if (callLongId[0]?.average_price) {
-            price = callLongId[0].average_price;
+          if (callLongId?.[0]?.average_price) {
+            price = callLongId?.[0].average_price;
           } else {
             price = "";
           }
@@ -423,12 +423,15 @@ function FutTrading() {
           console.log(putShortId);
           let price;
           let slPoint;
-          if (putShortId[0]?.average_price) {
-            price = putShortId[0].average_price;
+          let tgtPoint;
+          if (putShortId?.[0]?.average_price) {
+            price = putShortId?.[0].average_price;
             slPoint = 25;
+            tgtPoint = 52;
           } else {
             price = "";
             slPoint = "";
+            tgtPoint = "";
           }
 
           await setDoc(
@@ -436,6 +439,7 @@ function FutTrading() {
             {
               entryPrice: niftyFutLtp,
               slPoints: slPoint,
+              tgtPoints: tgtPoint,
               putShort: {
                 order_id: orderId,
                 average_price: price,
@@ -458,7 +462,7 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFutLong"), (doc) => {
-      if (doc.data().order_id || doc.data().entryLevel) {
+      if (doc.data()) {
         console.log(doc.data());
       }
       setNiftyLongOrderId(doc.data());
@@ -495,8 +499,8 @@ function FutTrading() {
 
           let price;
 
-          if (putLongId[0]?.average_price) {
-            price = putLongId[0].average_price;
+          if (putLongId?.[0]?.average_price) {
+            price = putLongId?.[0].average_price;
           } else {
             price = "";
           }
@@ -537,12 +541,15 @@ function FutTrading() {
           console.log(callShortId);
           let price;
           let slpoint;
-          if (callShortId[0]?.average_price) {
-            price = callShortId[0].average_price;
+          let tgtPoint;
+          if (callShortId?.[0]?.average_price) {
+            price = callShortId?.[0].average_price;
             slpoint = 25;
+            tgtPoint = 52;
           } else {
             price = "";
             slpoint = "";
+            tgtPoint = "";
           }
 
           await setDoc(
@@ -550,6 +557,7 @@ function FutTrading() {
             {
               entryPrice: niftyFutLtp,
               slPoints: slpoint,
+              tgtPoints: tgtPoint,
               callShort: {
                 order_id: orderId,
                 average_price: price,
@@ -574,7 +582,7 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFutShort"), (doc) => {
-      if (doc.data().order_id || doc.data().entryLevel) {
+      if (doc.data()) {
         console.log(doc.data());
       }
       setNiftyShortOrderId(doc.data());
@@ -613,11 +621,11 @@ function FutTrading() {
           {
             callLong: {
               order_id: niftyLongOrderId?.callLong?.order_id,
-              average_price: callLongId[0]?.average_price,
+              average_price: callLongId?.[0]?.average_price,
             },
             putShort: {
               order_id: niftyLongOrderId?.putShort?.order_id,
-              average_price: putShortId[0]?.average_price,
+              average_price: putShortId?.[0]?.average_price,
             },
           },
           { merge: true }
@@ -651,11 +659,11 @@ function FutTrading() {
           {
             putLong: {
               order_id: niftyShortOrderId?.putLong?.order_id,
-              average_price: putLongId[0]?.average_price,
+              average_price: putLongId?.[0]?.average_price,
             },
             callShort: {
               order_id: niftyShortOrderId?.callShort?.order_id,
-              average_price: callShortId[0]?.average_price,
+              average_price: callShortId?.[0]?.average_price,
             },
           },
           { merge: true }
@@ -898,8 +906,8 @@ function FutTrading() {
           console.log(callLongId);
           let price;
 
-          if (callLongId[0]?.average_price) {
-            price = callLongId[0].average_price;
+          if (callLongId?.[0]?.average_price) {
+            price = callLongId?.[0].average_price;
           } else {
             price = "";
           }
@@ -941,12 +949,14 @@ function FutTrading() {
           console.log(putShortId);
           let price;
           let slPoint;
-          if (putShortId[0]?.average_price) {
-            price = putShortId[0].average_price;
+          if (putShortId?.[0]?.average_price) {
+            price = putShortId?.[0].average_price;
             slPoint = 85;
+            tgtPoint = 177;
           } else {
             price = "";
             slPoint = "";
+            tgtPoint = "";
           }
 
           await setDoc(
@@ -954,6 +964,7 @@ function FutTrading() {
             {
               entryPrice: bnfFutLtp,
               slPoints: slPoint,
+              tgtPoints: tgtPoint,
               putShort: {
                 order_id: orderId,
                 average_price: price,
@@ -976,7 +987,7 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfFutLong"), (doc) => {
-      if (doc.data().order_id || doc.data().entryLevel) {
+      if (doc.data()) {
         console.log(doc.data());
       }
       setBnfLongOrderId(doc.data());
@@ -1013,8 +1024,8 @@ function FutTrading() {
           console.log(putLongId);
           let price;
 
-          if (putLongId[0]?.average_price) {
-            price = putLongId[0].average_price;
+          if (putLongId?.[0]?.average_price) {
+            price = putLongId?.[0].average_price;
           } else {
             price = "";
           }
@@ -1055,12 +1066,14 @@ function FutTrading() {
           console.log(callShortId);
           let price;
           let slPoint;
-          if (callShortId[0]?.average_price) {
-            price = callShortId[0].average_price;
+          if (callShortId?.[0]?.average_price) {
+            price = callShortId?.[0].average_price;
             slPoint = 85;
+            tgtPoint = 177;
           } else {
             price = "";
             slPoint = "";
+            tgtPoint = "";
           }
 
           await setDoc(
@@ -1068,6 +1081,7 @@ function FutTrading() {
             {
               entryPrice: bnfFutLtp,
               slPoints: slPoint,
+              tgtPoints: tgtPoint,
               callShort: {
                 order_id: orderId,
                 average_price: price,
@@ -1090,7 +1104,7 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfFutShort"), (doc) => {
-      if (doc.data().order_id || doc.data().entryLevel) {
+      if (doc.data()) {
         console.log(doc.data());
       }
       setBnfShortOrderId(doc.data());
@@ -1130,11 +1144,11 @@ function FutTrading() {
           {
             callLong: {
               order_id: bnfLongOrderId?.callLong?.order_id,
-              average_price: callLongId[0]?.average_price,
+              average_price: callLongId?.[0]?.average_price,
             },
             putShort: {
               order_id: bnfLongOrderId?.putShort?.order_id,
-              average_price: putShortId[0]?.average_price,
+              average_price: putShortId?.[0]?.average_price,
             },
           },
           { merge: true }
@@ -1168,11 +1182,11 @@ function FutTrading() {
           {
             putLong: {
               order_id: bnfShortOrderId?.putLong?.order_id,
-              average_price: putLongId[0]?.average_price,
+              average_price: putLongId?.[0]?.average_price,
             },
             callShort: {
               order_id: bnfShortOrderId?.callShort?.order_id,
-              average_price: callShortId[0]?.average_price,
+              average_price: callShortId?.[0]?.average_price,
             },
           },
           { merge: true }
@@ -1589,7 +1603,7 @@ function FutTrading() {
     const checkNiftyLongEntry = async () => {
       if (niftyLongOrderId?.entryLevel) {
         let entry = niftyLongOrderId?.entryLevel;
-        let lastClose = niftyCandles[0]?.close;
+        let lastClose = niftyCandles?.[0]?.close;
 
         if (
           niftyFutLtp > entry &&
@@ -1606,16 +1620,16 @@ function FutTrading() {
             { merge: true }
           );
         } else {
-          console.log("Entry not met");
+          console.log("Nifty Long Entry not met");
         }
       } else {
-        console.log("No level set");
+        console.log("Nifty Long No level set");
       }
     };
     const checkNiftyShortEntry = async () => {
       if (niftyShortOrderId?.entryLevel) {
         let entry = niftyShortOrderId?.entryLevel;
-        let lastClose = niftyCandles[0]?.close;
+        let lastClose = niftyCandles?.[0]?.close;
 
         if (
           niftyFutLtp < entry &&
@@ -1632,16 +1646,16 @@ function FutTrading() {
             { merge: true }
           );
         } else {
-          console.log("Entry not met");
+          console.log("Nifty Short Entry not met");
         }
       } else {
-        console.log("No level set");
+        console.log("Nifty Short No level set");
       }
     };
     const checkBnfLongEntry = async () => {
       if (bnfLongOrderId?.entryLevel) {
         let entry = bnfLongOrderId?.entryLevel;
-        let lastClose = bnfCandles[0]?.close;
+        let lastClose = bnfCandles?.[0]?.close;
 
         if (
           bnfFutLtp > entry &&
@@ -1658,16 +1672,16 @@ function FutTrading() {
             { merge: true }
           );
         } else {
-          console.log("Entry not met");
+          console.log("Bank Nifty Long Entry not met");
         }
       } else {
-        console.log("No level set");
+        console.log("Bank Nifty Long No level set");
       }
     };
     const checkBnfShortEntry = async () => {
       if (bnfShortOrderId?.entryLevel) {
         let entry = bnfShortOrderId?.entryLevel;
-        let lastClose = bnfCandles[0]?.close;
+        let lastClose = bnfCandles?.[0]?.close;
 
         if (
           bnfFutLtp < entry &&
@@ -1684,10 +1698,10 @@ function FutTrading() {
             { merge: true }
           );
         } else {
-          console.log("Entry not met");
+          console.log("Bank Nifty Short Entry not met");
         }
       } else {
-        console.log("No level set");
+        console.log("Bank Nifty Short No level set");
       }
     };
     checkNiftyLongEntry();
@@ -1710,24 +1724,42 @@ function FutTrading() {
 
   useEffect(() => {
     const slTgtRefresh = () => {
-      if (niftyLongOrderId?.slPoints && niftyLongOrderId?.tgtPoints) {
+      if (niftyLongOrderId?.slPoints || niftyLongOrderId?.tgtPoints) {
         document.getElementById("niftySl").value = niftyLongOrderId?.slPoints;
         document.getElementById("niftyTgt").value = niftyLongOrderId?.tgtPoints;
-      } else if (niftyShortOrderId?.slPoints && niftyShortOrderId?.tgtPoints) {
+      } else if (niftyShortOrderId?.slPoints || niftyShortOrderId?.tgtPoints) {
         document.getElementById("niftySl").value = niftyShortOrderId?.slPoints;
         document.getElementById("niftyTgt").value =
           niftyShortOrderId?.tgtPoints;
       }
 
-      if (bnfLongOrderId?.slPoints && bnfLongOrderId?.tgtPoints) {
+      if (bnfLongOrderId?.slPoints || bnfLongOrderId?.tgtPoints) {
         document.getElementById("bnfSl").value = bnfLongOrderId?.slPoints;
         document.getElementById("bnfTgt").value = bnfLongOrderId?.tgtPoints;
-      } else if (bnfShortOrderId?.slPoints && bnfShortOrderId?.tgtPoints) {
+      } else if (bnfShortOrderId?.slPoints || bnfShortOrderId?.tgtPoints) {
         document.getElementById("bnfSl").value = bnfShortOrderId?.slPoints;
         document.getElementById("bnfTgt").value = bnfShortOrderId?.tgtPoints;
       }
     };
+    const levelRefresh = () => {
+      if (niftyLongOrderId?.entryLevel) {
+        document.getElementById("niftyLongLevel").value =
+          niftyLongOrderId?.entryLevel;
+      } else if (niftyShortOrderId?.entryLevel) {
+        document.getElementById("niftyShortLevel").value =
+          niftyShortOrderId?.entryLevel;
+      }
+
+      if (bnfLongOrderId?.entryLevel) {
+        document.getElementById("bnfLongLevel").value =
+          bnfLongOrderId?.entryLevel;
+      } else if (bnfShortOrderId?.entryLevel) {
+        document.getElementById("bnfShortLevel").value =
+          bnfShortOrderId?.entryLevel;
+      }
+    };
     slTgtRefresh();
+    levelRefresh();
   }, [niftyLongOrderId, niftyShortOrderId, bnfLongOrderId, bnfShortOrderId]);
 
   useEffect(() => {
@@ -1754,7 +1786,7 @@ function FutTrading() {
         <div className="innerNav w-full h-full bg-neutral rounded-2xl shadow-lg flex justify-between">
           <div className="nifty flex items-center">
             <div className="m-3 ml-6">
-              Nifty Expiry: {expiries?.niftyExpiryDates[0]?.slice(0, 10)} ||
+              Nifty Expiry: {expiries?.niftyExpiryDates?.[0]?.slice(0, 10)} ||
               Strike Expiry: {niftyShortCallSell?.expiry.slice(0, 10)} ||
               Quantity: {niftyQty}
             </div>
@@ -1789,9 +1821,9 @@ function FutTrading() {
             )}
           <div className="bnf flex items-center">
             <div className="m-3 mr-6">
-              BNF Expiry: {expiries?.bnfExpiryDates[0]?.slice(0, 10)} || Strike
-              Expiry: {bnfShortCallSell?.expiry.slice(0, 10)} || Quantity:{" "}
-              {bnfQty}
+              BNF Expiry: {expiries?.bnfExpiryDates?.[0]?.slice(0, 10)} ||
+              Strike Expiry: {bnfShortCallSell?.expiry.slice(0, 10)} ||
+              Quantity: {bnfQty}
             </div>
           </div>
         </div>

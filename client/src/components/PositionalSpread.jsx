@@ -213,7 +213,7 @@ function PositionalSpread() {
       const niftyLongStrikeSell = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[1] &&
+            data.expiry === expiries?.niftyExpiryDates?.[1] &&
             data.strike === parseInt(niftyRounded) &&
             data.instrument_type === "PE"
           );
@@ -222,7 +222,7 @@ function PositionalSpread() {
       const niftyLongStrikeBuy = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[1] &&
+            data.expiry === expiries?.niftyExpiryDates?.[1] &&
             data.strike === parseInt(niftyRounded) &&
             data.instrument_type === "CE"
           );
@@ -232,7 +232,7 @@ function PositionalSpread() {
       const niftyShortStrikeSell = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[1] &&
+            data.expiry === expiries?.niftyExpiryDates?.[1] &&
             data.strike === parseInt(niftyRounded) &&
             data.instrument_type === "CE"
           );
@@ -241,7 +241,7 @@ function PositionalSpread() {
       const niftyShortStrikeBuy = niftyOptChainData?.niftyChain?.filter(
         (data) => {
           return (
-            data.expiry === expiries?.niftyExpiryDates[1] &&
+            data.expiry === expiries?.niftyExpiryDates?.[1] &&
             data.strike === parseInt(niftyRounded) &&
             data.instrument_type === "PE"
           );
@@ -256,14 +256,14 @@ function PositionalSpread() {
     const bnfStrikeSelect = () => {
       const bnfLongStrikeSell = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[1] &&
+          data.expiry === expiries?.bnfExpiryDates?.[1] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "PE"
         );
       });
       const bnfLongStrikeBuy = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[1] &&
+          data.expiry === expiries?.bnfExpiryDates?.[1] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "CE"
         );
@@ -271,14 +271,14 @@ function PositionalSpread() {
 
       const bnfShortStrikeSell = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[1] &&
+          data.expiry === expiries?.bnfExpiryDates?.[1] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "CE"
         );
       });
       const bnfShortStrikeBuy = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
-          data.expiry === expiries?.bnfExpiryDates[1] &&
+          data.expiry === expiries?.bnfExpiryDates?.[1] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "PE"
         );
@@ -367,8 +367,8 @@ function PositionalSpread() {
           console.log(callLongId);
           let price;
 
-          if (callLongId[0]?.average_price) {
-            price = callLongId[0].average_price;
+          if (callLongId?.[0]?.average_price) {
+            price = callLongId?.[0].average_price;
           } else {
             price = "";
           }
@@ -407,24 +407,32 @@ function PositionalSpread() {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
-          console.log(putShortId);
           let price;
-          if (putShortId[0]?.average_price) {
-            price = putShortId[0].average_price;
+          let slPoint;
+          let tgtPoint;
+          if (putShortId?.[0]?.average_price) {
+            price = putShortId?.[0].average_price;
+            slPoint = 100;
+            tgtPoint = 210;
           } else {
             price = "";
+            slPoint = "";
+            tgtPoint = "";
           }
 
           await setDoc(
             doc(db, "user", "30niftyFutLong"),
             {
               entryPrice: niftyFutLtp,
+              slPoints: slPoint,
+              tgtPoints: tgtPoint,
               putShort: {
                 order_id: orderId,
                 average_price: price,
                 instrument_token: parseInt(niftyLongPutSell?.instrument_token),
                 trading_symbol: niftyLongPutSell.tradingsymbol,
               },
+              entryLevel: deleteField(),
             },
             { merge: true }
           )
@@ -440,7 +448,7 @@ function PositionalSpread() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "30niftyFutLong"), (doc) => {
-      if (doc.data().order_id) {
+      if (doc.data()) {
         console.log(doc.data());
       }
       setNiftyLongOrderId(doc.data());
@@ -477,8 +485,8 @@ function PositionalSpread() {
           console.log(putLongId);
           let price;
 
-          if (putLongId[0]?.average_price) {
-            price = putLongId[0].average_price;
+          if (putLongId?.[0]?.average_price) {
+            price = putLongId?.[0].average_price;
           } else {
             price = "";
           }
@@ -518,17 +526,24 @@ function PositionalSpread() {
           console.log(callShortId);
 
           let price;
-
-          if (callShortId[0]?.average_price) {
-            price = callShortId[0].average_price;
+          let slpoint;
+          let tgtPoint;
+          if (callShortId?.[0]?.average_price) {
+            price = callShortId?.[0].average_price;
+            slpoint = 100;
+            tgtPoint = 210;
           } else {
             price = "";
+            slpoint = "";
+            tgtPoint = "";
           }
 
           await setDoc(
             doc(db, "user", "30niftyFutShort"),
             {
               entryPrice: niftyFutLtp,
+              slPoints: slpoint,
+              tgtPoints: tgtPoint,
               callShort: {
                 order_id: orderId,
                 average_price: price,
@@ -537,6 +552,7 @@ function PositionalSpread() {
                 ),
                 trading_symbol: niftyShortCallSell?.tradingsymbol,
               },
+              entryLevel: deleteField(),
             },
             { merge: true }
           )
@@ -552,7 +568,7 @@ function PositionalSpread() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "30niftyFutShort"), (doc) => {
-      if (doc.data().order_id) {
+      if (doc.data()) {
         console.log(doc.data());
       }
       setNiftyShortOrderId(doc.data());
@@ -591,11 +607,11 @@ function PositionalSpread() {
           {
             callLong: {
               order_id: niftyLongOrderId?.callLong?.order_id,
-              average_price: callLongId[0]?.average_price,
+              average_price: callLongId?.[0]?.average_price,
             },
             putShort: {
               order_id: niftyLongOrderId?.putShort?.order_id,
-              average_price: putShortId[0]?.average_price,
+              average_price: putShortId?.[0]?.average_price,
             },
           },
           { merge: true }
@@ -629,11 +645,11 @@ function PositionalSpread() {
           {
             putLong: {
               order_id: niftyShortOrderId?.putLong?.order_id,
-              average_price: putLongId[0]?.average_price,
+              average_price: putLongId?.[0]?.average_price,
             },
             callShort: {
               order_id: niftyShortOrderId?.callShort?.order_id,
-              average_price: callShortId[0]?.average_price,
+              average_price: callShortId?.[0]?.average_price,
             },
           },
           { merge: true }
@@ -876,8 +892,8 @@ function PositionalSpread() {
           console.log(callLongId);
           let price;
 
-          if (callLongId[0]?.average_price) {
-            price = callLongId[0].average_price;
+          if (callLongId?.[0]?.average_price) {
+            price = callLongId?.[0].average_price;
           } else {
             price = "";
           }
@@ -918,22 +934,30 @@ function PositionalSpread() {
 
           console.log(putShortId);
           let price;
-          if (putShortId[0]?.average_price) {
-            price = putShortId[0].average_price;
+          let slPoint;
+          if (putShortId?.[0]?.average_price) {
+            price = putShortId?.[0].average_price;
+            slPoint = 350;
+            tgtPoint = 730;
           } else {
             price = "";
+            slPoint = "";
+            tgtPoint = "";
           }
 
           await setDoc(
             doc(db, "user", "30bnfFutLong"),
             {
               entryPrice: bnfFutLtp,
+              slPoints: slPoint,
+              tgtPoints: tgtPoint,
               putShort: {
                 order_id: orderId,
                 average_price: price,
                 instrument_token: parseInt(bnfLongPutSell?.instrument_token),
                 trading_symbol: bnfLongPutSell.tradingsymbol,
               },
+              entryLevel: deleteField(),
             },
             { merge: true }
           )
@@ -949,7 +973,7 @@ function PositionalSpread() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "30bnfFutLong"), (doc) => {
-      if (doc.data().order_id) {
+      if (doc.data()) {
         console.log(doc.data());
       }
       setBnfLongOrderId(doc.data());
@@ -986,8 +1010,8 @@ function PositionalSpread() {
           console.log(putLongId);
           let price;
 
-          if (putLongId[0]?.average_price) {
-            price = putLongId[0].average_price;
+          if (putLongId?.[0]?.average_price) {
+            price = putLongId?.[0].average_price;
           } else {
             price = "";
           }
@@ -1027,23 +1051,30 @@ function PositionalSpread() {
           console.log(callShortId);
 
           let price;
-
-          if (callShortId[0]?.average_price) {
-            price = callShortId[0].average_price;
+          let slPoint;
+          if (callShortId?.[0]?.average_price) {
+            price = callShortId?.[0].average_price;
+            slPoint = 350;
+            tgtPoint = 730;
           } else {
             price = "";
+            slPoint = "";
+            tgtPoint = "";
           }
 
           await setDoc(
             doc(db, "user", "30bnfFutShort"),
             {
               entryPrice: bnfFutLtp,
+              slPoints: slPoint,
+              tgtPoints: tgtPoint,
               callShort: {
                 order_id: orderId,
                 average_price: price,
                 instrument_token: parseInt(bnfShortCallSell?.instrument_token),
                 trading_symbol: bnfShortCallSell?.tradingsymbol,
               },
+              entryLevel: deleteField(),
             },
             { merge: true }
           )
@@ -1059,7 +1090,7 @@ function PositionalSpread() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "30bnfFutShort"), (doc) => {
-      if (doc.data().order_id) {
+      if (doc.data()) {
         console.log(doc.data());
       }
       setBnfShortOrderId(doc.data());
@@ -1099,11 +1130,11 @@ function PositionalSpread() {
           {
             callLong: {
               order_id: bnfLongOrderId?.callLong?.order_id,
-              average_price: callLongId[0]?.average_price,
+              average_price: callLongId?.[0]?.average_price,
             },
             putShort: {
               order_id: bnfLongOrderId?.putShort?.order_id,
-              average_price: putShortId[0]?.average_price,
+              average_price: putShortId?.[0]?.average_price,
             },
           },
           { merge: true }
@@ -1137,11 +1168,11 @@ function PositionalSpread() {
           {
             putLong: {
               order_id: bnfShortOrderId?.putLong?.order_id,
-              average_price: putLongId[0]?.average_price,
+              average_price: putLongId?.[0]?.average_price,
             },
             callShort: {
               order_id: bnfShortOrderId?.callShort?.order_id,
-              average_price: callShortId[0]?.average_price,
+              average_price: callShortId?.[0]?.average_price,
             },
           },
           { merge: true }
@@ -1352,9 +1383,10 @@ function PositionalSpread() {
       }
     };
     bnfShortSLManager();
-  }, [bnfLtp, bnfShortOrderId]);
+  }, [tickerData, bnfShortOrderId]);
 
   const [nextCheck, setNextCheck] = useState();
+  const [nextEntryCheck, setNextEntryCheck] = useState();
 
   useEffect(() => {
     const monitorNiftyShortTrailing = async () => {
@@ -1443,13 +1475,277 @@ function PositionalSpread() {
     monitorBnfLongTrailing();
   }, [nextCheck]);
 
+  const niftySetLongLevel = async (level) => {
+    if (
+      !niftyLongOrderId?.callLong?.trading_symbol &&
+      !niftyLongOrderId?.putShort?.trading_symbol
+    ) {
+      if (level === 0 || !level || level === null) {
+        await setDoc(
+          doc(db, "user", "30niftyFutLong"),
+          {
+            entryLevel: deleteField(),
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, "user", "30niftyFutLong"),
+          {
+            entryLevel: parseInt(level),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("Trades already open");
+    }
+  };
+  const niftySetShortLevel = async (level) => {
+    if (
+      !niftyShortOrderId?.putLong?.trading_symbol &&
+      !niftyShortOrderId?.callShort?.trading_symbol
+    ) {
+      if (level === 0 || !level || level === null) {
+        await setDoc(
+          doc(db, "user", "30niftyFutShort"),
+          {
+            entryLevel: deleteField(),
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, "user", "30niftyFutShort"),
+          {
+            entryLevel: parseInt(level),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("Trades already open");
+    }
+  };
+  const bnfSetLongLevel = async (level) => {
+    if (
+      !bnfLongOrderId?.callLong?.trading_symbol &&
+      !bnfLongOrderId?.putShort?.trading_symbol
+    ) {
+      if (level === 0 || !level || level === null) {
+        await setDoc(
+          doc(db, "user", "30bnfFutLong"),
+          {
+            entryLevel: deleteField(),
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, "user", "30bnfFutLong"),
+          {
+            entryLevel: parseInt(level),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("Trades already open");
+    }
+  };
+  const bnfSetShortLevel = async (level) => {
+    if (
+      !bnfShortOrderId?.putLong?.trading_symbol &&
+      !bnfShortOrderId?.callShort?.trading_symbol
+    ) {
+      if (level === 0 || !level || level === null) {
+        await setDoc(
+          doc(db, "user", "30bnfFutShort"),
+          {
+            entryLevel: deleteField(),
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, "user", "30bnfFutShort"),
+          {
+            entryLevel: parseInt(level),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("Trades already open");
+    }
+  };
+
+  useEffect(() => {
+    const checkNiftyLongEntry = async () => {
+      if (niftyLongOrderId?.entryLevel) {
+        let entry = niftyLongOrderId?.entryLevel;
+        let lastClose = niftyCandles?.[0]?.close;
+
+        if (
+          niftyFutLtp > entry &&
+          niftyFutLtp - lastClose <= 28 &&
+          niftyFutLtp > nifty20SMA
+        ) {
+          await niftyLong();
+        } else if (niftyFutLtp < nifty20SMA) {
+          await setDoc(
+            doc(db, "user", "30niftyFutLong"),
+            {
+              entryLevel: deleteField(),
+            },
+            { merge: true }
+          );
+        } else {
+          console.log("Nifty Long 30 Mins Entry not met");
+        }
+      } else {
+        console.log("Nifty Long 30 Mins No level set");
+      }
+    };
+    const checkNiftyShortEntry = async () => {
+      if (niftyShortOrderId?.entryLevel) {
+        let entry = niftyShortOrderId?.entryLevel;
+        let lastClose = niftyCandles?.[0]?.close;
+
+        if (
+          niftyFutLtp < entry &&
+          lastClose - niftyFutLtp <= 28 &&
+          niftyFutLtp < nifty20SMA
+        ) {
+          await niftyShort();
+        } else if (niftyFutLtp > nifty20SMA) {
+          await setDoc(
+            doc(db, "user", "30niftyFutShort"),
+            {
+              entryLevel: deleteField(),
+            },
+            { merge: true }
+          );
+        } else {
+          console.log("Nifty Short 30 Mins Entry not met");
+        }
+      } else {
+        console.log("Nifty Short 30 Mins No level set");
+      }
+    };
+    const checkBnfLongEntry = async () => {
+      if (bnfLongOrderId?.entryLevel) {
+        let entry = bnfLongOrderId?.entryLevel;
+        let lastClose = bnfCandles?.[0]?.close;
+
+        if (
+          bnfFutLtp > entry &&
+          bnfFutLtp - lastClose <= 95 &&
+          bnfFutLtp > bnf20SMA
+        ) {
+          await bnfLong();
+        } else if (bnfFutLtp < bnf20SMA) {
+          await setDoc(
+            doc(db, "user", "30bnfFutLong"),
+            {
+              entryLevel: deleteField(),
+            },
+            { merge: true }
+          );
+        } else {
+          console.log("Bank Nifty 30 Mins Long Entry not met");
+        }
+      } else {
+        console.log("Bank Nifty 30 Mins Long No level set");
+      }
+    };
+    const checkBnfShortEntry = async () => {
+      if (bnfShortOrderId?.entryLevel) {
+        let entry = bnfShortOrderId?.entryLevel;
+        let lastClose = bnfCandles?.[0]?.close;
+
+        if (
+          bnfFutLtp < entry &&
+          lastClose - bnfFutLtp <= 95 &&
+          bnfFutLtp < bnf20SMA
+        ) {
+          await bnfShort();
+        } else if (bnfFutLtp > bnf20SMA) {
+          await setDoc(
+            doc(db, "user", "30bnfFutShort"),
+            {
+              entryLevel: deleteField(),
+            },
+            { merge: true }
+          );
+        } else {
+          console.log("Bank Nifty 30 Mins Short Entry not met");
+        }
+      } else {
+        console.log("Bank Nifty 30 Mins Short No level set");
+      }
+    };
+    checkNiftyLongEntry();
+    checkNiftyShortEntry();
+    checkBnfLongEntry();
+    checkBnfShortEntry();
+  }, [nextEntryCheck]);
+
   socket?.on("checkSl30m", (data) => {
     setNextCheck(data);
+  });
+
+  socket?.on("checkEntry30m", (data) => {
+    setNextEntryCheck(data);
   });
 
   useEffect(() => {
     refreshOpenPos();
   }, [isSuccess]);
+
+  useEffect(() => {
+    const slTgtRefresh = () => {
+      if (niftyLongOrderId?.slPoints || niftyLongOrderId?.tgtPoints) {
+        document.getElementById("niftySl30m").value =
+          niftyLongOrderId?.slPoints;
+        document.getElementById("niftyTgt30m").value =
+          niftyLongOrderId?.tgtPoints;
+      } else if (niftyShortOrderId?.slPoints || niftyShortOrderId?.tgtPoints) {
+        document.getElementById("niftySl30m").value =
+          niftyShortOrderId?.slPoints;
+        document.getElementById("niftyTgt30m").value =
+          niftyShortOrderId?.tgtPoints;
+      }
+
+      if (bnfLongOrderId?.slPoints || bnfLongOrderId?.tgtPoints) {
+        document.getElementById("bnfSl30m").value = bnfLongOrderId?.slPoints;
+        document.getElementById("bnfTgt30m").value = bnfLongOrderId?.tgtPoints;
+      } else if (bnfShortOrderId?.slPoints || bnfShortOrderId?.tgtPoints) {
+        document.getElementById("bnfSl30m").value = bnfShortOrderId?.slPoints;
+        document.getElementById("bnfTgt30m").value = bnfShortOrderId?.tgtPoints;
+      }
+    };
+
+    const levelRefresh = () => {
+      if (niftyLongOrderId?.entryLevel) {
+        document.getElementById("niftyLongLevel30m").value =
+          niftyLongOrderId?.entryLevel;
+      } else if (niftyShortOrderId?.entryLevel) {
+        document.getElementById("niftyShortLevel30m").value =
+          niftyShortOrderId?.entryLevel;
+      }
+
+      if (bnfLongOrderId?.entryLevel) {
+        document.getElementById("bnfLongLevel30m").value =
+          bnfLongOrderId?.entryLevel;
+      } else if (bnfShortOrderId?.entryLevel) {
+        document.getElementById("bnfShortLevel30m").value =
+          bnfShortOrderId?.entryLevel;
+      }
+    };
+    slTgtRefresh();
+    levelRefresh();
+  }, [niftyLongOrderId, niftyShortOrderId, bnfLongOrderId, bnfShortOrderId]);
 
   // socket?.on("tickerSuccess", () => {
   //
@@ -1479,7 +1775,7 @@ function PositionalSpread() {
         <div className="innerNav w-full h-full bg-neutral rounded-2xl shadow-lg flex justify-between">
           <div className="nifty flex items-center">
             <div className="m-3 ml-6">
-              Nifty Expiry: {expiries?.niftyExpiryDates[1]?.slice(0, 10)} ||
+              Nifty Expiry: {expiries?.niftyExpiryDates?.[1]?.slice(0, 10)} ||
               Strike Expiry: {niftyShortCallSell?.expiry.slice(0, 10)} ||
               Quantity: {niftyQty}
             </div>
@@ -1501,9 +1797,9 @@ function PositionalSpread() {
             )}
           <div className="bnf flex items-center">
             <div className="m-3 mr-6">
-              BNF Expiry: {expiries?.bnfExpiryDates[1]?.slice(0, 10)} || Strike
-              Expiry: {bnfShortCallSell?.expiry.slice(0, 10)} || Quantity:{" "}
-              {bnfQty}
+              BNF Expiry: {expiries?.bnfExpiryDates?.[1]?.slice(0, 10)} ||
+              Strike Expiry: {bnfShortCallSell?.expiry.slice(0, 10)} ||
+              Quantity: {bnfQty}
             </div>
           </div>
         </div>
@@ -1581,6 +1877,47 @@ function PositionalSpread() {
                 <div className="stat-title">20 SMA</div>
                 <div className="font-bold text-xl">{nifty20SMA}</div>
               </div>
+            </div>
+          </div>
+
+          {/*  */}
+          {/* ENTRY LEVELS*/}
+          {/*  */}
+
+          <div className="setEntryLevels w-full flex justify-between p-3 pt-0">
+            <div className="setLong join">
+              <input
+                type="number"
+                id="niftyLongLevel30m"
+                className="input input-bordered join-item input-md w-32"
+              />
+              <button
+                className="btn btn-neutral join-item text-white"
+                onClick={() => {
+                  let longLevel =
+                    document.getElementById("niftyLongLevel30m").value;
+                  niftySetLongLevel(parseInt(longLevel));
+                }}
+              >
+                Nifty Long
+              </button>
+            </div>
+            <div className="setShort join">
+              <input
+                type="number"
+                id="niftyShortLevel30m"
+                className="input input-bordered join-item input-md w-32"
+              />
+              <button
+                className="btn btn-neutral join-item text-white "
+                onClick={() => {
+                  let shortLevel =
+                    document.getElementById("niftyShortLevel30m").value;
+                  niftySetShortLevel(parseInt(shortLevel));
+                }}
+              >
+                Nifty Short
+              </button>
             </div>
           </div>
 
@@ -1893,6 +2230,48 @@ function PositionalSpread() {
               </div>
             </div>
           </div>
+
+          {/*  */}
+          {/* ENTRY LEVELS*/}
+          {/*  */}
+
+          <div className="setEntryLevels w-full flex justify-between p-3 pt-0">
+            <div className="setLong join">
+              <input
+                type="number"
+                id="bnfLongLevel30m"
+                className="input input-bordered join-item input-md w-32"
+              />
+              <button
+                className="btn btn-neutral join-item text-white"
+                onClick={() => {
+                  let longLevel =
+                    document.getElementById("bnfLongLevel30m").value;
+                  bnfSetLongLevel(parseInt(longLevel));
+                }}
+              >
+                Bank Nifty Long
+              </button>
+            </div>
+            <div className="setShort join">
+              <input
+                type="number"
+                id="bnfShortLevel30m"
+                className="input input-bordered join-item input-md w-32"
+              />
+              <button
+                className="btn btn-neutral join-item text-white "
+                onClick={() => {
+                  let shortLevel =
+                    document.getElementById("bnfShortLevel30m").value;
+                  bnfSetShortLevel(parseInt(shortLevel));
+                }}
+              >
+                Bank Nifty Short
+              </button>
+            </div>
+          </div>
+
           {/*  */}
           {/* ENTRY BUTTONS */}
           {/*  */}

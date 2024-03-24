@@ -48,9 +48,9 @@ const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
 
 var now = new Date();
 var start = new Date();
-start.setHours(9, 15, 0);
+start.setHours(0, 15, 0);
 var end = new Date();
-end.setHours(23, 30, 5);
+end.setHours(15, 30, 5);
 var tickEnd = new Date();
 tickEnd.setHours(15, 29, 59, 900);
 
@@ -180,12 +180,29 @@ const startSLMonitor30m = () => {
 };
 
 const startEntryMonitor = () => {
-  // const job = schedule.scheduleJob("58 4/5 * * * *", () => {
-  const job = schedule.scheduleJob("*/5 * * * * *", () => {
+  const job = schedule.scheduleJob("58 4/5 * * * *", () => {
+    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
     now = new Date();
 
     // io.emit("checkEntry", now.getMinutes());
     io.emit("checkEntry", now.getSeconds());
+  });
+};
+const startEntryMonitor30m = () => {
+  const job = schedule.scheduleJob("58 14,44 * * * *", () => {
+    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
+    now = new Date();
+
+    // io.emit("checkEntry", now.getMinutes());
+    io.emit("checkEntry30m", now.getSeconds());
+  });
+
+  const job2 = schedule.scheduleJob("25 15 * * *", () => {
+    // const job2 = schedule.scheduleJob("*/5 * * * * *", () => {
+    now = new Date();
+
+    // io.emit("checkEntry", now.getMinutes());
+    io.emit("checkEntry30m", now.getSeconds());
   });
 };
 
@@ -204,7 +221,10 @@ io.on("connection", (socket) => {
     ticker.autoReconnect(true, 300, 5);
 
     ticker.on("connect", () => {
-      socket.emit("tickerSuccess", `ConnectionSuccessful${now}`);
+      socket.emit(
+        "tickerSuccess",
+        `ConnectionSuccessful${now.getMilliseconds()}`
+      );
     });
 
     ticker.on("error", (err) => {
@@ -279,6 +299,7 @@ io.on("connection", (socket) => {
     startSLMonitor();
     startSLMonitor30m();
     startEntryMonitor();
+    startEntryMonitor30m();
   });
 });
 
