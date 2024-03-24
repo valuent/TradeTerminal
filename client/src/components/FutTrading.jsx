@@ -10,6 +10,7 @@ import {
   onSnapshot,
   deleteDoc,
   deleteField,
+  documentId,
 } from "firebase/firestore";
 // import schedule from "node-schedule";
 
@@ -421,16 +422,20 @@ function FutTrading() {
 
           console.log(putShortId);
           let price;
+          let slPoint;
           if (putShortId[0]?.average_price) {
             price = putShortId[0].average_price;
+            slPoint = 25;
           } else {
             price = "";
+            slPoint = "";
           }
 
           await setDoc(
             doc(db, "user", "niftyFutLong"),
             {
               entryPrice: niftyFutLtp,
+              slPoints: slPoint,
               putShort: {
                 order_id: orderId,
                 average_price: price,
@@ -531,17 +536,20 @@ function FutTrading() {
 
           console.log(callShortId);
           let price;
-
+          let slpoint;
           if (callShortId[0]?.average_price) {
             price = callShortId[0].average_price;
+            slpoint = 25;
           } else {
             price = "";
+            slpoint = "";
           }
 
           await setDoc(
             doc(db, "user", "niftyFutShort"),
             {
               entryPrice: niftyFutLtp,
+              slPoints: slpoint,
               callShort: {
                 order_id: orderId,
                 average_price: price,
@@ -932,16 +940,20 @@ function FutTrading() {
 
           console.log(putShortId);
           let price;
+          let slPoint;
           if (putShortId[0]?.average_price) {
             price = putShortId[0].average_price;
+            slPoint = 85;
           } else {
             price = "";
+            slPoint = "";
           }
 
           await setDoc(
             doc(db, "user", "bnfFutLong"),
             {
               entryPrice: bnfFutLtp,
+              slPoints: slPoint,
               putShort: {
                 order_id: orderId,
                 average_price: price,
@@ -1042,17 +1054,20 @@ function FutTrading() {
 
           console.log(callShortId);
           let price;
-
+          let slPoint;
           if (callShortId[0]?.average_price) {
             price = callShortId[0].average_price;
+            slPoint = 85;
           } else {
             price = "";
+            slPoint = "";
           }
 
           await setDoc(
             doc(db, "user", "bnfFutShort"),
             {
               entryPrice: bnfFutLtp,
+              slPoints: slPoint,
               callShort: {
                 order_id: orderId,
                 average_price: price,
@@ -1627,7 +1642,7 @@ function FutTrading() {
       if (bnfLongOrderId?.entryLevel) {
         let entry = bnfLongOrderId?.entryLevel;
         let lastClose = bnfCandles[0]?.close;
-        // setBnfFutLtp(46950);
+
         if (
           bnfFutLtp > entry &&
           bnfFutLtp - lastClose <= 95 &&
@@ -1692,11 +1707,28 @@ function FutTrading() {
     refreshOpenPos();
     startStream();
   }, [isSuccess]);
-  // socket?.on("tickerSuccess", () => {
-  //   startStream();
-  //   refreshOpenPos();
-  //   console.log("hi");
-  // });
+
+  useEffect(() => {
+    const slTgtRefresh = () => {
+      if (niftyLongOrderId?.slPoints && niftyLongOrderId?.tgtPoints) {
+        document.getElementById("niftySl").value = niftyLongOrderId?.slPoints;
+        document.getElementById("niftyTgt").value = niftyLongOrderId?.tgtPoints;
+      } else if (niftyShortOrderId?.slPoints && niftyShortOrderId?.tgtPoints) {
+        document.getElementById("niftySl").value = niftyShortOrderId?.slPoints;
+        document.getElementById("niftyTgt").value =
+          niftyShortOrderId?.tgtPoints;
+      }
+
+      if (bnfLongOrderId?.slPoints && bnfLongOrderId?.tgtPoints) {
+        document.getElementById("bnfSl").value = bnfLongOrderId?.slPoints;
+        document.getElementById("bnfTgt").value = bnfLongOrderId?.tgtPoints;
+      } else if (bnfShortOrderId?.slPoints && bnfShortOrderId?.tgtPoints) {
+        document.getElementById("bnfSl").value = bnfShortOrderId?.slPoints;
+        document.getElementById("bnfTgt").value = bnfShortOrderId?.tgtPoints;
+      }
+    };
+    slTgtRefresh();
+  }, [niftyLongOrderId, niftyShortOrderId, bnfLongOrderId, bnfShortOrderId]);
 
   useEffect(() => {
     // console.log(niftyCandles?.slice(0, 19));
@@ -2299,14 +2331,14 @@ function FutTrading() {
                 SL Bank Nifty
               </button>
             </div>
-            <div className="setTgt ">
+            <div className="setTgt join">
               <input
                 type="number"
                 id="bnfTgt"
-                className="input input-bordered input-md w-32"
+                className="input input-bordered input-md w-32 join-item"
               />
               <button
-                className="btn btn-secondary text-white mx-1"
+                className="btn btn-secondary text-white join-item"
                 onClick={() => {
                   let tgt = document.getElementById("bnfTgt").value;
                   bnfSetTG(tgt);
