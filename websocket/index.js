@@ -48,7 +48,7 @@ const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
 
 var now = new Date();
 var start = new Date();
-start.setHours(0, 15, 0);
+start.setHours(9, 15, 0);
 var end = new Date();
 end.setHours(15, 30, 5);
 var tickEnd = new Date();
@@ -157,7 +157,7 @@ const startSLMonitor = () => {
     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
     now = new Date();
 
-    io.emit("checkSl", now.getMinutes());
+    io.emit("checkSl", crypto.randomUUID());
     // io.emit("checkSl", now.getSeconds());
   });
 };
@@ -167,7 +167,7 @@ const startSLMonitor30m = () => {
     now = new Date();
 
     // io.emit("checkSl", now.getMinutes());
-    io.emit("checkSl30m", now.getMinutes());
+    io.emit("checkSl30m", crypto.randomUUID());
   });
 
   const job2 = schedule.scheduleJob("25 15 * * *", () => {
@@ -175,7 +175,7 @@ const startSLMonitor30m = () => {
     now = new Date();
 
     // io.emit("checkSl", now.getMinutes());
-    io.emit("checkSl30m", now.getMinutes());
+    io.emit("checkSl30m", crypto.randomUUID());
   });
 };
 
@@ -185,7 +185,7 @@ const startEntryMonitor = () => {
     now = new Date();
 
     // io.emit("checkEntry", now.getMinutes());
-    io.emit("checkEntry", now.getSeconds());
+    io.emit("checkEntry", crypto.randomUUID());
   });
 };
 const startEntryMonitor30m = () => {
@@ -194,7 +194,7 @@ const startEntryMonitor30m = () => {
     now = new Date();
 
     // io.emit("checkEntry", now.getMinutes());
-    io.emit("checkEntry30m", now.getSeconds());
+    io.emit("checkEntry30m", crypto.randomUUID());
   });
 
   const job2 = schedule.scheduleJob("25 15 * * *", () => {
@@ -202,7 +202,7 @@ const startEntryMonitor30m = () => {
     now = new Date();
 
     // io.emit("checkEntry", now.getMinutes());
-    io.emit("checkEntry30m", now.getSeconds());
+    io.emit("checkEntry30m", crypto.randomUUID());
   });
 };
 
@@ -291,10 +291,10 @@ io.on("connection", (socket) => {
 
   socket.on("candleToken", (data) => {
     console.log(data);
-    // startFetchJob(data);
-    // startFiveFetchJob(data);
+    startFetchJob(data);
+    startFiveFetchJob(data);
     fetchFiveCandleFromDB(data);
-    // startThirtyFetchJob(data);
+    startThirtyFetchJob(data);
     fetchThirtyCandleFromDB(data);
     startSLMonitor();
     startSLMonitor30m();

@@ -12,7 +12,7 @@ import {
   deleteField,
   documentId,
 } from "firebase/firestore";
-// import schedule from "node-schedule";
+import { toast } from "react-toastify";
 
 function FutTrading() {
   const {
@@ -89,6 +89,19 @@ function FutTrading() {
   const refreshOpenPos = () => {
     setRefreshExistingOrder(Math.random()); //
     // console.log(refreshExistingOrder);
+  };
+
+  const toastHandler = (message) => {
+    toast(message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
   };
 
   useEffect(() => {
@@ -294,12 +307,13 @@ function FutTrading() {
     bnfStrikeSelect();
   }, [niftyRounded, bnfRounded]);
 
-  const startStream = () => {
-    socket?.emit("candleToken", [
+  const startStream = async () => {
+    await socket?.emit("candleToken", [
       niftyFutData?.instrument_token,
       bnfFutData?.instrument_token,
     ]);
-    socket?.emit("defaultTokens", [
+
+    await socket?.emit("defaultTokens", [
       niftyFutData?.instrument_token,
       bnfFutData?.instrument_token,
       niftySpotData?.instrument_token,
@@ -369,17 +383,19 @@ function FutTrading() {
         `/api/placeOrderFno?tradingsymbol=${niftyLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
       )
       .then(async (response) => {
-        console.log(response);
-        let orderId = response.data.order_id;
+        let orderId = response?.data?.order_id;
+        if (orderId) {
+          toastHandler(`CE placed OID: ${orderId}`);
+        } else {
+          toastHandler(`CE error ${response.data}`);
+        }
         await axios.get(`/api/orderInfo`).then(async (res) => {
           // console.log(res);
           let callLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
-          console.log(callLongId);
           let price;
-
           if (callLongId?.[0]?.average_price) {
             price = callLongId?.[0].average_price;
           } else {
@@ -398,11 +414,11 @@ function FutTrading() {
             },
             { merge: true }
           )
-            .then(() => {
-              console.log("Order Updated Updated");
+            .then((response) => {
+              toastHandler(`Nifty long order updated`);
             })
             .catch((e) => {
-              console.log("Error: ", e);
+              toastHandler(`Nifty long error at firebase ${e}`);
             });
         });
       });
@@ -412,15 +428,18 @@ function FutTrading() {
         `/api/placeOrderFno?tradingsymbol=${niftyLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
       )
       .then(async (response) => {
-        console.log(response);
-        let orderId = response.data.order_id;
+        let orderId = response?.data?.order_id;
+        if (orderId) {
+          toastHandler(`PE placed OID: ${orderId}`);
+        } else {
+          toastHandler(`PE error ${response.data}`);
+        }
         await axios.get(`/api/orderInfo`).then(async (res) => {
           // console.log(res);
           let putShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
-          console.log(putShortId);
           let price;
           let slPoint;
           let tgtPoint;
@@ -450,11 +469,11 @@ function FutTrading() {
             },
             { merge: true }
           )
-            .then(() => {
-              console.log("Order Updated Updated");
+            .then((response) => {
+              toastHandler(`Nifty long order updated`);
             })
             .catch((e) => {
-              console.log("Error: ", e);
+              toastHandler(`Nifty long error at firebase ${e}`);
             });
         });
       });
@@ -462,8 +481,8 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFutLong"), (doc) => {
-      if (doc.data()) {
-        console.log(doc.data());
+      if (doc?.data()?.callLong?.order_id || doc?.data()?.putShort?.order_id) {
+        toastHandler(`Nifty Long order present`);
       }
       setNiftyLongOrderId(doc.data());
 
@@ -489,13 +508,16 @@ function FutTrading() {
         `/api/placeOrderFno?tradingsymbol=${niftyShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
       )
       .then(async (response) => {
-        console.log(response);
-        let orderId = response.data.order_id;
+        let orderId = response?.data?.order_id;
+        if (orderId) {
+          toastHandler(`PE placed OID: ${orderId}`);
+        } else {
+          toastHandler(`PE error ${response.data}`);
+        }
         await axios.get(`/api/orderInfo`).then(async (res) => {
           let putLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
-          console.log(putLongId);
 
           let price;
 
@@ -517,11 +539,11 @@ function FutTrading() {
             },
             { merge: true }
           )
-            .then(() => {
-              console.log("Order Updated Updated");
+            .then((response) => {
+              toastHandler(`Nifty short order updated`);
             })
             .catch((e) => {
-              console.log("Error: ", e);
+              toastHandler(`Nifty short error at firebase ${e}`);
             });
         });
       });
@@ -531,14 +553,17 @@ function FutTrading() {
         // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
       )
       .then(async (response) => {
-        console.log(response);
-        let orderId = response.data.order_id;
+        let orderId = response?.data?.order_id;
+        if (orderId) {
+          toastHandler(`CE placed OID: ${orderId}`);
+        } else {
+          toastHandler(`CE error ${response.data}`);
+        }
         await axios.get(`/api/orderInfo`).then(async (res) => {
           let callShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
-          console.log(callShortId);
           let price;
           let slpoint;
           let tgtPoint;
@@ -570,11 +595,11 @@ function FutTrading() {
             },
             { merge: true }
           )
-            .then(() => {
-              console.log("Order Updated Updated");
+            .then((response) => {
+              toastHandler(`Nifty short order updated`);
             })
             .catch((e) => {
-              console.log("Error: ", e);
+              toastHandler(`Nifty short error at firebase ${e}`);
             });
         });
       });
@@ -582,8 +607,8 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFutShort"), (doc) => {
-      if (doc.data()) {
-        console.log(doc.data());
+      if (doc?.data()?.putLong?.order_id || doc?.data()?.callShort?.order_id) {
+        toastHandler(`Nifty Short order present`);
       }
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [
@@ -631,10 +656,10 @@ function FutTrading() {
           { merge: true }
         )
           .then(() => {
-            console.log("Order Updated Updated");
+            toastHandler(`Nifty long order book updated`);
           })
           .catch((e) => {
-            console.log("Error: ", e);
+            toastHandler(`Nifty long order Book Error: ${e}`);
           });
       }
     });
@@ -669,10 +694,10 @@ function FutTrading() {
           { merge: true }
         )
           .then(() => {
-            console.log("Order Updated Updated");
+            toastHandler(`Nifty short order book updated`);
           })
           .catch((e) => {
-            console.log("Error: ", e);
+            toastHandler(`Nifty short order Book Error: ${e}`);
           });
       }
     });
@@ -690,6 +715,7 @@ function FutTrading() {
         },
         { merge: true }
       );
+      toastHandler(`Nifty Long SL points ${slPoints}`);
     } else if (
       niftyShortOrderId?.putLong?.trading_symbol &&
       niftyShortOrderId?.callShort?.trading_symbol
@@ -701,8 +727,9 @@ function FutTrading() {
         },
         { merge: true }
       );
+      toastHandler(`Nifty Short SL points ${slPoints}`);
     } else {
-      console.log("No trades Found");
+      toastHandler(`Nifty no trades found`);
     }
   };
 
@@ -718,6 +745,7 @@ function FutTrading() {
         },
         { merge: true }
       );
+      toastHandler(`Nifty Long TGT points ${tgtPoints}`);
     } else if (
       niftyShortOrderId?.putLong?.trading_symbol &&
       niftyShortOrderId?.callShort?.trading_symbol
@@ -729,8 +757,9 @@ function FutTrading() {
         },
         { merge: true }
       );
+      toastHandler(`Nifty Short TGT points ${tgtPoints}`);
     } else {
-      console.log("No trades Found");
+      toastHandler(`Nifty no trades found`);
     }
   };
 
@@ -746,7 +775,6 @@ function FutTrading() {
           `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
-          // console.log(response);
           if (response?.data?.order_id) {
             await updateDoc(doc(db, "user", "niftyFutLong"), {
               callLong: deleteField(),
@@ -761,6 +789,7 @@ function FutTrading() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
+            toastHandler(`Nifty long exit done`);
             await updateDoc(doc(db, "user", "niftyFutLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
@@ -769,6 +798,8 @@ function FutTrading() {
             });
           }
         });
+    } else {
+      toastHandler(`Nifty long no positions Found`);
     }
   };
 
@@ -799,6 +830,7 @@ function FutTrading() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
+            toastHandler(`Nifty short exit done`);
             await updateDoc(doc(db, "user", "niftyFutShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
@@ -807,6 +839,8 @@ function FutTrading() {
             });
           }
         });
+    } else {
+      toastHandler(`Nifty Short no positions Found`);
     }
   };
 
@@ -834,11 +868,11 @@ function FutTrading() {
 
         if (niftyFutLtp >= tgt_level || mtm >= niftyLongOrderId?.tgtPoints) {
           await niftyLongExit();
-          console.log("Nifty Target Reached MTM");
+          toastHandler(`Nifty long TGT reached`);
         }
         if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
           await niftyLongExit();
-          console.log("Nifty Stoploss Reached MTM");
+          toastHandler(`Nifty long SL reached`);
         }
       }
     };
@@ -874,12 +908,12 @@ function FutTrading() {
 
         if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
           await niftyShortExit();
-          console.log("Nifty Target Reached LEVEL");
+          toastHandler(`Nifty short TGT reached`);
         }
 
         if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
           await niftyShortExit();
-          console.log("Nifty Stoploss Reached LEVEL");
+          toastHandler(`Nifty short SL reached`);
         }
       }
     };
@@ -895,15 +929,18 @@ function FutTrading() {
         `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
       )
       .then(async (response) => {
-        console.log(response);
-        let orderId = response.data.order_id;
+        let orderId = response?.data?.order_id;
+        if (orderId) {
+          toastHandler(`CE placed OID: ${orderId}`);
+        } else {
+          toastHandler(`CE error ${response.data}`);
+        }
         await axios.get(`/api/orderInfo`).then(async (res) => {
           // console.log(res);
           let callLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
-          console.log(callLongId);
           let price;
 
           if (callLongId?.[0]?.average_price) {
@@ -924,11 +961,11 @@ function FutTrading() {
             },
             { merge: true }
           )
-            .then(() => {
-              console.log("Order Updated Updated");
+            .then((response) => {
+              toastHandler(`Bank Nifty long order updated`);
             })
             .catch((e) => {
-              console.log("Error: ", e);
+              toastHandler(`Bank Nifty long error at firebase ${e}`);
             });
         });
       });
@@ -938,15 +975,18 @@ function FutTrading() {
         `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
       )
       .then(async (response) => {
-        console.log(response);
         let orderId = response.data.order_id;
+        if (orderId) {
+          toastHandler(`PE placed OID: ${orderId}`);
+        } else {
+          toastHandler(`PE error ${response.data}`);
+        }
         await axios.get(`/api/orderInfo`).then(async (res) => {
           // console.log(res);
           let putShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
-          console.log(putShortId);
           let price;
           let slPoint;
           if (putShortId?.[0]?.average_price) {
@@ -975,11 +1015,11 @@ function FutTrading() {
             },
             { merge: true }
           )
-            .then(() => {
-              console.log("Order Updated Updated");
+            .then((response) => {
+              toastHandler(`Bank Nifty long order updated`);
             })
             .catch((e) => {
-              console.log("Error: ", e);
+              toastHandler(`Bank Nifty long error at firebase ${e}`);
             });
         });
       });
@@ -987,8 +1027,8 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfFutLong"), (doc) => {
-      if (doc.data()) {
-        console.log(doc.data());
+      if (doc?.data()?.callLong?.order_id || doc?.data()?.putShort?.order_id) {
+        toastHandler(`Bank Nifty Long order present`);
       }
       setBnfLongOrderId(doc.data());
 
@@ -1014,14 +1054,17 @@ function FutTrading() {
         `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
       )
       .then(async (response) => {
-        console.log(response);
         let orderId = response.data.order_id;
+        if (orderId) {
+          toastHandler(`PE placed OID: ${orderId}`);
+        } else {
+          toastHandler(`PE error ${response.data}`);
+        }
         await axios.get(`/api/orderInfo`).then(async (res) => {
           let putLongId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
-          console.log(putLongId);
           let price;
 
           if (putLongId?.[0]?.average_price) {
@@ -1042,11 +1085,11 @@ function FutTrading() {
             },
             { merge: true }
           )
-            .then(() => {
-              console.log("Order Updated Updated");
+            .then((response) => {
+              toastHandler(`Bank Nifty short order updated`);
             })
             .catch((e) => {
-              console.log("Error: ", e);
+              toastHandler(`Bank Nifty short error at firebase ${e}`);
             });
         });
       });
@@ -1056,14 +1099,17 @@ function FutTrading() {
         // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
       )
       .then(async (response) => {
-        console.log(response);
         let orderId = response.data.order_id;
+        if (orderId) {
+          toastHandler(`CE placed OID: ${orderId}`);
+        } else {
+          toastHandler(`CE error ${response.data}`);
+        }
         await axios.get(`/api/orderInfo`).then(async (res) => {
           let callShortId = res?.data?.filter((order) => {
             return order.order_id === orderId && order.status === "COMPLETE";
           });
 
-          console.log(callShortId);
           let price;
           let slPoint;
           if (callShortId?.[0]?.average_price) {
@@ -1092,11 +1138,11 @@ function FutTrading() {
             },
             { merge: true }
           )
-            .then(() => {
-              console.log("Order Updated Updated");
+            .then((response) => {
+              toastHandler(`Bank Nifty short order updated`);
             })
             .catch((e) => {
-              console.log("Error: ", e);
+              toastHandler(`Bank Nifty short error at firebase ${e}`);
             });
         });
       });
@@ -1104,8 +1150,8 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfFutShort"), (doc) => {
-      if (doc.data()) {
-        console.log(doc.data());
+      if (doc?.data()?.putLong?.order_id || doc?.data()?.callShort?.order_id) {
+        toastHandler(`Bank Nifty Short order present`);
       }
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [
@@ -1154,10 +1200,10 @@ function FutTrading() {
           { merge: true }
         )
           .then(() => {
-            console.log("Order Updated Updated");
+            toastHandler(`Bank Nifty long order book updated`);
           })
           .catch((e) => {
-            console.log("Error: ", e);
+            toastHandler(`Bank Nifty long order Book Error: ${e}`);
           });
       }
     });
@@ -1192,10 +1238,10 @@ function FutTrading() {
           { merge: true }
         )
           .then(() => {
-            console.log("Order Updated Updated");
+            toastHandler(`Bank Nifty short order book updated`);
           })
           .catch((e) => {
-            console.log("Error: ", e);
+            toastHandler(`Bank Nifty short order Book Error: ${e}`);
           });
       }
     });
@@ -1213,6 +1259,7 @@ function FutTrading() {
         },
         { merge: true }
       );
+      toastHandler(`Bank Nifty Long SL points ${slPoints}`);
     } else if (
       bnfShortOrderId?.putLong?.trading_symbol &&
       bnfShortOrderId?.callShort?.trading_symbol
@@ -1224,8 +1271,9 @@ function FutTrading() {
         },
         { merge: true }
       );
+      toastHandler(`Bank Nifty Short SL points ${slPoints}`);
     } else {
-      console.log("No trades Found");
+      toastHandler(`Bank Nifty no trades found`);
     }
   };
 
@@ -1241,6 +1289,7 @@ function FutTrading() {
         },
         { merge: true }
       );
+      toastHandler(`Bank Nifty Long TGT points ${tgtPoints}`);
     } else if (
       bnfShortOrderId?.putLong?.trading_symbol &&
       bnfShortOrderId?.callShort?.trading_symbol
@@ -1252,8 +1301,9 @@ function FutTrading() {
         },
         { merge: true }
       );
+      toastHandler(`Bank Nifty Short TGT points ${tgtPoints}`);
     } else {
-      console.log("No trades Found");
+      toastHandler(`Nifty no trades found`);
     }
   };
 
@@ -1284,6 +1334,7 @@ function FutTrading() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
+            toastHandler(`Bank Nifty long exit done`);
             await updateDoc(doc(db, "user", "bnfFutLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
@@ -1292,6 +1343,8 @@ function FutTrading() {
             });
           }
         });
+    } else {
+      toastHandler(`Bank Nifty long no positions Found`);
     }
   };
 
@@ -1322,6 +1375,7 @@ function FutTrading() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
+            toastHandler(`Bank Nifty short exit done`);
             await updateDoc(doc(db, "user", "bnfFutShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
@@ -1330,6 +1384,8 @@ function FutTrading() {
             });
           }
         });
+    } else {
+      toastHandler(`Bank Nifty long no positions Found`);
     }
   };
 
@@ -1353,11 +1409,11 @@ function FutTrading() {
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           await bnfLongExit();
-          console.log("BankNifty Target Reached");
+          toastHandler(`Bank Nifty long TGT reached`);
         }
         if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
           await bnfLongExit();
-          console.log("BankNifty Stoploss Reached");
+          toastHandler(`Bank Nifty long SL reached`);
         }
       }
     };
@@ -1387,20 +1443,20 @@ function FutTrading() {
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
           await bnfShortExit();
-          console.log("BankNifty Target Reached");
+          toastHandler(`Bank Nifty short TGT reached`);
         }
 
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
           await bnfShortExit();
-          console.log("BankNifty Stoploss Reached");
+          toastHandler(`Bank Nifty short SL reached`);
         }
       }
     };
     bnfShortSLManager();
   }, [tickerData, bnfShortOrderId]);
 
-  const [nextCheck, setNextCheck] = useState();
-  const [nextEntryCheck, setNextEntryCheck] = useState();
+  const [nextCheck, setNextCheck] = useState(null);
+  const [nextEntryCheck, setNextEntryCheck] = useState(null);
 
   useEffect(() => {
     const monitorNiftyShortTrailing = async () => {
@@ -1416,9 +1472,9 @@ function FutTrading() {
           niftyFutLtp > nifty20SMA
         ) {
           await niftyShortExit();
-          console.log("NiftyShort Exit Done");
+          toastHandler(`Nifty short Trailing SL reached`);
         } else {
-          console.log("NiftyShort SL not hit yet");
+          toastHandler(`Nifty short TSL No reached`);
         }
       } else {
         console.log("NiftyShort No positions");
@@ -1437,9 +1493,9 @@ function FutTrading() {
           niftyFutLtp < nifty20SMA
         ) {
           await niftyLongExit();
-          console.log("NiftyLong Exit Done");
+          toastHandler(`Nifty long Trailing SL reached`);
         } else {
-          console.log("NiftyLong SL not hit yet");
+          toastHandler(`Nifty long TSL No reached`);
         }
       } else {
         console.log("NiftyLong No positions");
@@ -1457,10 +1513,9 @@ function FutTrading() {
           (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
           bnfFutLtp > bnf20SMA
         ) {
-          await bnfShortExit();
-          console.log("BnfShort Exit Done");
+          toastHandler(`Bank Nifty short Trailing SL reached`);
         } else {
-          console.log("BnfShort SL not hit yet");
+          toastHandler(`Bank Nifty short TSL No reached`);
         }
       } else {
         console.log("BnfShort No positions");
@@ -1478,19 +1533,20 @@ function FutTrading() {
           bnfFutLtp < bnf20SMA
         ) {
           await bnfLongExit();
-          console.log("BnfLong Exit Done");
+          toastHandler(`Bank Nifty long Trailing SL reached`);
         } else {
-          console.log("BnfLong SL not hit yet");
+          toastHandler(`Bank Nifty long TSL No reached`);
         }
       } else {
         console.log("BnfLong No positions");
       }
     };
-
-    monitorNiftyShortTrailing();
-    monitorNiftyLongTrailing();
-    monitorBnfShortTrailing();
-    monitorBnfLongTrailing();
+    if (nextCheck !== null) {
+      monitorNiftyShortTrailing();
+      monitorNiftyLongTrailing();
+      monitorBnfShortTrailing();
+      monitorBnfLongTrailing();
+    }
   }, [nextCheck]);
 
   // Nifty levels set
@@ -1507,6 +1563,7 @@ function FutTrading() {
           },
           { merge: true }
         );
+        toastHandler(`Nifty Long Level ${level} deleted`);
       } else {
         await setDoc(
           doc(db, "user", "niftyFutLong"),
@@ -1515,6 +1572,7 @@ function FutTrading() {
           },
           { merge: true }
         );
+        toastHandler(`Nifty Long Level ${level} set`);
       }
     } else {
       console.log("Trades already open");
@@ -1533,6 +1591,7 @@ function FutTrading() {
           },
           { merge: true }
         );
+        toastHandler(`Nifty Short Level ${level} deleted`);
       } else {
         await setDoc(
           doc(db, "user", "niftyFutShort"),
@@ -1541,6 +1600,7 @@ function FutTrading() {
           },
           { merge: true }
         );
+        toastHandler(`Nifty Short Level ${level} set`);
       }
     } else {
       console.log("Trades already open");
@@ -1559,6 +1619,7 @@ function FutTrading() {
           },
           { merge: true }
         );
+        toastHandler(`Bank Nifty Long Level ${level} deleted`);
       } else {
         await setDoc(
           doc(db, "user", "bnfFutLong"),
@@ -1567,6 +1628,7 @@ function FutTrading() {
           },
           { merge: true }
         );
+        toastHandler(`Bank Nifty Long Level ${level} set`);
       }
     } else {
       console.log("Trades already open");
@@ -1585,6 +1647,7 @@ function FutTrading() {
           },
           { merge: true }
         );
+        toastHandler(`Bank Nifty Short Level ${level} deleted`);
       } else {
         await setDoc(
           doc(db, "user", "bnfFutShort"),
@@ -1593,6 +1656,7 @@ function FutTrading() {
           },
           { merge: true }
         );
+        toastHandler(`Bank Nifty Short Level ${level} set`);
       }
     } else {
       console.log("Trades already open");
@@ -1601,7 +1665,7 @@ function FutTrading() {
 
   useEffect(() => {
     const checkNiftyLongEntry = async () => {
-      if (niftyLongOrderId?.entryLevel) {
+      if (niftyLongOrderId?.entryLevel && nextEntryCheck !== null) {
         let entry = niftyLongOrderId?.entryLevel;
         let lastClose = niftyCandles?.[0]?.close;
 
@@ -1611,6 +1675,7 @@ function FutTrading() {
           niftyFutLtp > nifty20SMA
         ) {
           await niftyLong();
+          toastHandler(`Nifty Long Auto Entry`);
         } else if (niftyFutLtp < nifty20SMA) {
           await setDoc(
             doc(db, "user", "niftyFutLong"),
@@ -1619,15 +1684,20 @@ function FutTrading() {
             },
             { merge: true }
           );
+          toastHandler(
+            `Nifty Long Level ${niftyLongOrderId?.entryLevel} voided`
+          );
         } else {
-          console.log("Nifty Long Entry not met");
+          toastHandler(
+            `Nifty Long Level ${niftyLongOrderId?.entryLevel} not met`
+          );
         }
       } else {
         console.log("Nifty Long No level set");
       }
     };
     const checkNiftyShortEntry = async () => {
-      if (niftyShortOrderId?.entryLevel) {
+      if (niftyShortOrderId?.entryLevel && nextEntryCheck !== null) {
         let entry = niftyShortOrderId?.entryLevel;
         let lastClose = niftyCandles?.[0]?.close;
 
@@ -1637,6 +1707,7 @@ function FutTrading() {
           niftyFutLtp < nifty20SMA
         ) {
           await niftyShort();
+          toastHandler(`Nifty Short Auto Entry`);
         } else if (niftyFutLtp > nifty20SMA) {
           await setDoc(
             doc(db, "user", "niftyFutShort"),
@@ -1645,15 +1716,20 @@ function FutTrading() {
             },
             { merge: true }
           );
+          toastHandler(
+            `Nifty Short Level ${niftyShortOrderId?.entryLevel} voided`
+          );
         } else {
-          console.log("Nifty Short Entry not met");
+          toastHandler(
+            `Nifty Short Level ${niftyShortOrderId?.entryLevel} not met`
+          );
         }
       } else {
         console.log("Nifty Short No level set");
       }
     };
     const checkBnfLongEntry = async () => {
-      if (bnfLongOrderId?.entryLevel) {
+      if (bnfLongOrderId?.entryLevel && nextEntryCheck !== null) {
         let entry = bnfLongOrderId?.entryLevel;
         let lastClose = bnfCandles?.[0]?.close;
 
@@ -1663,6 +1739,7 @@ function FutTrading() {
           bnfFutLtp > bnf20SMA
         ) {
           await bnfLong();
+          toastHandler(`Bank Nifty Long Auto Entry`);
         } else if (bnfFutLtp < bnf20SMA) {
           await setDoc(
             doc(db, "user", "bnfFutLong"),
@@ -1671,15 +1748,20 @@ function FutTrading() {
             },
             { merge: true }
           );
+          toastHandler(
+            `Bank Nifty Long Level ${bnfLongOrderId?.entryLevel} voided`
+          );
         } else {
-          console.log("Bank Nifty Long Entry not met");
+          toastHandler(
+            `Bank Nifty Long Level ${bnfLongOrderId?.entryLevel} not met`
+          );
         }
       } else {
         console.log("Bank Nifty Long No level set");
       }
     };
     const checkBnfShortEntry = async () => {
-      if (bnfShortOrderId?.entryLevel) {
+      if (bnfShortOrderId?.entryLevel && nextEntryCheck !== null) {
         let entry = bnfShortOrderId?.entryLevel;
         let lastClose = bnfCandles?.[0]?.close;
 
@@ -1689,6 +1771,7 @@ function FutTrading() {
           bnfFutLtp < bnf20SMA
         ) {
           await bnfShort();
+          toastHandler(`Bank Nifty Short Auto Entry`);
         } else if (bnfFutLtp > bnf20SMA) {
           await setDoc(
             doc(db, "user", "bnfFutShort"),
@@ -1697,17 +1780,24 @@ function FutTrading() {
             },
             { merge: true }
           );
+          toastHandler(
+            `Bank Nifty Short Level ${bnfShortOrderId?.entryLevel} voided`
+          );
         } else {
-          console.log("Bank Nifty Short Entry not met");
+          toastHandler(
+            `Bank Nifty Short Level ${bnfShortOrderId?.entryLevel} not met`
+          );
         }
       } else {
         console.log("Bank Nifty Short No level set");
       }
     };
-    checkNiftyLongEntry();
-    checkNiftyShortEntry();
-    checkBnfLongEntry();
-    checkBnfShortEntry();
+    if (nextEntryCheck !== null) {
+      checkNiftyLongEntry();
+      checkNiftyShortEntry();
+      checkBnfLongEntry();
+      checkBnfShortEntry();
+    }
   }, [nextEntryCheck]);
 
   socket?.on("checkSl", (data) => {
@@ -1731,6 +1821,9 @@ function FutTrading() {
         document.getElementById("niftySl").value = niftyShortOrderId?.slPoints;
         document.getElementById("niftyTgt").value =
           niftyShortOrderId?.tgtPoints;
+      } else {
+        document.getElementById("niftySl").value = "";
+        document.getElementById("niftyTgt").value = "";
       }
 
       if (bnfLongOrderId?.slPoints || bnfLongOrderId?.tgtPoints) {
@@ -1739,23 +1832,35 @@ function FutTrading() {
       } else if (bnfShortOrderId?.slPoints || bnfShortOrderId?.tgtPoints) {
         document.getElementById("bnfSl").value = bnfShortOrderId?.slPoints;
         document.getElementById("bnfTgt").value = bnfShortOrderId?.tgtPoints;
+      } else {
+        document.getElementById("bnfSl").value = "";
+        document.getElementById("bnfTgt").value = "";
       }
     };
     const levelRefresh = () => {
       if (niftyLongOrderId?.entryLevel) {
         document.getElementById("niftyLongLevel").value =
           niftyLongOrderId?.entryLevel;
-      } else if (niftyShortOrderId?.entryLevel) {
+      } else {
+        document.getElementById("niftyLongLevel").value = "";
+      }
+      if (niftyShortOrderId?.entryLevel) {
         document.getElementById("niftyShortLevel").value =
           niftyShortOrderId?.entryLevel;
+      } else {
+        document.getElementById("niftyShortLevel").value = "";
       }
-
       if (bnfLongOrderId?.entryLevel) {
         document.getElementById("bnfLongLevel").value =
           bnfLongOrderId?.entryLevel;
-      } else if (bnfShortOrderId?.entryLevel) {
+      } else {
+        document.getElementById("bnfLongLevel").value = "";
+      }
+      if (bnfShortOrderId?.entryLevel) {
         document.getElementById("bnfShortLevel").value =
           bnfShortOrderId?.entryLevel;
+      } else {
+        document.getElementById("bnfShortLevel").value = "";
       }
     };
     slTgtRefresh();
@@ -1763,6 +1868,7 @@ function FutTrading() {
   }, [niftyLongOrderId, niftyShortOrderId, bnfLongOrderId, bnfShortOrderId]);
 
   useEffect(() => {
+    // console.log(nextEntryCheck);
     // console.log(niftyCandles?.slice(0, 19));
     // console.log(bnfCandles?.slice(0, 19));
     // console.log(niftyCandles);
@@ -1774,7 +1880,7 @@ function FutTrading() {
     // console.log(niftyLongPutBuy);
     // console.log(niftyLongOrderId);
     // console.log(nextCheck == null);
-  }, [niftyLongOrderId, niftyLtp]);
+  }, [niftyLongOrderId, niftyLtp, nextEntryCheck]);
 
   // console.log(formatDate(date));
   return (

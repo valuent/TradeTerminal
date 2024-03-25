@@ -18,6 +18,7 @@
     "react-dom": "^18.2.0",
     "react-js-cron": "^5.0.1",
     "react-router-dom": "^6.22.2",
+    "react-toastify": "^10.0.5",
     "socket.io-client": "^4.7.4"
   },
   "devDependencies": {
