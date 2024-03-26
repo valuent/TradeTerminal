@@ -4,10 +4,6 @@
   padding: 2rem;
   text-align: center;
 }
-:root {
-  --toastify-color-light: #fff;
-  --toastify-color-dark: #414558;
-}
 
 .logo {
   height: 6em;

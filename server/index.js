@@ -1,6 +1,5 @@
 const express = require("express");
 const KiteConnect = require("kiteconnect").KiteConnect;
-var KiteTicker = require("kiteconnect").KiteTicker;
 require("dotenv").config();
 const cors = require("cors");
 const app = express();

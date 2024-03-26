@@ -1303,7 +1303,7 @@ function FutTrading() {
       );
       toastHandler(`Bank Nifty Short TGT points ${tgtPoints}`);
     } else {
-      toastHandler(`Nifty no trades found`);
+      toastHandler(`Bank Nifty no trades found`);
     }
   };
 

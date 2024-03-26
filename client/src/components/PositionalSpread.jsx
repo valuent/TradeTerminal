@@ -1294,7 +1294,7 @@ function PositionalSpread() {
       );
       toastHandler(`30 Mins Bank Nifty Short TGT points ${tgtPoints}`);
     } else {
-      toastHandler(`30 Mins Nifty no trades found`);
+      toastHandler(`30 Mins Bank Nifty no trades found`);
     }
   };
 
@@ -1662,7 +1662,7 @@ function PositionalSpread() {
 
         if (
           niftyFutLtp > entry &&
-          niftyFutLtp - lastClose <= 28 &&
+          niftyFutLtp - lastClose <= 80 &&
           niftyFutLtp > nifty20SMA
         ) {
           await niftyLong();
@@ -1694,7 +1694,7 @@ function PositionalSpread() {
 
         if (
           niftyFutLtp < entry &&
-          lastClose - niftyFutLtp <= 28 &&
+          lastClose - niftyFutLtp <= 80 &&
           niftyFutLtp < nifty20SMA
         ) {
           await niftyShort();
@@ -1726,7 +1726,7 @@ function PositionalSpread() {
 
         if (
           bnfFutLtp > entry &&
-          bnfFutLtp - lastClose <= 95 &&
+          bnfFutLtp - lastClose <= 250 &&
           bnfFutLtp > bnf20SMA
         ) {
           await bnfLong();
@@ -1758,7 +1758,7 @@ function PositionalSpread() {
 
         if (
           bnfFutLtp < entry &&
-          lastClose - bnfFutLtp <= 95 &&
+          lastClose - bnfFutLtp <= 250 &&
           bnfFutLtp < bnf20SMA
         ) {
           await bnfShort();
