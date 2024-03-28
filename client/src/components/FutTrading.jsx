@@ -377,106 +377,114 @@ function FutTrading() {
   }, [niftyLtp, bnfLtp, niftyCandles, bnfCandles]);
 
   const niftyLong = async () => {
-    await axios
-      .get(
-        // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-        `/api/placeOrderFno?tradingsymbol=${niftyLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-      )
-      .then(async (response) => {
-        let orderId = response?.data?.order_id;
-        if (orderId) {
-          toastHandler(`CE placed OID: ${orderId}`);
-        } else {
-          toastHandler(`CE error ${response.data}`);
-        }
-        await axios.get(`/api/orderInfo`).then(async (res) => {
-          // console.log(res);
-          let callLongId = res?.data?.filter((order) => {
-            return order.order_id === orderId && order.status === "COMPLETE";
-          });
-
-          let price;
-          if (callLongId?.[0]?.average_price) {
-            price = callLongId?.[0].average_price;
+    if (!niftyLongOrderId.callLong) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          let orderId = response?.data?.order_id;
+          if (orderId) {
+            toastHandler(`CE placed OID: ${orderId}`);
           } else {
-            price = "";
+            toastHandler(`CE error ${response.data}`);
           }
-
-          await setDoc(
-            doc(db, "user", "niftyFutLong"),
-            {
-              callLong: {
-                order_id: orderId,
-                average_price: price,
-                instrument_token: parseInt(niftyLongCallBuy?.instrument_token),
-                trading_symbol: niftyLongCallBuy.tradingsymbol,
-              },
-            },
-            { merge: true }
-          )
-            .then((response) => {
-              toastHandler(`Nifty long order updated`);
-            })
-            .catch((e) => {
-              toastHandler(`Nifty long error at firebase ${e}`);
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            // console.log(res);
+            let callLongId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
             });
-        });
-      });
-    await axios
-      .get(
-        // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-        `/api/placeOrderFno?tradingsymbol=${niftyLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-      )
-      .then(async (response) => {
-        let orderId = response?.data?.order_id;
-        if (orderId) {
-          toastHandler(`PE placed OID: ${orderId}`);
-        } else {
-          toastHandler(`PE error ${response.data}`);
-        }
-        await axios.get(`/api/orderInfo`).then(async (res) => {
-          // console.log(res);
-          let putShortId = res?.data?.filter((order) => {
-            return order.order_id === orderId && order.status === "COMPLETE";
+
+            let price;
+            if (callLongId?.[0]?.average_price) {
+              price = callLongId?.[0].average_price;
+            } else {
+              price = "";
+            }
+
+            await setDoc(
+              doc(db, "user", "niftyFutLong"),
+              {
+                callLong: {
+                  order_id: orderId,
+                  average_price: price,
+                  instrument_token: parseInt(
+                    niftyLongCallBuy?.instrument_token
+                  ),
+                  trading_symbol: niftyLongCallBuy.tradingsymbol,
+                },
+              },
+              { merge: true }
+            )
+              .then((response) => {
+                toastHandler(`Nifty long order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`Nifty long error at firebase ${e}`);
+              });
           });
-
-          let price;
-          let slPoint;
-          let tgtPoint;
-          if (putShortId?.[0]?.average_price) {
-            price = putShortId?.[0].average_price;
-            slPoint = 25;
-            tgtPoint = 52;
-          } else {
-            price = "";
-            slPoint = "";
-            tgtPoint = "";
-          }
-
-          await setDoc(
-            doc(db, "user", "niftyFutLong"),
-            {
-              entryPrice: niftyFutLtp,
-              slPoints: slPoint,
-              tgtPoints: tgtPoint,
-              putShort: {
-                order_id: orderId,
-                average_price: price,
-                instrument_token: parseInt(niftyLongPutSell?.instrument_token),
-                trading_symbol: niftyLongPutSell.tradingsymbol,
-              },
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          )
-            .then((response) => {
-              toastHandler(`Nifty long order updated`);
-            })
-            .catch((e) => {
-              toastHandler(`Nifty long error at firebase ${e}`);
-            });
         });
-      });
+    }
+    if (!niftyLongOrderId.putShort) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          let orderId = response?.data?.order_id;
+          if (orderId) {
+            toastHandler(`PE placed OID: ${orderId}`);
+          } else {
+            toastHandler(`PE error ${response.data}`);
+          }
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            // console.log(res);
+            let putShortId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
+            });
+
+            let price;
+            let slPoint;
+            let tgtPoint;
+            if (putShortId?.[0]?.average_price) {
+              price = putShortId?.[0].average_price;
+              slPoint = 25;
+              tgtPoint = 52;
+            } else {
+              price = "";
+              slPoint = "";
+              tgtPoint = "";
+            }
+
+            await setDoc(
+              doc(db, "user", "niftyFutLong"),
+              {
+                entryPrice: niftyFutLtp,
+                slPoints: slPoint,
+                tgtPoints: tgtPoint,
+                putShort: {
+                  order_id: orderId,
+                  average_price: price,
+                  instrument_token: parseInt(
+                    niftyLongPutSell?.instrument_token
+                  ),
+                  trading_symbol: niftyLongPutSell.tradingsymbol,
+                },
+                entryLevel: deleteField(),
+              },
+              { merge: true }
+            )
+              .then((response) => {
+                toastHandler(`Nifty long order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`Nifty long error at firebase ${e}`);
+              });
+          });
+        });
+    }
   };
 
   useEffect(() => {
@@ -501,108 +509,114 @@ function FutTrading() {
   }, [niftyLongOrderId, refreshExistingOrder]);
 
   const niftyShort = async () => {
-    await axios
-      .get(
-        // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+    if (!niftyShortOrderId.putLong) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
-        `/api/placeOrderFno?tradingsymbol=${niftyShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-      )
-      .then(async (response) => {
-        let orderId = response?.data?.order_id;
-        if (orderId) {
-          toastHandler(`PE placed OID: ${orderId}`);
-        } else {
-          toastHandler(`PE error ${response.data}`);
-        }
-        await axios.get(`/api/orderInfo`).then(async (res) => {
-          let putLongId = res?.data?.filter((order) => {
-            return order.order_id === orderId && order.status === "COMPLETE";
-          });
-
-          let price;
-
-          if (putLongId?.[0]?.average_price) {
-            price = putLongId?.[0].average_price;
+          `/api/placeOrderFno?tradingsymbol=${niftyShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          let orderId = response?.data?.order_id;
+          if (orderId) {
+            toastHandler(`PE placed OID: ${orderId}`);
           } else {
-            price = "";
+            toastHandler(`PE error ${response.data}`);
           }
-
-          await setDoc(
-            doc(db, "user", "niftyFutShort"),
-            {
-              putLong: {
-                order_id: orderId,
-                average_price: price,
-                instrument_token: parseInt(niftyShortPutBuy?.instrument_token),
-                trading_symbol: niftyShortPutBuy?.tradingsymbol,
-              },
-            },
-            { merge: true }
-          )
-            .then((response) => {
-              toastHandler(`Nifty short order updated`);
-            })
-            .catch((e) => {
-              toastHandler(`Nifty short error at firebase ${e}`);
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            let putLongId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
             });
-        });
-      });
-    await axios
-      .get(
-        `/api/placeOrderFno?tradingsymbol=${niftyShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-      )
-      .then(async (response) => {
-        let orderId = response?.data?.order_id;
-        if (orderId) {
-          toastHandler(`CE placed OID: ${orderId}`);
-        } else {
-          toastHandler(`CE error ${response.data}`);
-        }
-        await axios.get(`/api/orderInfo`).then(async (res) => {
-          let callShortId = res?.data?.filter((order) => {
-            return order.order_id === orderId && order.status === "COMPLETE";
+
+            let price;
+
+            if (putLongId?.[0]?.average_price) {
+              price = putLongId?.[0].average_price;
+            } else {
+              price = "";
+            }
+
+            await setDoc(
+              doc(db, "user", "niftyFutShort"),
+              {
+                putLong: {
+                  order_id: orderId,
+                  average_price: price,
+                  instrument_token: parseInt(
+                    niftyShortPutBuy?.instrument_token
+                  ),
+                  trading_symbol: niftyShortPutBuy?.tradingsymbol,
+                },
+              },
+              { merge: true }
+            )
+              .then((response) => {
+                toastHandler(`Nifty short order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`Nifty short error at firebase ${e}`);
+              });
           });
-
-          let price;
-          let slpoint;
-          let tgtPoint;
-          if (callShortId?.[0]?.average_price) {
-            price = callShortId?.[0].average_price;
-            slpoint = 25;
-            tgtPoint = 52;
-          } else {
-            price = "";
-            slpoint = "";
-            tgtPoint = "";
-          }
-
-          await setDoc(
-            doc(db, "user", "niftyFutShort"),
-            {
-              entryPrice: niftyFutLtp,
-              slPoints: slpoint,
-              tgtPoints: tgtPoint,
-              callShort: {
-                order_id: orderId,
-                average_price: price,
-                instrument_token: parseInt(
-                  niftyShortCallSell?.instrument_token
-                ),
-                trading_symbol: niftyShortCallSell?.tradingsymbol,
-              },
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          )
-            .then((response) => {
-              toastHandler(`Nifty short order updated`);
-            })
-            .catch((e) => {
-              toastHandler(`Nifty short error at firebase ${e}`);
-            });
         });
-      });
+    }
+    if (!niftyShortOrderId.callShort) {
+      await axios
+        .get(
+          `/api/placeOrderFno?tradingsymbol=${niftyShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          let orderId = response?.data?.order_id;
+          if (orderId) {
+            toastHandler(`CE placed OID: ${orderId}`);
+          } else {
+            toastHandler(`CE error ${response.data}`);
+          }
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            let callShortId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
+            });
+
+            let price;
+            let slPoint;
+            let tgtPoint;
+            if (callShortId?.[0]?.average_price) {
+              price = callShortId?.[0].average_price;
+              slPoint = 25;
+              tgtPoint = 52;
+            } else {
+              price = "";
+              slPoint = "";
+              tgtPoint = "";
+            }
+
+            await setDoc(
+              doc(db, "user", "niftyFutShort"),
+              {
+                entryPrice: niftyFutLtp,
+                slPoints: slPoint,
+                tgtPoints: tgtPoint,
+                callShort: {
+                  order_id: orderId,
+                  average_price: price,
+                  instrument_token: parseInt(
+                    niftyShortCallSell?.instrument_token
+                  ),
+                  trading_symbol: niftyShortCallSell?.tradingsymbol,
+                },
+                entryLevel: deleteField(),
+              },
+              { merge: true }
+            )
+              .then((response) => {
+                toastHandler(`Nifty short order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`Nifty short error at firebase ${e}`);
+              });
+          });
+        });
+    }
   };
 
   useEffect(() => {
@@ -923,106 +937,111 @@ function FutTrading() {
   //BNF
 
   const bnfLong = async () => {
-    await axios
-      .get(
-        // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-        `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-      )
-      .then(async (response) => {
-        let orderId = response?.data?.order_id;
-        if (orderId) {
-          toastHandler(`CE placed OID: ${orderId}`);
-        } else {
-          toastHandler(`CE error ${response.data}`);
-        }
-        await axios.get(`/api/orderInfo`).then(async (res) => {
-          // console.log(res);
-          let callLongId = res?.data?.filter((order) => {
-            return order.order_id === orderId && order.status === "COMPLETE";
-          });
-
-          let price;
-
-          if (callLongId?.[0]?.average_price) {
-            price = callLongId?.[0].average_price;
+    if (!bnfLongOrderId.callLong) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          let orderId = response?.data?.order_id;
+          if (orderId) {
+            toastHandler(`CE placed OID: ${orderId}`);
           } else {
-            price = "";
+            toastHandler(`CE error ${response.data}`);
           }
-
-          await setDoc(
-            doc(db, "user", "bnfFutLong"),
-            {
-              callLong: {
-                order_id: orderId,
-                average_price: price,
-                instrument_token: parseInt(bnfLongCallBuy?.instrument_token),
-                trading_symbol: bnfLongCallBuy.tradingsymbol,
-              },
-            },
-            { merge: true }
-          )
-            .then((response) => {
-              toastHandler(`Bank Nifty long order updated`);
-            })
-            .catch((e) => {
-              toastHandler(`Bank Nifty long error at firebase ${e}`);
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            // console.log(res);
+            let callLongId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
             });
-        });
-      });
-    await axios
-      .get(
-        // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-        `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-      )
-      .then(async (response) => {
-        let orderId = response.data.order_id;
-        if (orderId) {
-          toastHandler(`PE placed OID: ${orderId}`);
-        } else {
-          toastHandler(`PE error ${response.data}`);
-        }
-        await axios.get(`/api/orderInfo`).then(async (res) => {
-          // console.log(res);
-          let putShortId = res?.data?.filter((order) => {
-            return order.order_id === orderId && order.status === "COMPLETE";
+
+            let price;
+
+            if (callLongId?.[0]?.average_price) {
+              price = callLongId?.[0].average_price;
+            } else {
+              price = "";
+            }
+
+            await setDoc(
+              doc(db, "user", "bnfFutLong"),
+              {
+                callLong: {
+                  order_id: orderId,
+                  average_price: price,
+                  instrument_token: parseInt(bnfLongCallBuy?.instrument_token),
+                  trading_symbol: bnfLongCallBuy.tradingsymbol,
+                },
+              },
+              { merge: true }
+            )
+              .then((response) => {
+                toastHandler(`Bank Nifty long order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`Bank Nifty long error at firebase ${e}`);
+              });
           });
-
-          let price;
-          let slPoint;
-          if (putShortId?.[0]?.average_price) {
-            price = putShortId?.[0].average_price;
-            slPoint = 85;
-            tgtPoint = 177;
-          } else {
-            price = "";
-            slPoint = "";
-            tgtPoint = "";
-          }
-
-          await setDoc(
-            doc(db, "user", "bnfFutLong"),
-            {
-              entryPrice: bnfFutLtp,
-              slPoints: slPoint,
-              tgtPoints: tgtPoint,
-              putShort: {
-                order_id: orderId,
-                average_price: price,
-                instrument_token: parseInt(bnfLongPutSell?.instrument_token),
-                trading_symbol: bnfLongPutSell.tradingsymbol,
-              },
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          )
-            .then((response) => {
-              toastHandler(`Bank Nifty long order updated`);
-            })
-            .catch((e) => {
-              toastHandler(`Bank Nifty long error at firebase ${e}`);
-            });
         });
-      });
+    }
+    if (!bnfLongOrderId.putShort) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          let orderId = response.data.order_id;
+          if (orderId) {
+            toastHandler(`PE placed OID: ${orderId}`);
+          } else {
+            toastHandler(`PE error ${response.data}`);
+          }
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            // console.log(res);
+            let putShortId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
+            });
+
+            let price;
+            let slPoint;
+            let tgtPoint;
+            if (putShortId?.[0]?.average_price) {
+              price = putShortId?.[0].average_price;
+              slPoint = 85;
+              tgtPoint = 177;
+            } else {
+              price = "";
+              slPoint = "";
+              tgtPoint = "";
+            }
+
+            await setDoc(
+              doc(db, "user", "bnfFutLong"),
+              {
+                entryPrice: bnfFutLtp,
+                slPoints: slPoint,
+                tgtPoints: tgtPoint,
+                putShort: {
+                  order_id: orderId,
+                  average_price: price,
+                  instrument_token: parseInt(bnfLongPutSell?.instrument_token),
+                  trading_symbol: bnfLongPutSell.tradingsymbol,
+                },
+                entryLevel: deleteField(),
+              },
+              { merge: true }
+            )
+              .then((response) => {
+                toastHandler(`Bank Nifty long order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`Bank Nifty long error at firebase ${e}`);
+              });
+          });
+        });
+    }
   };
 
   useEffect(() => {
@@ -1047,105 +1066,112 @@ function FutTrading() {
   }, [bnfLongOrderId, refreshExistingOrder]);
 
   const bnfShort = async () => {
-    await axios
-      .get(
-        // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+    if (!bnfShortOrderId.putLong) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
-        `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-      )
-      .then(async (response) => {
-        let orderId = response.data.order_id;
-        if (orderId) {
-          toastHandler(`PE placed OID: ${orderId}`);
-        } else {
-          toastHandler(`PE error ${response.data}`);
-        }
-        await axios.get(`/api/orderInfo`).then(async (res) => {
-          let putLongId = res?.data?.filter((order) => {
-            return order.order_id === orderId && order.status === "COMPLETE";
-          });
-
-          let price;
-
-          if (putLongId?.[0]?.average_price) {
-            price = putLongId?.[0].average_price;
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          let orderId = response.data.order_id;
+          if (orderId) {
+            toastHandler(`PE placed OID: ${orderId}`);
           } else {
-            price = "";
+            toastHandler(`PE error ${response.data}`);
           }
-
-          await setDoc(
-            doc(db, "user", "bnfFutShort"),
-            {
-              putLong: {
-                order_id: orderId,
-                average_price: price,
-                instrument_token: parseInt(bnfShortPutBuy?.instrument_token),
-                trading_symbol: bnfShortPutBuy?.tradingsymbol,
-              },
-            },
-            { merge: true }
-          )
-            .then((response) => {
-              toastHandler(`Bank Nifty short order updated`);
-            })
-            .catch((e) => {
-              toastHandler(`Bank Nifty short error at firebase ${e}`);
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            let putLongId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
             });
-        });
-      });
-    await axios
-      .get(
-        `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-      )
-      .then(async (response) => {
-        let orderId = response.data.order_id;
-        if (orderId) {
-          toastHandler(`CE placed OID: ${orderId}`);
-        } else {
-          toastHandler(`CE error ${response.data}`);
-        }
-        await axios.get(`/api/orderInfo`).then(async (res) => {
-          let callShortId = res?.data?.filter((order) => {
-            return order.order_id === orderId && order.status === "COMPLETE";
+
+            let price;
+
+            if (putLongId?.[0]?.average_price) {
+              price = putLongId?.[0].average_price;
+            } else {
+              price = "";
+            }
+
+            await setDoc(
+              doc(db, "user", "bnfFutShort"),
+              {
+                putLong: {
+                  order_id: orderId,
+                  average_price: price,
+                  instrument_token: parseInt(bnfShortPutBuy?.instrument_token),
+                  trading_symbol: bnfShortPutBuy?.tradingsymbol,
+                },
+              },
+              { merge: true }
+            )
+              .then((response) => {
+                toastHandler(`Bank Nifty short order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`Bank Nifty short error at firebase ${e}`);
+              });
           });
-
-          let price;
-          let slPoint;
-          if (callShortId?.[0]?.average_price) {
-            price = callShortId?.[0].average_price;
-            slPoint = 85;
-            tgtPoint = 177;
-          } else {
-            price = "";
-            slPoint = "";
-            tgtPoint = "";
-          }
-
-          await setDoc(
-            doc(db, "user", "bnfFutShort"),
-            {
-              entryPrice: bnfFutLtp,
-              slPoints: slPoint,
-              tgtPoints: tgtPoint,
-              callShort: {
-                order_id: orderId,
-                average_price: price,
-                instrument_token: parseInt(bnfShortCallSell?.instrument_token),
-                trading_symbol: bnfShortCallSell?.tradingsymbol,
-              },
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          )
-            .then((response) => {
-              toastHandler(`Bank Nifty short order updated`);
-            })
-            .catch((e) => {
-              toastHandler(`Bank Nifty short error at firebase ${e}`);
-            });
         });
-      });
+    }
+    if (!bnfShortOrderId.callShort) {
+      await axios
+        .get(
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          let orderId = response.data.order_id;
+          if (orderId) {
+            toastHandler(`CE placed OID: ${orderId}`);
+          } else {
+            toastHandler(`CE error ${response.data}`);
+          }
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            let callShortId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
+            });
+
+            let price;
+            let slPoint;
+            let tgtPoint;
+            if (callShortId?.[0]?.average_price) {
+              price = callShortId?.[0].average_price;
+              slPoint = 85;
+              tgtPoint = 177;
+            } else {
+              price = "";
+              slPoint = "";
+              tgtPoint = "";
+            }
+
+            await setDoc(
+              doc(db, "user", "bnfFutShort"),
+              {
+                entryPrice: bnfFutLtp,
+                slPoints: slPoint,
+                tgtPoints: tgtPoint,
+                callShort: {
+                  order_id: orderId,
+                  average_price: price,
+                  instrument_token: parseInt(
+                    bnfShortCallSell?.instrument_token
+                  ),
+                  trading_symbol: bnfShortCallSell?.tradingsymbol,
+                },
+                entryLevel: deleteField(),
+              },
+              { merge: true }
+            )
+              .then((response) => {
+                toastHandler(`Bank Nifty short order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`Bank Nifty short error at firebase ${e}`);
+              });
+          });
+        });
+    }
   };
 
   useEffect(() => {
@@ -1513,6 +1539,7 @@ function FutTrading() {
           (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
           bnfFutLtp > bnf20SMA
         ) {
+          bnfShortExit();
           toastHandler(`Bank Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Bank Nifty short TSL No reached`);
@@ -1671,12 +1698,12 @@ function FutTrading() {
 
         if (
           niftyFutLtp > entry &&
-          niftyFutLtp - lastClose <= 28 &&
+          niftyFutLtp - lastClose <= 25 &&
           niftyFutLtp > nifty20SMA
         ) {
           await niftyLong();
           toastHandler(`Nifty Long Auto Entry`);
-        } else if (niftyFutLtp < nifty20SMA) {
+        } else if (niftyFutLtp < nifty20SMA || niftyFutLtp - lastClose > 25) {
           await setDoc(
             doc(db, "user", "niftyFutLong"),
             {
@@ -1703,12 +1730,12 @@ function FutTrading() {
 
         if (
           niftyFutLtp < entry &&
-          lastClose - niftyFutLtp <= 28 &&
+          lastClose - niftyFutLtp <= 25 &&
           niftyFutLtp < nifty20SMA
         ) {
           await niftyShort();
           toastHandler(`Nifty Short Auto Entry`);
-        } else if (niftyFutLtp > nifty20SMA) {
+        } else if (niftyFutLtp > nifty20SMA || lastClose - niftyFutLtp > 25) {
           await setDoc(
             doc(db, "user", "niftyFutShort"),
             {
@@ -1735,12 +1762,12 @@ function FutTrading() {
 
         if (
           bnfFutLtp > entry &&
-          bnfFutLtp - lastClose <= 95 &&
+          bnfFutLtp - lastClose <= 85 &&
           bnfFutLtp > bnf20SMA
         ) {
           await bnfLong();
           toastHandler(`Bank Nifty Long Auto Entry`);
-        } else if (bnfFutLtp < bnf20SMA) {
+        } else if (bnfFutLtp < bnf20SMA || bnfFutLtp - lastClose > 85) {
           await setDoc(
             doc(db, "user", "bnfFutLong"),
             {
@@ -1767,12 +1794,12 @@ function FutTrading() {
 
         if (
           bnfFutLtp < entry &&
-          lastClose - bnfFutLtp <= 95 &&
+          lastClose - bnfFutLtp <= 85 &&
           bnfFutLtp < bnf20SMA
         ) {
           await bnfShort();
           toastHandler(`Bank Nifty Short Auto Entry`);
-        } else if (bnfFutLtp > bnf20SMA) {
+        } else if (bnfFutLtp > bnf20SMA || lastClose - bnfFutLtp > 85) {
           await setDoc(
             doc(db, "user", "bnfFutShort"),
             {

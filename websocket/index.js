@@ -157,7 +157,7 @@ const startSLMonitor = () => {
     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
     now = new Date();
 
-    io.emit("checkSl", crypto.randomUUID());
+    io.emit("checkSl", now.getMinutes());
     // io.emit("checkSl", now.getSeconds());
   });
 };
@@ -167,7 +167,7 @@ const startSLMonitor30m = () => {
     now = new Date();
 
     // io.emit("checkSl", now.getMinutes());
-    io.emit("checkSl30m", crypto.randomUUID());
+    io.emit("checkSl30m", now.getMinutes());
   });
 
   const job2 = schedule.scheduleJob("25 15 * * *", () => {
@@ -175,17 +175,17 @@ const startSLMonitor30m = () => {
     now = new Date();
 
     // io.emit("checkSl", now.getMinutes());
-    io.emit("checkSl30m", crypto.randomUUID());
+    io.emit("checkSl30m", now.getMinutes());
   });
 };
 
 const startEntryMonitor = () => {
-  const job = schedule.scheduleJob("58 4/5 * * * *", () => {
+  const job = schedule.scheduleJob("59 4/5 * * * *", () => {
     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
     now = new Date();
 
     // io.emit("checkEntry", now.getMinutes());
-    io.emit("checkEntry", crypto.randomUUID());
+    io.emit("checkEntry", now.getMinutes());
   });
 };
 const startEntryMonitor30m = () => {
@@ -194,7 +194,7 @@ const startEntryMonitor30m = () => {
     now = new Date();
 
     // io.emit("checkEntry", now.getMinutes());
-    io.emit("checkEntry30m", crypto.randomUUID());
+    io.emit("checkEntry30m", now.getMinutes());
   });
 
   const job2 = schedule.scheduleJob("25 15 * * *", () => {
@@ -202,7 +202,7 @@ const startEntryMonitor30m = () => {
     now = new Date();
 
     // io.emit("checkEntry", now.getMinutes());
-    io.emit("checkEntry30m", crypto.randomUUID());
+    io.emit("checkEntry30m", now.getMinutes());
   });
 };
 

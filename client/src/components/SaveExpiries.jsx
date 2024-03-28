@@ -10,6 +10,9 @@ function SaveExpiries() {
   const [filteredInstObject, setFilteredInstObject] = useState();
   const [expiryArray, setExpiryArray] = useState([]);
 
+  const [niftyFut, setNiftyFut] = useState();
+  const [bnfFut, setBnfFut] = useState();
+
   const [bnfFilteredInstObject, setBnfFilteredInstObject] = useState();
   const [bnfExpiryArray, setBnfExpiryArray] = useState([]);
 
@@ -29,69 +32,71 @@ function SaveExpiries() {
     getInstForExp();
   }, []);
 
-  // useEffect(() => {
-  //   const filterFut = () => {
-  //     if (instObject != null) {
-  //       const niftyFut = instObject?.filter((data) => {
-  //         return (
-  //           data.exchange === "NFO" &&
-  //           data.name === "NIFTY" &&
-  //           data.segment === "NFO-FUT"
-  //         );
-  //       });
-  //       const BnfFut = instObject?.filter((data) => {
-  //         return (
-  //           data.exchange === "NFO" &&
-  //           data.name === "BANKNIFTY" &&
-  //           data.segment === "NFO-FUT"
-  //         );
-  //       });
+  useEffect(() => {
+    const filterFut = () => {
+      if (instObject != null) {
+        const niftyFutFitered = instObject?.filter((data) => {
+          return (
+            data.exchange === "NFO" &&
+            data.name === "NIFTY" &&
+            data.segment === "NFO-FUT"
+          );
+        });
+        const bnfFutFiltered = instObject?.filter((data) => {
+          return (
+            data.exchange === "NFO" &&
+            data.name === "BANKNIFTY" &&
+            data.segment === "NFO-FUT"
+          );
+        });
 
-  //       niftyFut?.sort((a, b) => new Date(a.expiry) - new Date(b.expiry));
-  //       BnfFut?.sort((a, b) => new Date(a.expiry) - new Date(b.expiry));
+        niftyFutFitered?.sort(
+          (a, b) => new Date(a.expiry) - new Date(b.expiry)
+        );
+        bnfFutFiltered?.sort((a, b) => new Date(a.expiry) - new Date(b.expiry));
 
-  //       setNiftyFut(niftyFut);
-  //       setBnfFut(BnfFut);
-  //     }
-  //   };
-  //   filterFut();
-  // }, [instObject]);
+        setNiftyFut(niftyFutFitered);
+        setBnfFut(bnfFutFiltered);
+      }
+    };
+    filterFut();
+  }, [instObject]);
 
-  // useEffect(() => {
-  //   const futToFirebase = async () => {
-  //     if (niftyFut != null) {
-  //       const futRef = doc(db, "user", "niftyFut");
-  //       await updateDoc(futRef, {
-  //         instrument_token: parseInt(niftyFut?.[0]?.instrument_token),
-  //       })
-  //         .then(() => {
-  //           console.log("Futures Updated");
-  //         })
-  //         .catch((e) => {
-  //           console.log("Error: ", e);
-  //         });
-  //     }
-  //   };
-  //   futToFirebase();
-  // }, [niftyFut]);
+  useEffect(() => {
+    const futToFirebase = async () => {
+      if (niftyFut != null) {
+        const futRef = doc(db, "user", "niftyFut");
+        await updateDoc(futRef, {
+          instrument_token: parseInt(niftyFut?.[0]?.instrument_token),
+        })
+          .then(() => {
+            console.log("Futures Updated");
+          })
+          .catch((e) => {
+            console.log("Error: ", e);
+          });
+      }
+    };
+    futToFirebase();
+  }, [niftyFut]);
 
-  // useEffect(() => {
-  //   const futToFirebase = async () => {
-  //     if (bnfFut != null) {
-  //       const futRef = doc(db, "user", "bnfFut");
-  //       await updateDoc(futRef, {
-  //         instrument_token: parseInt(bnfFut?.[0]?.instrument_token),
-  //       })
-  //         .then(() => {
-  //           console.log("Futures Updated");
-  //         })
-  //         .catch((e) => {
-  //           console.log("Error: ", e);
-  //         });
-  //     }
-  //   };
-  //   futToFirebase();
-  // }, [bnfFut]);
+  useEffect(() => {
+    const futToFirebase = async () => {
+      if (bnfFut != null) {
+        const futRef = doc(db, "user", "bnfFut");
+        await updateDoc(futRef, {
+          instrument_token: parseInt(bnfFut?.[0]?.instrument_token),
+        })
+          .then(() => {
+            console.log("Futures Updated");
+          })
+          .catch((e) => {
+            console.log("Error: ", e);
+          });
+      }
+    };
+    futToFirebase();
+  }, [bnfFut]);
 
   const filterInst = () => {
     const niftyOptions = instObject.filter((data) => {
