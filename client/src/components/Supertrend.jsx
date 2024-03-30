@@ -14,7 +14,7 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 
-function FutTrading() {
+function Supertrend() {
   const {
     expiries,
     niftyOptChainData,
@@ -62,6 +62,9 @@ function FutTrading() {
 
   const [bnf10SMA, setBnf10SMA] = useState();
   const [bnf20SMA, setBnf20SMA] = useState();
+
+  const [niftySuperTrend, setNiftySuperTrend] = useState();
+  const [bnfSuperTrend, setBnfSuperTrend] = useState();
 
   const [niftyLongOrderId, setNiftyLongOrderId] = useState();
   const [niftyShortOrderId, setNiftyShortOrderId] = useState();
@@ -119,47 +122,26 @@ function FutTrading() {
       return data.instrument_token === bnfFutData?.instrument_token;
     });
 
-    const niftyLongPut = tickerData?.filter((data) => {
+    const niftyLong = tickerData?.filter((data) => {
       return (
-        data.instrument_token === niftyShortOrderId?.putLong?.instrument_token
+        data.instrument_token === niftyLongOrderId?.putShort?.instrument_token
       );
     });
-    const niftyShortCall = tickerData?.filter((data) => {
+    const niftyShort = tickerData?.filter((data) => {
       return (
         data.instrument_token === niftyShortOrderId?.callShort?.instrument_token
       );
     });
 
-    const niftyShortPut = tickerData?.filter((data) => {
-      return (
-        data.instrument_token === niftyLongOrderId?.putShort?.instrument_token
-      );
-    });
-    const niftyLongCall = tickerData?.filter((data) => {
-      return (
-        data.instrument_token === niftyLongOrderId?.callLong?.instrument_token
-      );
-    });
-
     // BNF filter
-    const bnfLongPut = tickerData?.filter((data) => {
+    const bnfLong = tickerData?.filter((data) => {
       return (
-        data.instrument_token === bnfShortOrderId?.putLong?.instrument_token
+        data.instrument_token === bnfShortOrderId?.putShort?.instrument_token
       );
     });
-    const bnfShortCall = tickerData?.filter((data) => {
+    const bnfShort = tickerData?.filter((data) => {
       return (
         data.instrument_token === bnfShortOrderId?.callShort?.instrument_token
-      );
-    });
-    const bnfShortPut = tickerData?.filter((data) => {
-      return (
-        data.instrument_token === bnfLongOrderId?.putShort?.instrument_token
-      );
-    });
-    const bnfLongCall = tickerData?.filter((data) => {
-      return (
-        data.instrument_token === bnfLongOrderId?.callLong?.instrument_token
       );
     });
 
@@ -178,32 +160,21 @@ function FutTrading() {
     if (bnfFutLastPrice.length > 0) {
       setBnfFutLtp(bnfFutLastPrice?.[0]?.last_price);
     }
-    if (niftyLongPut.length > 0) {
-      setNiftyLongPutLtp(niftyLongPut?.[0]?.last_price);
+
+    if (niftyLong.length > 0) {
+      setNiftyLongPutLtp(niftyLong?.[0]?.last_price);
     }
-    if (niftyShortCall.length > 0) {
-      setNiftyShortCallLtp(niftyShortCall?.[0]?.last_price);
-    }
-    if (niftyShortPut.length > 0) {
-      setNiftyShortPutLtp(niftyShortPut?.[0]?.last_price);
-    }
-    if (niftyLongCall.length > 0) {
-      setNiftyLongCallLtp(niftyLongCall?.[0]?.last_price);
+    if (niftyShort.length > 0) {
+      setNiftyShortCallLtp(niftyShort?.[0]?.last_price);
     }
 
     // BNF LTP
 
-    if (bnfLongPut.length > 0) {
-      setBnfLongPutLtp(bnfLongPut?.[0]?.last_price);
+    if (bnfLong.length > 0) {
+      setBnfLongPutLtp(bnfLong?.[0]?.last_price);
     }
-    if (bnfShortCall.length > 0) {
-      setBnfShortCallLtp(bnfShortCall?.[0]?.last_price);
-    }
-    if (bnfShortPut.length > 0) {
-      setBnfShortPutLtp(bnfShortPut?.[0]?.last_price);
-    }
-    if (bnfLongCall.length > 0) {
-      setBnfLongCallLtp(bnfLongCall?.[0]?.last_price);
+    if (bnfShort.length > 0) {
+      setBnfShortCallLtp(bnfShort?.[0]?.last_price);
     }
   }, [tickerData]);
 
@@ -225,108 +196,73 @@ function FutTrading() {
 
   useEffect(() => {
     const niftyStrikeSelect = () => {
-      const niftyLongStrikeSell = niftyOptChainData?.niftyChain?.filter(
-        (data) => {
-          return (
-            data.expiry === expiries?.niftyExpiryDates?.[0] &&
-            data.strike === parseInt(niftyRounded) &&
-            data.instrument_type === "PE"
-          );
-        }
-      );
-      const niftyLongStrikeBuy = niftyOptChainData?.niftyChain?.filter(
-        (data) => {
-          return (
-            data.expiry === expiries?.niftyExpiryDates?.[0] &&
-            data.strike === parseInt(niftyRounded) &&
-            data.instrument_type === "CE"
-          );
-        }
-      );
+      const niftyLongStrike = niftyOptChainData?.niftyChain?.filter((data) => {
+        return (
+          data.expiry === expiries?.niftyExpiryDates?.[0] &&
+          data.strike === parseInt(niftyRounded) &&
+          data.instrument_type === "PE"
+        );
+      });
 
-      const niftyShortStrikeSell = niftyOptChainData?.niftyChain?.filter(
-        (data) => {
-          return (
-            data.expiry === expiries?.niftyExpiryDates?.[0] &&
-            data.strike === parseInt(niftyRounded) &&
-            data.instrument_type === "CE"
-          );
-        }
-      );
-      const niftyShortStrikeBuy = niftyOptChainData?.niftyChain?.filter(
-        (data) => {
-          return (
-            data.expiry === expiries?.niftyExpiryDates?.[0] &&
-            data.strike === parseInt(niftyRounded) &&
-            data.instrument_type === "PE"
-          );
-        }
-      );
-      setNiftyShortPutBuy(niftyShortStrikeBuy?.[0]);
-      setNiftyShortCallSell(niftyShortStrikeSell?.[0]);
-      setNiftyLongCallBuy(niftyLongStrikeBuy?.[0]);
-      setNiftyLongPutSell(niftyLongStrikeSell?.[0]);
+      const niftyShortStrike = niftyOptChainData?.niftyChain?.filter((data) => {
+        return (
+          data.expiry === expiries?.niftyExpiryDates?.[0] &&
+          data.strike === parseInt(niftyRounded) &&
+          data.instrument_type === "CE"
+        );
+      });
+
+      setNiftyShortCallSell(niftyShortStrike?.[0]);
+      setNiftyLongPutSell(niftyLongStrike?.[0]);
     };
 
     const bnfStrikeSelect = () => {
-      const bnfLongStrikeSell = bnfOptChainData?.bnfChain?.filter((data) => {
+      const bnfLongStrike = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
           data.expiry === expiries?.bnfExpiryDates?.[0] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "PE"
-        );
-      });
-      const bnfLongStrikeBuy = bnfOptChainData?.bnfChain?.filter((data) => {
-        return (
-          data.expiry === expiries?.bnfExpiryDates?.[0] &&
-          data.strike === parseInt(bnfRounded) &&
-          data.instrument_type === "CE"
         );
       });
 
-      const bnfShortStrikeSell = bnfOptChainData?.bnfChain?.filter((data) => {
+      const bnfShortStrike = bnfOptChainData?.bnfChain?.filter((data) => {
         return (
           data.expiry === expiries?.bnfExpiryDates?.[0] &&
           data.strike === parseInt(bnfRounded) &&
           data.instrument_type === "CE"
         );
       });
-      const bnfShortStrikeBuy = bnfOptChainData?.bnfChain?.filter((data) => {
-        return (
-          data.expiry === expiries?.bnfExpiryDates?.[0] &&
-          data.strike === parseInt(bnfRounded) &&
-          data.instrument_type === "PE"
-        );
-      });
-      setBnfShortPutBuy(bnfShortStrikeBuy?.[0]);
-      setBnfShortCallSell(bnfShortStrikeSell?.[0]);
-      setBnfLongPutSell(bnfLongStrikeSell?.[0]);
-      setBnfLongCallBuy(bnfLongStrikeBuy?.[0]);
+      setBnfShortCallSell(bnfShortStrike?.[0]);
+      setBnfLongPutSell(bnfLongStrike?.[0]);
     };
 
     niftyStrikeSelect();
     bnfStrikeSelect();
   }, [niftyRounded, bnfRounded]);
 
-  const startStream = async () => {
-    await socket?.emit("candleToken", [
-      niftyFutData?.instrument_token,
-      bnfFutData?.instrument_token,
-    ]);
-
-    await socket?.emit("defaultTokens", [
-      niftyFutData?.instrument_token,
-      bnfFutData?.instrument_token,
-      niftySpotData?.instrument_token,
-      bnfSpotData?.instrument_token,
-    ]);
-  };
   socket?.on(niftyFutData?.instrument_token, (data) => {
     setNiftyCandles(data);
   });
   socket?.on(bnfFutData?.instrument_token, (data) => {
     setBnfCandles(data);
   });
+
+  useEffect(() => {
+    const unsub = onSnapshot(
+      doc(db, "5minSupertrend", "niftySuperTrend"),
+      (doc) => {
+        setNiftySuperTrend(doc.data());
+        console.log(doc.data());
+      }
+    );
+    const unsub2 = onSnapshot(
+      doc(db, "5minSupertrend", "bnfSuperTrend"),
+      (doc) => {
+        setBnfSuperTrend(doc.data());
+        console.log(doc.data());
+      }
+    );
+  }, []);
 
   useEffect(() => {
     const nifty10SMA = () => {
@@ -375,58 +311,145 @@ function FutTrading() {
     nifty20SMA();
     bnf10SMA();
     bnf20SMA();
-  }, [niftyLtp, bnfLtp, niftyCandles, bnfCandles]);
+  }, [niftyFutLtp, bnfFutLtp, niftyCandles, bnfCandles]);
+
+  const calculateATR = async (prices, periods) => {
+    let atr = [];
+
+    for (let i = 0; i < prices?.length; i++) {
+      // Calculate the true range (TR)
+      let tr = Math.max(
+        prices[i]?.high - prices[i].low,
+        Math.abs(prices[i]?.high - prices[i - 1]?.close),
+        Math.abs(prices[i]?.low - prices[i - 1]?.close)
+      );
+
+      // Calculate the ATR
+      let atrValue;
+      if (i < periods) {
+        atrValue = tr;
+      } else {
+        let atrCalcTemp =
+          (atr?.slice(-20)?.[i - 1] * (periods - 1) + tr) / periods;
+        atrValue = atrCalcTemp;
+        //   console.log(atrCalcTemp);
+      }
+      atr.push(atrValue);
+      // console.log(atrValue, prices[i]?.open_time);
+    }
+
+    return atr[atr.length - 1];
+  };
+  useEffect(() => {
+    const calculateSupertrendBnf = async () => {
+      let atr = await calculateATR(bnfCandles?.slice(0, 20).reverse(), 10);
+      let prevCandleHigh = bnfCandles?.[0]?.high;
+      let prevCandleLow = bnfCandles?.[0]?.low;
+      let prevCandleClose = bnfCandles?.[0]?.close;
+
+      let upperBand = (prevCandleHigh + prevCandleLow) / 2 + 3 * atr;
+      let lowerBand = (prevCandleHigh + prevCandleLow) / 2 - 3 * atr;
+
+      if (
+        upperBand < bnfSuperTrend?.supertrend_value &&
+        prevCandleClose < bnfSuperTrend?.supertrend_value
+      ) {
+        await setDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
+          direction: "short",
+          supertrend_value: upperBand,
+        });
+      } else {
+        console.log("noChange");
+      }
+      if (
+        lowerBand > bnfSuperTrend?.supertrend_value &&
+        prevCandleClose > bnfSuperTrend?.supertrend_value
+      ) {
+        await setDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
+          direction: "long",
+          supertrend_value: lowerBand,
+        });
+      } else {
+        console.log("noChange");
+      }
+
+      if (
+        bnfSuperTrend?.direction == "short" &&
+        prevCandleClose > bnfSuperTrend?.supertrend_value
+      ) {
+        await setDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
+          direction: "long",
+          supertrend_value: lowerBand,
+        });
+      } else if (
+        bnfSuperTrend?.direction == "long" &&
+        prevCandleClose < bnfSuperTrend?.supertrend_value
+      ) {
+        await setDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
+          direction: "long",
+          supertrend_value: upperBand,
+        });
+      } else {
+        console.log("No direction change");
+      }
+    };
+    const calculateSupertrendNifty = async () => {
+      let atr = await calculateATR(niftyCandles?.slice(0, 20).reverse(), 10);
+      let prevCandleHigh = niftyCandles?.[0]?.high;
+      let prevCandleLow = niftyCandles?.[0]?.low;
+      let prevCandleClose = niftyCandles?.[0]?.close;
+
+      let upperBand = (prevCandleHigh + prevCandleLow) / 2 + 3 * atr;
+      let lowerBand = (prevCandleHigh + prevCandleLow) / 2 - 3 * atr;
+
+      if (
+        upperBand < niftySuperTrend?.supertrend_value &&
+        prevCandleClose < niftySuperTrend?.supertrend_value
+      ) {
+        await setDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
+          direction: "short",
+          supertrend_value: upperBand,
+        });
+      } else {
+        console.log("noChange");
+      }
+      if (
+        lowerBand > niftySuperTrend?.supertrend_value &&
+        prevCandleClose > niftySuperTrend?.supertrend_value
+      ) {
+        await setDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
+          direction: "long",
+          supertrend_value: lowerBand,
+        });
+      } else {
+        console.log("noChange");
+      }
+
+      if (
+        niftySuperTrend?.direction == "short" &&
+        prevCandleClose > niftySuperTrend?.supertrend_value
+      ) {
+        await setDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
+          direction: "long",
+          supertrend_value: lowerBand,
+        });
+      } else if (
+        niftySuperTrend?.direction == "long" &&
+        prevCandleClose < niftySuperTrend?.supertrend_value
+      ) {
+        await setDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
+          direction: "long",
+          supertrend_value: upperBand,
+        });
+      } else {
+        console.log("No direction change");
+      }
+    };
+    calculateSupertrendBnf();
+    calculateSupertrendNifty();
+  }, [niftyCandles, bnfCandles]);
 
   const niftyLong = async () => {
-    if (!niftyLongOrderId.callLong) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-          `/api/placeOrderFno?tradingsymbol=${niftyLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          let orderId = response?.data?.order_id;
-          if (orderId) {
-            toastHandler(`CE placed OID: ${orderId}`);
-          } else {
-            toastHandler(`CE error ${response.data}`);
-          }
-          await axios.get(`/api/orderInfo`).then(async (res) => {
-            // console.log(res);
-            let callLongId = res?.data?.filter((order) => {
-              return order.order_id === orderId && order.status === "COMPLETE";
-            });
-
-            let price;
-            if (callLongId?.[0]?.average_price) {
-              price = callLongId?.[0].average_price;
-            } else {
-              price = "";
-            }
-
-            await setDoc(
-              doc(db, "futFiveMin", "niftyFutLong"),
-              {
-                callLong: {
-                  order_id: orderId,
-                  average_price: price,
-                  instrument_token: parseInt(
-                    niftyLongCallBuy?.instrument_token
-                  ),
-                  trading_symbol: niftyLongCallBuy.tradingsymbol,
-                },
-              },
-              { merge: true }
-            )
-              .then((response) => {
-                toastHandler(`Nifty long order updated`);
-              })
-              .catch((e) => {
-                toastHandler(`Nifty long error at firebase ${e}`);
-              });
-          });
-        });
-    }
     if (!niftyLongOrderId.putShort) {
       await axios
         .get(
@@ -436,9 +459,9 @@ function FutTrading() {
         .then(async (response) => {
           let orderId = response?.data?.order_id;
           if (orderId) {
-            toastHandler(`PE placed OID: ${orderId}`);
+            toastHandler(`Supertrend PE placed OID: ${orderId}`);
           } else {
-            toastHandler(`PE error ${response.data}`);
+            toastHandler(`SuperTrend PE error ${response.data}`);
           }
           await axios.get(`/api/orderInfo`).then(async (res) => {
             // console.log(res);
@@ -460,7 +483,7 @@ function FutTrading() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "niftyFutLong"),
+              doc(db, "5minSupertrend", "niftyLong"),
               {
                 entryPrice: niftyFutLtp,
                 slPoints: slPoint,
@@ -473,7 +496,6 @@ function FutTrading() {
                   ),
                   trading_symbol: niftyLongPutSell.tradingsymbol,
                 },
-                entryLevel: deleteField(),
               },
               { merge: true }
             )
@@ -489,77 +511,23 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutLong"), (doc) => {
-      if (doc?.data()?.callLong?.order_id || doc?.data()?.putShort?.order_id) {
+    const unsub = onSnapshot(doc(db, "5minSupertrend", "niftyLong"), (doc) => {
+      if (doc?.data()?.putShort?.order_id) {
         toastHandler(`Nifty Long order present`);
       }
       setNiftyLongOrderId(doc.data());
 
-      socket?.emit("niftyFutToken", [
-        doc?.data()?.callLong?.instrument_token,
-        doc?.data()?.putShort?.instrument_token,
-      ]);
+      socket?.emit("niftyFutToken", [doc?.data()?.putShort?.instrument_token]);
     });
   }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
-      niftyLongOrderId?.callLong?.instrument_token,
       niftyLongOrderId?.putShort?.instrument_token,
     ]);
   }, [niftyLongOrderId, refreshExistingOrder]);
 
   const niftyShort = async () => {
-    if (!niftyShortOrderId.putLong) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFno?tradingsymbol=${niftyShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          let orderId = response?.data?.order_id;
-          if (orderId) {
-            toastHandler(`PE placed OID: ${orderId}`);
-          } else {
-            toastHandler(`PE error ${response.data}`);
-          }
-          await axios.get(`/api/orderInfo`).then(async (res) => {
-            let putLongId = res?.data?.filter((order) => {
-              return order.order_id === orderId && order.status === "COMPLETE";
-            });
-
-            let price;
-
-            if (putLongId?.[0]?.average_price) {
-              price = putLongId?.[0].average_price;
-            } else {
-              price = "";
-            }
-
-            await setDoc(
-              doc(db, "futFiveMin", "niftyFutShort"),
-              {
-                putLong: {
-                  order_id: orderId,
-                  average_price: price,
-                  instrument_token: parseInt(
-                    niftyShortPutBuy?.instrument_token
-                  ),
-                  trading_symbol: niftyShortPutBuy?.tradingsymbol,
-                },
-              },
-              { merge: true }
-            )
-              .then((response) => {
-                toastHandler(`Nifty short order updated`);
-              })
-              .catch((e) => {
-                toastHandler(`Nifty short error at firebase ${e}`);
-              });
-          });
-        });
-    }
     if (!niftyShortOrderId.callShort) {
       await axios
         .get(
@@ -592,7 +560,7 @@ function FutTrading() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "niftyFutShort"),
+              doc(db, "5minSupertrend", "niftyShort"),
               {
                 entryPrice: niftyFutLtp,
                 slPoints: slPoint,
@@ -621,21 +589,17 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutShort"), (doc) => {
-      if (doc?.data()?.putLong?.order_id || doc?.data()?.callShort?.order_id) {
+    const unsub = onSnapshot(doc(db, "5minSupertrend", "niftyShort"), (doc) => {
+      if (doc?.data()?.callShort?.order_id) {
         toastHandler(`Nifty Short order present`);
       }
       setNiftyShortOrderId(doc.data());
-      socket?.emit("niftyFutToken", [
-        doc?.data()?.putLong?.instrument_token,
-        doc?.data()?.callShort?.instrument_token,
-      ]);
+      socket?.emit("niftyFutToken", [doc?.data()?.callShort?.instrument_token]);
     });
   }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
-      niftyShortOrderId?.putLong?.instrument_token,
       niftyShortOrderId?.callShort?.instrument_token,
     ]);
   }, [niftyShortOrderId, refreshExistingOrder]);
@@ -643,26 +607,16 @@ function FutTrading() {
   const updateOrderBookNifty = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
       // console.log(response);
-      let callLongId = response?.data?.filter((order) => {
-        return (
-          order.order_id === niftyLongOrderId?.callLong?.order_id &&
-          order.status === "COMPLETE"
-        );
-      });
       let putShortId = response?.data?.filter((order) => {
         return (
           order.order_id === niftyLongOrderId?.putShort?.order_id &&
           order.status === "COMPLETE"
         );
       });
-      if (callLongId.length > 0 && putShortId.length > 0) {
+      if (putShortId.length > 0) {
         await setDoc(
-          doc(db, "futFiveMin", "niftyFutLong"),
+          doc(db, "5minSupertrend", "niftyLong"),
           {
-            callLong: {
-              order_id: niftyLongOrderId?.callLong?.order_id,
-              average_price: callLongId?.[0]?.average_price,
-            },
             putShort: {
               order_id: niftyLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
@@ -681,26 +635,16 @@ function FutTrading() {
 
     await axios.get(`/api/orderInfo`).then(async (response) => {
       // console.log(response);
-      let putLongId = response?.data?.filter((order) => {
-        return (
-          order.order_id === niftyShortOrderId?.putLong?.order_id &&
-          order.status === "COMPLETE"
-        );
-      });
       let callShortId = response?.data?.filter((order) => {
         return (
           order.order_id === niftyShortOrderId?.callShort?.order_id &&
           order.status === "COMPLETE"
         );
       });
-      if (putLongId.length > 0 && callShortId.length > 0) {
+      if (callShortId.length > 0) {
         await setDoc(
-          doc(db, "futFiveMin", "niftyFutShort"),
+          doc(db, "5minSupertrend", "niftyShort"),
           {
-            putLong: {
-              order_id: niftyShortOrderId?.putLong?.order_id,
-              average_price: putLongId?.[0]?.average_price,
-            },
             callShort: {
               order_id: niftyShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
@@ -719,24 +663,18 @@ function FutTrading() {
   };
 
   const niftySetSL = async (slPoints) => {
-    if (
-      niftyLongOrderId?.callLong?.trading_symbol &&
-      niftyLongOrderId?.putShort?.trading_symbol
-    ) {
+    if (niftyLongOrderId?.putShort?.trading_symbol) {
       await setDoc(
-        doc(db, "futFiveMin", "niftyFutLong"),
+        doc(db, "5minSupertrend", "niftyLong"),
         {
           slPoints: parseInt(slPoints),
         },
         { merge: true }
       );
       toastHandler(`Nifty Long SL points ${slPoints}`);
-    } else if (
-      niftyShortOrderId?.putLong?.trading_symbol &&
-      niftyShortOrderId?.callShort?.trading_symbol
-    ) {
+    } else if (niftyShortOrderId?.callShort?.trading_symbol) {
       await setDoc(
-        doc(db, "futFiveMin", "niftyFutShort"),
+        doc(db, "5minSupertrend", "niftyShort"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -749,24 +687,18 @@ function FutTrading() {
   };
 
   const niftySetTG = async (tgtPoints) => {
-    if (
-      niftyLongOrderId?.callLong?.trading_symbol &&
-      niftyLongOrderId?.putShort?.trading_symbol
-    ) {
+    if (niftyLongOrderId?.putShort?.trading_symbol) {
       await setDoc(
-        doc(db, "futFiveMin", "niftyFutLong"),
+        doc(db, "5minSupertrend", "niftyLong"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
         { merge: true }
       );
       toastHandler(`Nifty Long TGT points ${tgtPoints}`);
-    } else if (
-      niftyShortOrderId?.putLong?.trading_symbol &&
-      niftyShortOrderId?.callShort?.trading_symbol
-    ) {
+    } else if (niftyShortOrderId?.callShort?.trading_symbol) {
       await setDoc(
-        doc(db, "futFiveMin", "niftyFutShort"),
+        doc(db, "5minSupertrend", "niftyShort"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -779,23 +711,7 @@ function FutTrading() {
   };
 
   const niftyLongExit = async () => {
-    if (
-      niftyLongOrderId?.callLong?.trading_symbol &&
-      niftyLongOrderId?.putShort?.trading_symbol
-    ) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
-              callLong: deleteField(),
-            });
-          }
-        });
+    if (niftyLongOrderId?.putShort?.trading_symbol) {
       await axios
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
@@ -805,7 +721,7 @@ function FutTrading() {
         .then(async (response) => {
           if (response?.data?.order_id) {
             toastHandler(`Nifty long exit done`);
-            await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+            await updateDoc(doc(db, "5minSupertrend", "niftyLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -819,24 +735,7 @@ function FutTrading() {
   };
 
   const niftyShortExit = async () => {
-    if (
-      niftyShortOrderId?.putLong?.trading_symbol &&
-      niftyShortOrderId?.callShort?.trading_symbol
-    ) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          // console.log(response);
-          if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
-              putLong: deleteField(),
-            });
-          }
-        });
+    if (niftyShortOrderId?.callShort?.trading_symbol) {
       await axios
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
@@ -846,7 +745,7 @@ function FutTrading() {
         .then(async (response) => {
           if (response?.data?.order_id) {
             toastHandler(`Nifty short exit done`);
-            await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+            await updateDoc(doc(db, "5minSupertrend", "niftyShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -862,7 +761,6 @@ function FutTrading() {
   useEffect(() => {
     const niftyLongSLManager = async () => {
       if (
-        niftyLongOrderId?.callLong?.trading_symbol &&
         niftyLongOrderId?.putShort?.trading_symbol &&
         niftyLongOrderId?.slPoints &&
         niftyLongOrderId?.tgtPoints &&
@@ -872,11 +770,8 @@ function FutTrading() {
           niftyLongOrderId?.entryPrice - niftyLongOrderId?.slPoints;
         let tgt_level =
           niftyLongOrderId?.entryPrice + niftyLongOrderId?.tgtPoints;
-        let mtm =
-          niftyLongCallLtp -
-          niftyLongOrderId?.callLong?.average_price +
-          niftyLongOrderId?.putShort?.average_price -
-          niftyShortPutLtp;
+        let relativeSl = niftyLongOrderId?.putShort?.average_price * 0.4;
+        let mtm = niftyLongOrderId?.putShort?.average_price - niftyShortPutLtp;
         // console.log(mtm);
         // console.log(niftyLongCallLtp);
         // console.log(niftyShortPutLtp);
@@ -885,7 +780,11 @@ function FutTrading() {
           await niftyLongExit();
           toastHandler(`Nifty long TGT reached`);
         }
-        if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
+        if (
+          niftyFutLtp <= sl_level ||
+          mtm <= -niftyLongOrderId?.slPoints ||
+          mtm <= -relativeSl
+        ) {
           await niftyLongExit();
           toastHandler(`Nifty long SL reached`);
         }
@@ -897,7 +796,6 @@ function FutTrading() {
   useEffect(() => {
     const niftyShortSLManager = async () => {
       if (
-        niftyShortOrderId?.putLong?.trading_symbol &&
         niftyShortOrderId?.callShort?.trading_symbol &&
         niftyShortOrderId?.slPoints &&
         niftyShortOrderId?.tgtPoints &&
@@ -907,12 +805,9 @@ function FutTrading() {
           niftyShortOrderId?.entryPrice + niftyShortOrderId?.slPoints;
         let tgt_level =
           niftyShortOrderId?.entryPrice - niftyShortOrderId?.tgtPoints;
-
+        let relativeSl = niftyShortOrderId?.callShort?.average_price * 0.4;
         let mtm =
-          niftyLongPutLtp -
-          niftyShortOrderId?.putLong?.average_price +
-          niftyShortOrderId?.callShort?.average_price -
-          niftyShortCallLtp;
+          niftyShortOrderId?.callShort?.average_price - niftyShortCallLtp;
 
         // console.log(mtm);
         // console.log("SL", sl_level);
@@ -926,7 +821,11 @@ function FutTrading() {
           toastHandler(`Nifty short TGT reached`);
         }
 
-        if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
+        if (
+          niftyFutLtp >= sl_level ||
+          mtm <= -niftyShortOrderId?.slPoints ||
+          mtm <= -relativeSl
+        ) {
           await niftyShortExit();
           toastHandler(`Nifty short SL reached`);
         }
@@ -938,54 +837,6 @@ function FutTrading() {
   //BNF
 
   const bnfLong = async () => {
-    if (!bnfLongOrderId.callLong) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          let orderId = response?.data?.order_id;
-          if (orderId) {
-            toastHandler(`CE placed OID: ${orderId}`);
-          } else {
-            toastHandler(`CE error ${response.data}`);
-          }
-          await axios.get(`/api/orderInfo`).then(async (res) => {
-            // console.log(res);
-            let callLongId = res?.data?.filter((order) => {
-              return order.order_id === orderId && order.status === "COMPLETE";
-            });
-
-            let price;
-
-            if (callLongId?.[0]?.average_price) {
-              price = callLongId?.[0].average_price;
-            } else {
-              price = "";
-            }
-
-            await setDoc(
-              doc(db, "futFiveMin", "bnfFutLong"),
-              {
-                callLong: {
-                  order_id: orderId,
-                  average_price: price,
-                  instrument_token: parseInt(bnfLongCallBuy?.instrument_token),
-                  trading_symbol: bnfLongCallBuy.tradingsymbol,
-                },
-              },
-              { merge: true }
-            )
-              .then((response) => {
-                toastHandler(`Bank Nifty long order updated`);
-              })
-              .catch((e) => {
-                toastHandler(`Bank Nifty long error at firebase ${e}`);
-              });
-          });
-        });
-    }
     if (!bnfLongOrderId.putShort) {
       await axios
         .get(
@@ -1019,7 +870,7 @@ function FutTrading() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "bnfFutLong"),
+              doc(db, "5minSupertrend", "bnfLong"),
               {
                 entryPrice: bnfFutLtp,
                 slPoints: slPoint,
@@ -1030,7 +881,6 @@ function FutTrading() {
                   instrument_token: parseInt(bnfLongPutSell?.instrument_token),
                   trading_symbol: bnfLongPutSell.tradingsymbol,
                 },
-                entryLevel: deleteField(),
               },
               { merge: true }
             )
@@ -1046,75 +896,21 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "futFiveMin", "bnfFutLong"), (doc) => {
-      if (doc?.data()?.callLong?.order_id || doc?.data()?.putShort?.order_id) {
+    const unsub = onSnapshot(doc(db, "5minSupertrend", "bnfLong"), (doc) => {
+      if (doc?.data()?.putShort?.order_id) {
         toastHandler(`Bank Nifty Long order present`);
       }
       setBnfLongOrderId(doc.data());
 
-      socket?.emit("niftyFutToken", [
-        doc?.data()?.callLong?.instrument_token,
-        doc?.data()?.putShort?.instrument_token,
-      ]);
+      socket?.emit("niftyFutToken", [doc?.data()?.putShort?.instrument_token]);
     });
   }, [refreshExistingOrder]);
 
   useEffect(() => {
-    socket?.emit("niftyFutToken", [
-      bnfLongOrderId?.callLong?.instrument_token,
-      bnfLongOrderId?.putShort?.instrument_token,
-    ]);
+    socket?.emit("niftyFutToken", [bnfLongOrderId?.putShort?.instrument_token]);
   }, [bnfLongOrderId, refreshExistingOrder]);
 
   const bnfShort = async () => {
-    if (!bnfShortOrderId.putLong) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          let orderId = response.data.order_id;
-          if (orderId) {
-            toastHandler(`PE placed OID: ${orderId}`);
-          } else {
-            toastHandler(`PE error ${response.data}`);
-          }
-          await axios.get(`/api/orderInfo`).then(async (res) => {
-            let putLongId = res?.data?.filter((order) => {
-              return order.order_id === orderId && order.status === "COMPLETE";
-            });
-
-            let price;
-
-            if (putLongId?.[0]?.average_price) {
-              price = putLongId?.[0].average_price;
-            } else {
-              price = "";
-            }
-
-            await setDoc(
-              doc(db, "futFiveMin", "bnfFutShort"),
-              {
-                putLong: {
-                  order_id: orderId,
-                  average_price: price,
-                  instrument_token: parseInt(bnfShortPutBuy?.instrument_token),
-                  trading_symbol: bnfShortPutBuy?.tradingsymbol,
-                },
-              },
-              { merge: true }
-            )
-              .then((response) => {
-                toastHandler(`Bank Nifty short order updated`);
-              })
-              .catch((e) => {
-                toastHandler(`Bank Nifty short error at firebase ${e}`);
-              });
-          });
-        });
-    }
     if (!bnfShortOrderId.callShort) {
       await axios
         .get(
@@ -1147,7 +943,7 @@ function FutTrading() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "bnfFutShort"),
+              doc(db, "5minSupertrend", "bnfShort"),
               {
                 entryPrice: bnfFutLtp,
                 slPoints: slPoint,
@@ -1160,7 +956,6 @@ function FutTrading() {
                   ),
                   trading_symbol: bnfShortCallSell?.tradingsymbol,
                 },
-                entryLevel: deleteField(),
               },
               { merge: true }
             )
@@ -1176,21 +971,17 @@ function FutTrading() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "futFiveMin", "bnfFutShort"), (doc) => {
-      if (doc?.data()?.putLong?.order_id || doc?.data()?.callShort?.order_id) {
+    const unsub = onSnapshot(doc(db, "5minSupertrend", "bnfShort"), (doc) => {
+      if (doc?.data()?.callShort?.order_id) {
         toastHandler(`Bank Nifty Short order present`);
       }
       setBnfShortOrderId(doc.data());
-      socket?.emit("bnfFutToken", [
-        doc?.data()?.putLong?.instrument_token,
-        doc?.data()?.callShort?.instrument_token,
-      ]);
+      socket?.emit("bnfFutToken", [doc?.data()?.callShort?.instrument_token]);
     });
   }, [refreshExistingOrder]);
 
   useEffect(() => {
     socket?.emit("niftyFutToken", [
-      bnfShortOrderId?.putLong?.instrument_token,
       bnfShortOrderId?.callShort?.instrument_token,
     ]);
   }, [bnfShortOrderId, refreshExistingOrder]);
@@ -1198,12 +989,6 @@ function FutTrading() {
   const updateOrderBookBnf = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
       // console.log(response);
-      let callLongId = response?.data?.filter((order) => {
-        return (
-          order.order_id === bnfLongOrderId?.callLong?.order_id &&
-          order.status === "COMPLETE"
-        );
-      });
       let putShortId = response?.data?.filter((order) => {
         return (
           order.order_id === bnfLongOrderId?.putShort?.order_id &&
@@ -1211,14 +996,10 @@ function FutTrading() {
         );
       });
 
-      if (callLongId.length > 0 && putShortId.length > 0) {
+      if (putShortId.length > 0) {
         await setDoc(
-          doc(db, "futFiveMin", "bnfFutLong"),
+          doc(db, "5minSupertrend", "bnfLong"),
           {
-            callLong: {
-              order_id: bnfLongOrderId?.callLong?.order_id,
-              average_price: callLongId?.[0]?.average_price,
-            },
             putShort: {
               order_id: bnfLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
@@ -1237,26 +1018,16 @@ function FutTrading() {
 
     await axios.get(`/api/orderInfo`).then(async (response) => {
       // console.log(response);
-      let putLongId = response?.data?.filter((order) => {
-        return (
-          order.order_id === bnfShortOrderId?.putLong?.order_id &&
-          order.status === "COMPLETE"
-        );
-      });
       let callShortId = response?.data?.filter((order) => {
         return (
           order.order_id === bnfShortOrderId?.callShort?.order_id &&
           order.status === "COMPLETE"
         );
       });
-      if (putLongId.length > 0 && callShortId.length > 0) {
+      if (callShortId.length > 0) {
         await setDoc(
-          doc(db, "futFiveMin", "bnfFutShort"),
+          doc(db, "5minSupertrend", "bnfShort"),
           {
-            putLong: {
-              order_id: bnfShortOrderId?.putLong?.order_id,
-              average_price: putLongId?.[0]?.average_price,
-            },
             callShort: {
               order_id: bnfShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
@@ -1275,24 +1046,18 @@ function FutTrading() {
   };
 
   const bnfSetSL = async (slPoints) => {
-    if (
-      bnfLongOrderId?.callLong?.trading_symbol &&
-      bnfLongOrderId?.putShort?.trading_symbol
-    ) {
+    if (bnfLongOrderId?.putShort?.trading_symbol) {
       await setDoc(
-        doc(db, "futFiveMin", "bnfFutLong"),
+        doc(db, "5minSupertrend", "bnfLong"),
         {
           slPoints: parseInt(slPoints),
         },
         { merge: true }
       );
       toastHandler(`Bank Nifty Long SL points ${slPoints}`);
-    } else if (
-      bnfShortOrderId?.putLong?.trading_symbol &&
-      bnfShortOrderId?.callShort?.trading_symbol
-    ) {
+    } else if (bnfShortOrderId?.callShort?.trading_symbol) {
       await setDoc(
-        doc(db, "futFiveMin", "bnfFutShort"),
+        doc(db, "5minSupertrend", "bnfShort"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -1305,24 +1070,18 @@ function FutTrading() {
   };
 
   const bnfSetTG = async (tgtPoints) => {
-    if (
-      bnfLongOrderId?.callLong?.trading_symbol &&
-      bnfLongOrderId?.putShort?.trading_symbol
-    ) {
+    if (bnfLongOrderId?.putShort?.trading_symbol) {
       await setDoc(
-        doc(db, "futFiveMin", "bnfFutLong"),
+        doc(db, "5minSupertrend", "bnfLong"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
         { merge: true }
       );
       toastHandler(`Bank Nifty Long TGT points ${tgtPoints}`);
-    } else if (
-      bnfShortOrderId?.putLong?.trading_symbol &&
-      bnfShortOrderId?.callShort?.trading_symbol
-    ) {
+    } else if (bnfShortOrderId?.callShort?.trading_symbol) {
       await setDoc(
-        doc(db, "futFiveMin", "bnfFutShort"),
+        doc(db, "5minSupertrend", "bnfShort"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -1335,34 +1094,16 @@ function FutTrading() {
   };
 
   const bnfLongExit = async () => {
-    if (
-      bnfLongOrderId?.callLong?.trading_symbol &&
-      bnfLongOrderId?.putShort?.trading_symbol
-    ) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          // console.log(response);
-          if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
-              callLong: deleteField(),
-            });
-          }
-        });
+    if (bnfLongOrderId?.putShort?.trading_symbol) {
       await axios
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
             toastHandler(`Bank Nifty long exit done`);
-            await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+            await updateDoc(doc(db, "5minSupertrend", "bnfLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -1376,34 +1117,16 @@ function FutTrading() {
   };
 
   const bnfShortExit = async () => {
-    if (
-      bnfShortOrderId?.putLong?.trading_symbol &&
-      bnfShortOrderId?.callShort?.trading_symbol
-    ) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          // console.log(response);
-          if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
-              putLong: deleteField(),
-            });
-          }
-        });
+    if (bnfShortOrderId?.callShort?.trading_symbol) {
       await axios
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
             toastHandler(`Bank Nifty short exit done`);
-            await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+            await updateDoc(doc(db, "5minSupertrend", "bnfShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -1419,7 +1142,6 @@ function FutTrading() {
   useEffect(() => {
     const bnfLongSLManager = async () => {
       if (
-        bnfLongOrderId?.callLong?.trading_symbol &&
         bnfLongOrderId?.putShort?.trading_symbol &&
         bnfLongOrderId?.slPoints &&
         bnfLongOrderId?.tgtPoints &&
@@ -1427,18 +1149,19 @@ function FutTrading() {
       ) {
         let sl_level = bnfLongOrderId?.entryPrice - bnfLongOrderId?.slPoints;
         let tgt_level = bnfLongOrderId?.entryPrice + bnfLongOrderId?.tgtPoints;
-        let mtm =
-          bnfLongCallLtp -
-          bnfLongOrderId?.callLong?.average_price +
-          bnfLongOrderId?.putShort?.average_price -
-          bnfShortPutLtp;
+        let relativeSl = bnfLongOrderId?.average_price * 0.4;
+        let mtm = bnfLongOrderId?.putShort?.average_price - bnfShortPutLtp;
         // console.log(mtm);
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           await bnfLongExit();
           toastHandler(`Bank Nifty long TGT reached`);
         }
-        if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
+        if (
+          bnfFutLtp <= sl_level ||
+          mtm <= -bnfLongOrderId?.slPoints ||
+          mtm <= -relativeSl
+        ) {
           await bnfLongExit();
           toastHandler(`Bank Nifty long SL reached`);
         }
@@ -1450,7 +1173,6 @@ function FutTrading() {
   useEffect(() => {
     const bnfShortSLManager = async () => {
       if (
-        bnfShortOrderId?.putLong?.trading_symbol &&
         bnfShortOrderId?.callShort?.trading_symbol &&
         bnfShortOrderId?.slPoints &&
         bnfShortOrderId?.tgtPoints &&
@@ -1459,12 +1181,8 @@ function FutTrading() {
         let sl_level = bnfShortOrderId?.entryPrice + bnfShortOrderId?.slPoints;
         let tgt_level =
           bnfShortOrderId?.entryPrice - bnfShortOrderId?.tgtPoints;
-
-        let mtm =
-          bnfLongPutLtp -
-          bnfShortOrderId?.putLong?.average_price +
-          bnfShortOrderId?.callShort?.average_price -
-          bnfShortCallLtp;
+        let relativeSl = bnfShortOrderId?.average_price * 0.4;
+        let mtm = bnfShortOrderId?.callShort?.average_price - bnfShortCallLtp;
 
         // console.log("short", mtm);
 
@@ -1473,7 +1191,11 @@ function FutTrading() {
           toastHandler(`Bank Nifty short TGT reached`);
         }
 
-        if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
+        if (
+          bnfFutLtp >= sl_level ||
+          mtm <= -bnfShortOrderId?.slPoints ||
+          mtm <= -relativeSl
+        ) {
           await bnfShortExit();
           toastHandler(`Bank Nifty short SL reached`);
         }
@@ -1484,11 +1206,13 @@ function FutTrading() {
 
   const [nextCheck, setNextCheck] = useState(null);
   const [nextEntryCheck, setNextEntryCheck] = useState(null);
-
+  //   Monitoring Real time
+  //
+  //
+  //  Start
   useEffect(() => {
     const monitorNiftyShortTrailing = async () => {
       if (
-        niftyShortOrderId?.putLong?.trading_symbol &&
         niftyShortOrderId?.callShort?.trading_symbol &&
         niftyShortOrderId?.entryPrice &&
         nextCheck !== null
@@ -1496,7 +1220,8 @@ function FutTrading() {
         if (
           (niftyFutLtp > nifty10SMA &&
             niftyFutLtp >= niftyShortOrderId?.entryPrice) ||
-          niftyFutLtp > nifty20SMA
+          niftyFutLtp > nifty20SMA ||
+          niftyFutLtp > niftySuperTrend?.supertrend_value
         ) {
           await niftyShortExit();
           toastHandler(`Nifty short Trailing SL reached`);
@@ -1517,7 +1242,8 @@ function FutTrading() {
         if (
           (niftyFutLtp < nifty10SMA &&
             niftyFutLtp <= niftyLongOrderId?.entryPrice) ||
-          niftyFutLtp < nifty20SMA
+          niftyFutLtp < nifty20SMA ||
+          niftyFutLtp < niftySuperTrend?.supertrend_value
         ) {
           await niftyLongExit();
           toastHandler(`Nifty long Trailing SL reached`);
@@ -1538,7 +1264,8 @@ function FutTrading() {
       ) {
         if (
           (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
-          bnfFutLtp > bnf20SMA
+          bnfFutLtp > bnf20SMA ||
+          bnfFutLtp > bnfSuperTrend?.supertrend_value
         ) {
           bnfShortExit();
           toastHandler(`Bank Nifty short Trailing SL reached`);
@@ -1558,7 +1285,8 @@ function FutTrading() {
       ) {
         if (
           (bnfFutLtp < bnf10SMA && bnfFutLtp <= bnfLongOrderId?.entryPrice) ||
-          bnfFutLtp < bnf20SMA
+          bnfFutLtp < bnf20SMA ||
+          bnfFutLtp < bnfSuperTrend?.supertrend_value
         ) {
           await bnfLongExit();
           toastHandler(`Bank Nifty long Trailing SL reached`);
@@ -1577,247 +1305,53 @@ function FutTrading() {
     }
   }, [nextCheck]);
 
-  // Nifty levels set
-  const niftySetLongLevel = async (level) => {
-    if (
-      !niftyLongOrderId?.callLong?.trading_symbol &&
-      !niftyLongOrderId?.putShort?.trading_symbol
-    ) {
-      if (level === 0 || !level || level === null) {
-        await setDoc(
-          doc(db, "futFiveMin", "niftyFutLong"),
-          {
-            entryLevel: deleteField(),
-          },
-          { merge: true }
-        );
-        toastHandler(`Nifty Long Level ${level} deleted`);
-      } else {
-        await setDoc(
-          doc(db, "futFiveMin", "niftyFutLong"),
-          {
-            entryLevel: parseInt(level),
-          },
-          { merge: true }
-        );
-        toastHandler(`Nifty Long Level ${level} set`);
-      }
-    } else {
-      console.log("Trades already open");
-    }
-  };
-  const niftySetShortLevel = async (level) => {
-    if (
-      !niftyShortOrderId?.putLong?.trading_symbol &&
-      !niftyShortOrderId?.callShort?.trading_symbol
-    ) {
-      if (level === 0 || !level || level === null) {
-        await setDoc(
-          doc(db, "futFiveMin", "niftyFutShort"),
-          {
-            entryLevel: deleteField(),
-          },
-          { merge: true }
-        );
-        toastHandler(`Nifty Short Level ${level} deleted`);
-      } else {
-        await setDoc(
-          doc(db, "futFiveMin", "niftyFutShort"),
-          {
-            entryLevel: parseInt(level),
-          },
-          { merge: true }
-        );
-        toastHandler(`Nifty Short Level ${level} set`);
-      }
-    } else {
-      console.log("Trades already open");
-    }
-  };
-  const bnfSetLongLevel = async (level) => {
-    if (
-      !bnfLongOrderId?.callLong?.trading_symbol &&
-      !bnfLongOrderId?.putShort?.trading_symbol
-    ) {
-      if (level === 0 || !level || level === null) {
-        await setDoc(
-          doc(db, "futFiveMin", "bnfFutLong"),
-          {
-            entryLevel: deleteField(),
-          },
-          { merge: true }
-        );
-        toastHandler(`Bank Nifty Long Level ${level} deleted`);
-      } else {
-        await setDoc(
-          doc(db, "futFiveMin", "bnfFutLong"),
-          {
-            entryLevel: parseInt(level),
-          },
-          { merge: true }
-        );
-        toastHandler(`Bank Nifty Long Level ${level} set`);
-      }
-    } else {
-      console.log("Trades already open");
-    }
-  };
-  const bnfSetShortLevel = async (level) => {
-    if (
-      !bnfShortOrderId?.putLong?.trading_symbol &&
-      !bnfShortOrderId?.callShort?.trading_symbol
-    ) {
-      if (level === 0 || !level || level === null) {
-        await setDoc(
-          doc(db, "futFiveMin", "bnfFutShort"),
-          {
-            entryLevel: deleteField(),
-          },
-          { merge: true }
-        );
-        toastHandler(`Bank Nifty Short Level ${level} deleted`);
-      } else {
-        await setDoc(
-          doc(db, "futFiveMin", "bnfFutShort"),
-          {
-            entryLevel: parseInt(level),
-          },
-          { merge: true }
-        );
-        toastHandler(`Bank Nifty Short Level ${level} set`);
-      }
-    } else {
-      console.log("Trades already open");
-    }
-  };
-
   useEffect(() => {
     const checkNiftyLongEntry = async () => {
-      if (niftyLongOrderId?.entryLevel && nextEntryCheck !== null) {
-        let entry = niftyLongOrderId?.entryLevel;
-        let lastClose = niftyCandles?.[0]?.close;
-
-        if (
-          niftyFutLtp > entry &&
-          niftyFutLtp - lastClose <= 25 &&
-          niftyFutLtp > nifty20SMA
-        ) {
+      if (!niftyLongOrderId?.putShort && nextEntryCheck !== null) {
+        if (niftyFutLtp > niftySuperTrend?.supertrend_value) {
           await niftyLong();
           toastHandler(`Nifty Long Auto Entry`);
-        } else if (niftyFutLtp < nifty20SMA || niftyFutLtp - lastClose > 25) {
-          await setDoc(
-            doc(db, "futFiveMin", "niftyFutLong"),
-            {
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          );
-          toastHandler(
-            `Nifty Long Level ${niftyLongOrderId?.entryLevel} voided`
-          );
         } else {
-          toastHandler(
-            `Nifty Long Level ${niftyLongOrderId?.entryLevel} not met`
-          );
+          console.log("SuperTrend Long Entry not met");
         }
       } else {
-        console.log("Nifty Long No level set");
+        toastHandler("Supertrend Long still open");
       }
     };
     const checkNiftyShortEntry = async () => {
-      if (niftyShortOrderId?.entryLevel && nextEntryCheck !== null) {
-        let entry = niftyShortOrderId?.entryLevel;
-        let lastClose = niftyCandles?.[0]?.close;
-
-        if (
-          niftyFutLtp < entry &&
-          lastClose - niftyFutLtp <= 25 &&
-          niftyFutLtp < nifty20SMA
-        ) {
+      if (!niftyShortOrderId?.callShort && nextEntryCheck !== null) {
+        if (niftyFutLtp < niftySuperTrend?.supertrend_value) {
           await niftyShort();
           toastHandler(`Nifty Short Auto Entry`);
-        } else if (niftyFutLtp > nifty20SMA || lastClose - niftyFutLtp > 25) {
-          await setDoc(
-            doc(db, "futFiveMin", "niftyFutShort"),
-            {
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          );
-          toastHandler(
-            `Nifty Short Level ${niftyShortOrderId?.entryLevel} voided`
-          );
         } else {
-          toastHandler(
-            `Nifty Short Level ${niftyShortOrderId?.entryLevel} not met`
-          );
+          console.log("SuperTrend Short Entry not met");
         }
       } else {
-        console.log("Nifty Short No level set");
+        toastHandler("Supertrend Short still open");
       }
     };
     const checkBnfLongEntry = async () => {
-      if (bnfLongOrderId?.entryLevel && nextEntryCheck !== null) {
-        let entry = bnfLongOrderId?.entryLevel;
-        let lastClose = bnfCandles?.[0]?.close;
-
-        if (
-          bnfFutLtp > entry &&
-          bnfFutLtp - lastClose <= 85 &&
-          bnfFutLtp > bnf20SMA
-        ) {
+      if (!bnfLongOrderId?.putShort && nextEntryCheck !== null) {
+        if (bnfFutLtp > bnfSuperTrend?.supertrend_value) {
           await bnfLong();
           toastHandler(`Bank Nifty Long Auto Entry`);
-        } else if (bnfFutLtp < bnf20SMA || bnfFutLtp - lastClose > 85) {
-          await setDoc(
-            doc(db, "futFiveMin", "bnfFutLong"),
-            {
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          );
-          toastHandler(
-            `Bank Nifty Long Level ${bnfLongOrderId?.entryLevel} voided`
-          );
         } else {
-          toastHandler(
-            `Bank Nifty Long Level ${bnfLongOrderId?.entryLevel} not met`
-          );
+          console.log("Bank Nifty SuperTrend Long Entry not met");
         }
       } else {
-        console.log("Bank Nifty Long No level set");
+        toastHandler("Bank Nifty Supertrend Long still open");
       }
     };
     const checkBnfShortEntry = async () => {
-      if (bnfShortOrderId?.entryLevel && nextEntryCheck !== null) {
-        let entry = bnfShortOrderId?.entryLevel;
-        let lastClose = bnfCandles?.[0]?.close;
-
-        if (
-          bnfFutLtp < entry &&
-          lastClose - bnfFutLtp <= 85 &&
-          bnfFutLtp < bnf20SMA
-        ) {
+      if (!bnfShortOrderId?.callShort && nextEntryCheck !== null) {
+        if (bnfFutLtp < bnfSuperTrend?.supertrend_value) {
           await bnfShort();
           toastHandler(`Bank Nifty Short Auto Entry`);
-        } else if (bnfFutLtp > bnf20SMA || lastClose - bnfFutLtp > 85) {
-          await setDoc(
-            doc(db, "futFiveMin", "bnfFutShort"),
-            {
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          );
-          toastHandler(
-            `Bank Nifty Short Level ${bnfShortOrderId?.entryLevel} voided`
-          );
         } else {
-          toastHandler(
-            `Bank Nifty Short Level ${bnfShortOrderId?.entryLevel} not met`
-          );
+          console.log("Bank Nifty SuperTrend Short Entry not met");
         }
       } else {
-        console.log("Bank Nifty Short No level set");
+        toastHandler("Bank Nifty Supertrend Short still open");
       }
     };
     if (nextEntryCheck !== null) {
@@ -1837,7 +1371,6 @@ function FutTrading() {
 
   useEffect(() => {
     refreshOpenPos();
-    startStream();
   }, [isSuccess]);
 
   useEffect(() => {
@@ -1925,20 +1458,7 @@ function FutTrading() {
               Quantity: {niftyQty}
             </div>
           </div>
-          {isSuccess &&
-            niftyFutData?.instrument_token &&
-            bnfFutData?.instrument_token &&
-            niftySpotData?.instrument_token &&
-            bnfSpotData?.instrument_token && (
-              <div className="flex justify-end m-1">
-                <button
-                  className="btn btn-accent mr-4 text-black "
-                  onClick={startStream}
-                >
-                  Start Stream
-                </button>
-              </div>
-            )}
+
           {isSuccess &&
             niftyFutData?.instrument_token &&
             bnfFutData?.instrument_token &&
@@ -1967,8 +1487,8 @@ function FutTrading() {
         <div className="niftySection self-start">
           <div className="Strikes flex justify-between ">
             <div className="stats w-full shadow bg-neutral m-3">
-              <div className="stat ">
-                <div className="long text-xs text-slate-400">Long Strikes</div>
+              <div className="stat text-center">
+                <div className="long text-xs text-slate-400 ">Long Strikes</div>
                 <div className="stat-title">PE Sell</div>
                 <div className="font-bold text-xl">
                   {niftyLongPutSell?.strike}
@@ -1976,31 +1496,10 @@ function FutTrading() {
                 </div>
                 <div className="text-sm">LTP: {niftyShortPutLtp}</div>
               </div>
-
-              <div className="stat">
-                <div className="long text-xs text-slate-400">Long Strikes</div>
-
-                <div className="stat-title">CE Buy</div>
-                <div className="font-bold text-xl">
-                  {niftyLongCallBuy?.strike}
-                  {niftyLongCallBuy?.instrument_type}
-                </div>
-                <div className="text-sm">LTP: {niftyLongCallLtp}</div>
-              </div>
             </div>
 
             <div className="stats w-full shadow m-3 bg-neutral">
-              <div className="stat ">
-                <div className="long text-xs text-slate-400">Short Strikes</div>
-                <div className="stat-title">PE Buy</div>
-                <div className="font-bold text-xl">
-                  {niftyShortPutBuy?.strike}
-                  {niftyShortPutBuy?.instrument_type}
-                </div>
-                <div className="text-sm">LTP: {niftyLongPutLtp}</div>
-              </div>
-
-              <div className="stat">
+              <div className="stat text-center">
                 <div className="long text-xs text-slate-400">Short Strikes</div>
 
                 <div className="stat-title">CE Sell</div>
@@ -2027,55 +1526,22 @@ function FutTrading() {
             </div>
             <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
               <div className="stat overflow-hidden">
-                <div className="stat-title">10 SMA</div>
-                <div className="font-bold text-xl">{nifty10SMA}</div>
+                <div className="stat-title">Long ST</div>
+                <div className="font-bold text-xl">
+                  {niftySuperTrend?.direction === "long"
+                    ? niftySuperTrend?.supertrend_value
+                    : "None"}
+                </div>
               </div>
 
               <div className="stat overflow-hidden">
-                <div className="stat-title">20 SMA</div>
-                <div className="font-bold text-xl">{nifty20SMA}</div>
+                <div className="stat-title">Short ST</div>
+                <div className="font-bold text-xl">
+                  {niftySuperTrend?.direction === "short"
+                    ? niftySuperTrend?.supertrend_value
+                    : "None"}
+                </div>
               </div>
-            </div>
-          </div>
-
-          {/*  */}
-          {/* ENTRY LEVELS*/}
-          {/*  */}
-
-          <div className="setEntryLevels w-full flex justify-between p-3 pt-0">
-            <div className="setLong join">
-              <input
-                type="number"
-                id="niftyLongLevel"
-                className="input input-bordered join-item input-md w-32"
-              />
-              <button
-                className="btn btn-neutral join-item text-white"
-                onClick={() => {
-                  let longLevel =
-                    document.getElementById("niftyLongLevel").value;
-                  niftySetLongLevel(parseInt(longLevel));
-                }}
-              >
-                Nifty Long
-              </button>
-            </div>
-            <div className="setShort join">
-              <input
-                type="number"
-                id="niftyShortLevel"
-                className="input input-bordered join-item input-md w-32"
-              />
-              <button
-                className="btn btn-neutral join-item text-white "
-                onClick={() => {
-                  let shortLevel =
-                    document.getElementById("niftyShortLevel").value;
-                  niftySetShortLevel(parseInt(shortLevel));
-                }}
-              >
-                Nifty Short
-              </button>
             </div>
           </div>
 
@@ -2181,7 +1647,6 @@ function FutTrading() {
                 {/* Long POSITION */}
                 {/*  */}
                 {niftyLongOrderId?.entryPrice &&
-                  niftyLongOrderId?.callLong?.trading_symbol &&
                   niftyLongOrderId?.putShort?.trading_symbol && (
                     <div className="long flex flex-col items-center">
                       <div className="stats shadow mb-3 mt-3">
@@ -2198,21 +1663,7 @@ function FutTrading() {
                       </div>
                       <div className="stats shadow mb-3">
                         <div className="stat">
-                          <div className="stat-title">Buy Strike</div>
-                          <div className="font-bold text-xl">
-                            {niftyLongOrderId?.callLong?.trading_symbol}
-                          </div>
-                          <div className="stat-desc">
-                            PNL:
-                            {(
-                              (niftyLongCallLtp -
-                                niftyLongOrderId?.callLong?.average_price) *
-                              niftyQty
-                            ).toFixed(2)}
-                          </div>
-                        </div>
-                        <div className="stat">
-                          <div className="stat-title">Sell Strike</div>
+                          <div className="stat-title">Strike</div>
                           <div className="font-bold text-xl">
                             {niftyLongOrderId?.putShort?.trading_symbol}
                           </div>
@@ -2231,9 +1682,7 @@ function FutTrading() {
                           <div className="stat-title">Total</div>
                           <div className="font-bold text-xl">
                             {(
-                              (niftyLongCallLtp -
-                                niftyLongOrderId?.callLong?.average_price +
-                                niftyLongOrderId?.putShort?.average_price -
+                              (niftyLongOrderId?.putShort?.average_price -
                                 niftyShortPutLtp) *
                               niftyQty
                             ).toFixed(2)}
@@ -2246,7 +1695,6 @@ function FutTrading() {
                 {/* SHORT POSITION */}
                 {/*  */}
                 {niftyShortOrderId?.entryPrice &&
-                  niftyShortOrderId?.putLong?.trading_symbol &&
                   niftyShortOrderId?.callShort?.trading_symbol && (
                     <div className="short flex flex-col items-center">
                       <div className="stats shadow mb-3 mt-3">
@@ -2263,21 +1711,7 @@ function FutTrading() {
                       </div>
                       <div className="stats shadow mb-3">
                         <div className="stat">
-                          <div className="stat-title">Buy Strike</div>
-                          <div className="font-bold text-xl">
-                            {niftyShortOrderId?.putLong?.trading_symbol}
-                          </div>
-                          <div className="stat-desc">
-                            PNL:
-                            {(
-                              (niftyLongPutLtp -
-                                niftyShortOrderId?.putLong?.average_price) *
-                              niftyQty
-                            ).toFixed(2)}
-                          </div>
-                        </div>
-                        <div className="stat">
-                          <div className="stat-title">Sell Strike</div>
+                          <div className="stat-title">Strike</div>
                           <div className="font-bold text-xl">
                             {niftyShortOrderId?.callShort?.trading_symbol}
                           </div>
@@ -2296,9 +1730,7 @@ function FutTrading() {
                           <div className="stat-title">Total</div>
                           <div className="font-bold text-xl">
                             {(
-                              (niftyLongPutLtp -
-                                niftyShortOrderId?.putLong?.average_price +
-                                niftyShortOrderId?.callShort?.average_price -
+                              (niftyShortOrderId?.callShort?.average_price -
                                 niftyShortCallLtp) *
                               niftyQty
                             ).toFixed(2)}
@@ -2317,7 +1749,7 @@ function FutTrading() {
         <div className="bnfSection self-start">
           <div className="Strikes flex justify-between">
             <div className="stats w-full shadow bg-neutral m-3">
-              <div className="stat ">
+              <div className="stat text-center">
                 <div className="long text-xs text-slate-400">Long Strikes</div>
 
                 <div className="stat-title">PE Sell</div>
@@ -2327,31 +1759,9 @@ function FutTrading() {
                 </div>
                 <div className="text-sm">LTP: {bnfShortPutLtp}</div>
               </div>
-
-              <div className="stat">
-                <div className="long text-xs text-slate-400">Long Strikes</div>
-
-                <div className="stat-title">CE Buy</div>
-                <div className="font-bold text-xl">
-                  {bnfLongCallBuy?.strike}
-                  {bnfLongCallBuy?.instrument_type}
-                </div>
-                <div className="text-sm">LTP: {bnfLongCallLtp}</div>
-              </div>
             </div>
             <div className="stats w-full shadow m-3 bg-neutral">
-              <div className="stat ">
-                <div className="long text-xs text-slate-400">Short Strikes</div>
-
-                <div className="stat-title">PE Buy</div>
-                <div className="font-bold text-xl">
-                  {bnfShortPutBuy?.strike}
-                  {bnfShortPutBuy?.instrument_type}
-                </div>
-                <div className="text-sm">LTP: {bnfLongPutLtp}</div>
-              </div>
-
-              <div className="stat">
+              <div className="stat text-center">
                 <div className="long text-xs text-slate-400">Short Strikes</div>
 
                 <div className="stat-title">CE Sell</div>
@@ -2378,56 +1788,27 @@ function FutTrading() {
             </div>
             <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
               <div className="stat overflow-hidden">
-                <div className="stat-title">10 SMA</div>
-                <div className="font-bold text-xl">{bnf10SMA}</div>
+                <div className="stat-title">Long ST</div>
+                <div className="font-bold text-xl">
+                  {" "}
+                  {bnfSuperTrend?.direction === "long"
+                    ? bnfSuperTrend?.supertrend_value
+                    : "None"}
+                </div>
               </div>
 
               <div className="stat overflow-hidden">
-                <div className="stat-title">20 SMA</div>
-                <div className="font-bold text-xl">{bnf20SMA}</div>
+                <div className="stat-title">Short ST</div>
+                <div className="font-bold text-xl">
+                  {" "}
+                  {bnfSuperTrend?.direction === "short"
+                    ? bnfSuperTrend?.supertrend_value
+                    : "None"}
+                </div>
               </div>
             </div>
           </div>
 
-          {/*  */}
-          {/* ENTRY LEVELS*/}
-          {/*  */}
-
-          <div className="setEntryLevels w-full flex justify-between p-3 pt-0">
-            <div className="setLong join">
-              <input
-                type="number"
-                id="bnfLongLevel"
-                className="input input-bordered join-item input-md w-32"
-              />
-              <button
-                className="btn btn-neutral join-item text-white"
-                onClick={() => {
-                  let longLevel = document.getElementById("bnfLongLevel").value;
-                  bnfSetLongLevel(parseInt(longLevel));
-                }}
-              >
-                Bank Nifty Long
-              </button>
-            </div>
-            <div className="setShort join">
-              <input
-                type="number"
-                id="bnfShortLevel"
-                className="input input-bordered join-item input-md w-32"
-              />
-              <button
-                className="btn btn-neutral join-item text-white "
-                onClick={() => {
-                  let shortLevel =
-                    document.getElementById("bnfShortLevel").value;
-                  bnfSetShortLevel(parseInt(shortLevel));
-                }}
-              >
-                Bank Nifty Short
-              </button>
-            </div>
-          </div>
           {/*  */}
           {/* ENTRY BUTTONS */}
           {/*  */}
@@ -2527,7 +1908,6 @@ function FutTrading() {
                 {/* Long POSITION */}
                 {/*  */}
                 {bnfLongOrderId?.entryPrice &&
-                  bnfLongOrderId?.callLong?.trading_symbol &&
                   bnfLongOrderId?.putShort?.trading_symbol && (
                     <div className="long flex flex-col items-center">
                       <div className="stats shadow mb-3 mt-3">
@@ -2543,20 +1923,6 @@ function FutTrading() {
                         </div>
                       </div>
                       <div className="stats shadow mb-3">
-                        <div className="stat">
-                          <div className="stat-title">Buy Strike</div>
-                          <div className="font-bold text-xl">
-                            {bnfLongOrderId?.callLong?.trading_symbol}
-                          </div>
-                          <div className="stat-desc">
-                            PNL:
-                            {(
-                              (bnfLongCallLtp -
-                                bnfLongOrderId?.callLong?.average_price) *
-                              bnfQty
-                            ).toFixed(2)}
-                          </div>
-                        </div>
                         <div className="stat">
                           <div className="stat-title">Sell Strike</div>
                           <div className="font-bold text-xl">
@@ -2577,9 +1943,7 @@ function FutTrading() {
                           <div className="stat-title">Total</div>
                           <div className="font-bold text-xl">
                             {(
-                              (bnfLongCallLtp -
-                                bnfLongOrderId?.callLong?.average_price +
-                                bnfLongOrderId?.putShort?.average_price -
+                              (bnfLongOrderId?.putShort?.average_price -
                                 bnfShortPutLtp) *
                               bnfQty
                             ).toFixed(2)}
@@ -2609,20 +1973,6 @@ function FutTrading() {
                       </div>
                       <div className="stats shadow mb-3">
                         <div className="stat">
-                          <div className="stat-title">Buy Strike</div>
-                          <div className="font-bold text-xl">
-                            {bnfShortOrderId?.putLong?.trading_symbol}
-                          </div>
-                          <div className="stat-desc">
-                            PNL:
-                            {(
-                              (bnfLongPutLtp -
-                                bnfShortOrderId?.putLong?.average_price) *
-                              bnfQty
-                            ).toFixed(2)}
-                          </div>
-                        </div>
-                        <div className="stat">
                           <div className="stat-title">Sell Strike</div>
                           <div className="font-bold text-xl">
                             {bnfShortOrderId?.callShort?.trading_symbol}
@@ -2642,9 +1992,7 @@ function FutTrading() {
                           <div className="stat-title">Total</div>
                           <div className="font-bold text-xl">
                             {(
-                              (bnfLongPutLtp -
-                                bnfShortOrderId?.putLong?.average_price +
-                                bnfShortOrderId?.callShort?.average_price -
+                              (bnfShortOrderId?.callShort?.average_price -
                                 bnfShortCallLtp) *
                               bnfQty
                             ).toFixed(2)}
@@ -2662,4 +2010,4 @@ function FutTrading() {
   );
 }
 
-export default FutTrading;
+export default Supertrend;
