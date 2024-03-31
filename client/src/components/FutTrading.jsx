@@ -338,6 +338,7 @@ function FutTrading() {
       nifty10SMAval = parseFloat(
         ((sumOf9Candles + niftyFutLtp) / 10).toFixed(2)
       );
+
       setNifty10SMA(nifty10SMAval);
     };
     const nifty20SMA = () => {
@@ -1916,9 +1917,9 @@ function FutTrading() {
       {/* <h1>{JSON.stringify(expiries)}</h1> */}
       {/* {niftyRounded}:{bnfRounded} */}
 
-      <div className="w-full h-max p-2">
-        <div className="innerNav w-full h-full bg-neutral rounded-2xl shadow-lg flex justify-between">
-          <div className="nifty flex items-center">
+      <div className="w-full p-2 h-max">
+        <div className="flex justify-between w-full h-full shadow-lg innerNav bg-neutral rounded-2xl">
+          <div className="flex items-center nifty">
             <div className="m-3 ml-6">
               Nifty Expiry: {expiries?.niftyExpiryDates?.[0]?.slice(0, 10)} ||
               Strike Expiry: {niftyShortCallSell?.expiry.slice(0, 10)} ||
@@ -1932,7 +1933,7 @@ function FutTrading() {
             bnfSpotData?.instrument_token && (
               <div className="flex justify-end m-1">
                 <button
-                  className="btn btn-accent mr-4 text-black "
+                  className="mr-4 text-black btn btn-accent "
                   onClick={startStream}
                 >
                   Start Stream
@@ -1946,14 +1947,14 @@ function FutTrading() {
             bnfSpotData?.instrument_token && (
               <div className="flex justify-end m-1">
                 <button
-                  className="btn btn-accent mr-4 text-black "
+                  className="mr-4 text-black btn btn-accent "
                   onClick={refreshOpenPos}
                 >
                   Refresh Position
                 </button>
               </div>
             )}
-          <div className="bnf flex items-center">
+          <div className="flex items-center bnf">
             <div className="m-3 mr-6">
               BNF Expiry: {expiries?.bnfExpiryDates?.[0]?.slice(0, 10)} ||
               Strike Expiry: {bnfShortCallSell?.expiry.slice(0, 10)} ||
@@ -1963,14 +1964,14 @@ function FutTrading() {
         </div>
       </div>
 
-      <div className="strikes flex flex-row justify-evenly items-center w-full ">
-        <div className="niftySection self-start">
-          <div className="Strikes flex justify-between ">
-            <div className="stats w-full shadow bg-neutral m-3">
+      <div className="flex flex-row items-center w-full strikes justify-evenly ">
+        <div className="self-start niftySection">
+          <div className="flex justify-between Strikes ">
+            <div className="w-full m-3 shadow stats bg-neutral">
               <div className="stat ">
-                <div className="long text-xs text-slate-400">Long Strikes</div>
+                <div className="text-xs long text-slate-400">Long Strikes</div>
                 <div className="stat-title">PE Sell</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {niftyLongPutSell?.strike}
                   {niftyLongPutSell?.instrument_type}
                 </div>
@@ -1978,10 +1979,10 @@ function FutTrading() {
               </div>
 
               <div className="stat">
-                <div className="long text-xs text-slate-400">Long Strikes</div>
+                <div className="text-xs long text-slate-400">Long Strikes</div>
 
                 <div className="stat-title">CE Buy</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {niftyLongCallBuy?.strike}
                   {niftyLongCallBuy?.instrument_type}
                 </div>
@@ -1989,11 +1990,11 @@ function FutTrading() {
               </div>
             </div>
 
-            <div className="stats w-full shadow m-3 bg-neutral">
+            <div className="w-full m-3 shadow stats bg-neutral">
               <div className="stat ">
-                <div className="long text-xs text-slate-400">Short Strikes</div>
+                <div className="text-xs long text-slate-400">Short Strikes</div>
                 <div className="stat-title">PE Buy</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {niftyShortPutBuy?.strike}
                   {niftyShortPutBuy?.instrument_type}
                 </div>
@@ -2001,10 +2002,10 @@ function FutTrading() {
               </div>
 
               <div className="stat">
-                <div className="long text-xs text-slate-400">Short Strikes</div>
+                <div className="text-xs long text-slate-400">Short Strikes</div>
 
                 <div className="stat-title">CE Sell</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {niftyShortCallSell?.strike}
                   {niftyShortCallSell?.instrument_type}
                 </div>
@@ -2013,27 +2014,27 @@ function FutTrading() {
             </div>
           </div>
           {/* SPOT AND FUT */}
-          <div className="ltps flex justify-between ">
-            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
-              <div className="stat overflow-hidden">
+          <div className="flex justify-between ltps ">
+            <div className="w-full m-3 overflow-hidden shadow stats bg-neutral">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Spot</div>
-                <div className="font-bold text-xl">{niftyLtp}</div>
+                <div className="text-xl font-bold">{niftyLtp}</div>
               </div>
 
-              <div className="stat overflow-hidden">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Future</div>
-                <div className="font-bold text-xl">{niftyFutLtp}</div>
+                <div className="text-xl font-bold">{niftyFutLtp}</div>
               </div>
             </div>
-            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
-              <div className="stat overflow-hidden">
+            <div className="w-full m-3 overflow-hidden shadow stats bg-neutral">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">10 SMA</div>
-                <div className="font-bold text-xl">{nifty10SMA}</div>
+                <div className="text-xl font-bold">{nifty10SMA}</div>
               </div>
 
-              <div className="stat overflow-hidden">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">20 SMA</div>
-                <div className="font-bold text-xl">{nifty20SMA}</div>
+                <div className="text-xl font-bold">{nifty20SMA}</div>
               </div>
             </div>
           </div>
@@ -2042,15 +2043,15 @@ function FutTrading() {
           {/* ENTRY LEVELS*/}
           {/*  */}
 
-          <div className="setEntryLevels w-full flex justify-between p-3 pt-0">
+          <div className="flex justify-between w-full p-3 pt-0 setEntryLevels">
             <div className="setLong join">
               <input
                 type="number"
                 id="niftyLongLevel"
-                className="input input-bordered join-item input-md w-32"
+                className="w-32 input input-bordered join-item input-md"
               />
               <button
-                className="btn btn-neutral join-item text-white"
+                className="text-white btn btn-neutral join-item"
                 onClick={() => {
                   let longLevel =
                     document.getElementById("niftyLongLevel").value;
@@ -2064,10 +2065,10 @@ function FutTrading() {
               <input
                 type="number"
                 id="niftyShortLevel"
-                className="input input-bordered join-item input-md w-32"
+                className="w-32 input input-bordered join-item input-md"
               />
               <button
-                className="btn btn-neutral join-item text-white "
+                className="text-white btn btn-neutral join-item "
                 onClick={() => {
                   let shortLevel =
                     document.getElementById("niftyShortLevel").value;
@@ -2083,15 +2084,15 @@ function FutTrading() {
           {/* ENTRY BUTTONS */}
           {/*  */}
 
-          <div className="entryButtons flex w-full justify-between">
+          <div className="flex justify-between w-full entryButtons">
             <button
-              className="btn btn-secondary text-white w-48 m-3 "
+              className="w-48 m-3 text-white btn btn-secondary "
               onClick={niftyLong}
             >
               Long Nifty
             </button>
             <button
-              className="short btn btn-secondary text-white w-48 m-3"
+              className="w-48 m-3 text-white short btn btn-secondary"
               onClick={niftyShort}
             >
               Short Nifty
@@ -2102,15 +2103,12 @@ function FutTrading() {
           {/* EXIT BUTTONS */}
           {/*  */}
 
-          <div className="exitButtons flex w-full justify-between">
-            <button
-              className="btn  text-white w-48 m-3"
-              onClick={niftyLongExit}
-            >
+          <div className="flex justify-between w-full exitButtons">
+            <button className="w-48 m-3 text-white btn" onClick={niftyLongExit}>
               Exit Long Nifty
             </button>
             <button
-              className="short btn  text-white w-48 m-3"
+              className="w-48 m-3 text-white short btn"
               onClick={niftyShortExit}
             >
               Exit Short Nifty
@@ -2121,9 +2119,9 @@ function FutTrading() {
           {/* REFRESH ORDER */}
           {/*  */}
 
-          <div className="refreshOrder w-full p-3">
+          <div className="w-full p-3 refreshOrder">
             <button
-              className="btn btn-secondary w-full text-white"
+              className="w-full text-white btn btn-secondary"
               onClick={updateOrderBookNifty}
             >
               Refresh Order Book Nifty
@@ -2134,15 +2132,15 @@ function FutTrading() {
           {/* SL TGT SETTER */}
           {/*  */}
 
-          <div className="setSLTGT w-full flex justify-between p-3 pt-0">
+          <div className="flex justify-between w-full p-3 pt-0 setSLTGT">
             <div className="setSl join">
               <input
                 type="number"
                 id="niftySl"
-                className="input input-bordered input-md w-32 join-item"
+                className="w-32 input input-bordered input-md join-item"
               />
               <button
-                className="btn btn-secondary text-white join-item"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
                   let sl = document.getElementById("niftySl").value;
                   niftySetSL(sl);
@@ -2155,10 +2153,10 @@ function FutTrading() {
               <input
                 type="number"
                 id="niftyTgt"
-                className="input input-bordered input-md w-32 join-item"
+                className="w-32 input input-bordered input-md join-item"
               />
               <button
-                className="btn btn-secondary text-white join-item"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
                   let tgt = document.getElementById("niftyTgt").value;
                   niftySetTG(tgt);
@@ -2173,8 +2171,8 @@ function FutTrading() {
           {/* POSITION CARD*/}
           {/*  */}
 
-          <div className="openPosition p-2">
-            <div className="card w-full bg-base-200 shadow-xl">
+          <div className="p-2 openPosition">
+            <div className="w-full shadow-xl card bg-base-200">
               <div className="card-body">
                 <h2 className="card-title">Open Position</h2>
                 {/*  */}
@@ -2183,23 +2181,23 @@ function FutTrading() {
                 {niftyLongOrderId?.entryPrice &&
                   niftyLongOrderId?.callLong?.trading_symbol &&
                   niftyLongOrderId?.putShort?.trading_symbol && (
-                    <div className="long flex flex-col items-center">
-                      <div className="stats shadow mb-3 mt-3">
+                    <div className="flex flex-col items-center long">
+                      <div className="mt-3 mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Direction</div>
-                          <div className="font-bold text-xl">Long</div>
+                          <div className="text-xl font-bold">Long</div>
                         </div>
                         <div className="stat">
                           <div className="stat-title">Entry Price</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyLongOrderId?.entryPrice}
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow mb-3">
+                      <div className="mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Buy Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyLongOrderId?.callLong?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -2213,7 +2211,7 @@ function FutTrading() {
                         </div>
                         <div className="stat">
                           <div className="stat-title">Sell Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyLongOrderId?.putShort?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -2226,10 +2224,10 @@ function FutTrading() {
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow">
+                      <div className="shadow stats">
                         <div className="stat">
                           <div className="stat-title">Total</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {(
                               (niftyLongCallLtp -
                                 niftyLongOrderId?.callLong?.average_price +
@@ -2248,23 +2246,23 @@ function FutTrading() {
                 {niftyShortOrderId?.entryPrice &&
                   niftyShortOrderId?.putLong?.trading_symbol &&
                   niftyShortOrderId?.callShort?.trading_symbol && (
-                    <div className="short flex flex-col items-center">
-                      <div className="stats shadow mb-3 mt-3">
+                    <div className="flex flex-col items-center short">
+                      <div className="mt-3 mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Direction</div>
-                          <div className="font-bold text-xl">Short</div>
+                          <div className="text-xl font-bold">Short</div>
                         </div>
                         <div className="stat">
                           <div className="stat-title">Entry Price</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyShortOrderId?.entryPrice}
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow mb-3">
+                      <div className="mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Buy Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyShortOrderId?.putLong?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -2278,7 +2276,7 @@ function FutTrading() {
                         </div>
                         <div className="stat">
                           <div className="stat-title">Sell Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyShortOrderId?.callShort?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -2291,10 +2289,10 @@ function FutTrading() {
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow">
+                      <div className="shadow stats">
                         <div className="stat">
                           <div className="stat-title">Total</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {(
                               (niftyLongPutLtp -
                                 niftyShortOrderId?.putLong?.average_price +
@@ -2314,14 +2312,14 @@ function FutTrading() {
         {/*  */}
         {/* BNF  */}
         {/*  */}
-        <div className="bnfSection self-start">
-          <div className="Strikes flex justify-between">
-            <div className="stats w-full shadow bg-neutral m-3">
+        <div className="self-start bnfSection">
+          <div className="flex justify-between Strikes">
+            <div className="w-full m-3 shadow stats bg-neutral">
               <div className="stat ">
-                <div className="long text-xs text-slate-400">Long Strikes</div>
+                <div className="text-xs long text-slate-400">Long Strikes</div>
 
                 <div className="stat-title">PE Sell</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {bnfLongPutSell?.strike}
                   {bnfLongPutSell?.instrument_type}
                 </div>
@@ -2329,22 +2327,22 @@ function FutTrading() {
               </div>
 
               <div className="stat">
-                <div className="long text-xs text-slate-400">Long Strikes</div>
+                <div className="text-xs long text-slate-400">Long Strikes</div>
 
                 <div className="stat-title">CE Buy</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {bnfLongCallBuy?.strike}
                   {bnfLongCallBuy?.instrument_type}
                 </div>
                 <div className="text-sm">LTP: {bnfLongCallLtp}</div>
               </div>
             </div>
-            <div className="stats w-full shadow m-3 bg-neutral">
+            <div className="w-full m-3 shadow stats bg-neutral">
               <div className="stat ">
-                <div className="long text-xs text-slate-400">Short Strikes</div>
+                <div className="text-xs long text-slate-400">Short Strikes</div>
 
                 <div className="stat-title">PE Buy</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {bnfShortPutBuy?.strike}
                   {bnfShortPutBuy?.instrument_type}
                 </div>
@@ -2352,10 +2350,10 @@ function FutTrading() {
               </div>
 
               <div className="stat">
-                <div className="long text-xs text-slate-400">Short Strikes</div>
+                <div className="text-xs long text-slate-400">Short Strikes</div>
 
                 <div className="stat-title">CE Sell</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {bnfShortCallSell?.strike}
                   {bnfShortCallSell?.instrument_type}
                 </div>
@@ -2364,27 +2362,27 @@ function FutTrading() {
             </div>
           </div>
           {/* SPOT AND FUT */}
-          <div className="ltps flex justify-between ">
-            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
-              <div className="stat overflow-hidden">
+          <div className="flex justify-between ltps ">
+            <div className="w-full m-3 overflow-hidden shadow stats bg-neutral">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Spot</div>
-                <div className="font-bold text-xl">{bnfLtp}</div>
+                <div className="text-xl font-bold">{bnfLtp}</div>
               </div>
 
-              <div className="stat overflow-hidden">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Future</div>
-                <div className="font-bold text-xl">{bnfFutLtp}</div>
+                <div className="text-xl font-bold">{bnfFutLtp}</div>
               </div>
             </div>
-            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
-              <div className="stat overflow-hidden">
+            <div className="w-full m-3 overflow-hidden shadow stats bg-neutral">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">10 SMA</div>
-                <div className="font-bold text-xl">{bnf10SMA}</div>
+                <div className="text-xl font-bold">{bnf10SMA}</div>
               </div>
 
-              <div className="stat overflow-hidden">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">20 SMA</div>
-                <div className="font-bold text-xl">{bnf20SMA}</div>
+                <div className="text-xl font-bold">{bnf20SMA}</div>
               </div>
             </div>
           </div>
@@ -2393,15 +2391,15 @@ function FutTrading() {
           {/* ENTRY LEVELS*/}
           {/*  */}
 
-          <div className="setEntryLevels w-full flex justify-between p-3 pt-0">
+          <div className="flex justify-between w-full p-3 pt-0 setEntryLevels">
             <div className="setLong join">
               <input
                 type="number"
                 id="bnfLongLevel"
-                className="input input-bordered join-item input-md w-32"
+                className="w-32 input input-bordered join-item input-md"
               />
               <button
-                className="btn btn-neutral join-item text-white"
+                className="text-white btn btn-neutral join-item"
                 onClick={() => {
                   let longLevel = document.getElementById("bnfLongLevel").value;
                   bnfSetLongLevel(parseInt(longLevel));
@@ -2414,10 +2412,10 @@ function FutTrading() {
               <input
                 type="number"
                 id="bnfShortLevel"
-                className="input input-bordered join-item input-md w-32"
+                className="w-32 input input-bordered join-item input-md"
               />
               <button
-                className="btn btn-neutral join-item text-white "
+                className="text-white btn btn-neutral join-item "
                 onClick={() => {
                   let shortLevel =
                     document.getElementById("bnfShortLevel").value;
@@ -2432,15 +2430,15 @@ function FutTrading() {
           {/* ENTRY BUTTONS */}
           {/*  */}
 
-          <div className="entryButtons flex w-full justify-between">
+          <div className="flex justify-between w-full entryButtons">
             <button
-              className="btn btn-secondary text-white w-48 m-3"
+              className="w-48 m-3 text-white btn btn-secondary"
               onClick={bnfLong}
             >
               Long Bank Nifty
             </button>
             <button
-              className="short btn btn-secondary text-white w-48 m-3"
+              className="w-48 m-3 text-white short btn btn-secondary"
               onClick={bnfShort}
             >
               Short Bank Nifty
@@ -2451,12 +2449,12 @@ function FutTrading() {
           {/* EXIT BUTTONS */}
           {/*  */}
 
-          <div className="exitButtons flex w-full justify-between">
-            <button className="btn  text-white w-48 m-3" onClick={bnfLongExit}>
+          <div className="flex justify-between w-full exitButtons">
+            <button className="w-48 m-3 text-white btn" onClick={bnfLongExit}>
               Exit Long Bank Nifty
             </button>
             <button
-              className="short btn  text-white w-48 m-3"
+              className="w-48 m-3 text-white short btn"
               onClick={bnfShortExit}
             >
               Exit Short Bank Nifty
@@ -2467,9 +2465,9 @@ function FutTrading() {
           {/* REFRESH ORDER */}
           {/*  */}
 
-          <div className="refreshOrder w-full p-3">
+          <div className="w-full p-3 refreshOrder">
             <button
-              className="btn btn-secondary w-full text-white"
+              className="w-full text-white btn btn-secondary"
               onClick={updateOrderBookBnf}
             >
               Refresh Order Book Bank Nifty
@@ -2480,15 +2478,15 @@ function FutTrading() {
           {/* SL TGT SETTER */}
           {/*  */}
 
-          <div className="setSLTGT w-full flex justify-between p-3 pt-0 ">
+          <div className="flex justify-between w-full p-3 pt-0 setSLTGT ">
             <div className="setSl join">
               <input
                 type="number"
                 id="bnfSl"
-                className="input input-bordered input-md w-32 join-item"
+                className="w-32 input input-bordered input-md join-item"
               />
               <button
-                className="btn btn-secondary join-item text-white"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
                   let sl = document.getElementById("bnfSl").value;
                   bnfSetSL(sl);
@@ -2501,10 +2499,10 @@ function FutTrading() {
               <input
                 type="number"
                 id="bnfTgt"
-                className="input input-bordered input-md w-32 join-item"
+                className="w-32 input input-bordered input-md join-item"
               />
               <button
-                className="btn btn-secondary text-white join-item"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
                   let tgt = document.getElementById("bnfTgt").value;
                   bnfSetTG(tgt);
@@ -2519,8 +2517,8 @@ function FutTrading() {
           {/* POSITION CARD*/}
           {/*  */}
 
-          <div className="openPosition p-2">
-            <div className="card w-full bg-base-200 shadow-xl">
+          <div className="p-2 openPosition">
+            <div className="w-full shadow-xl card bg-base-200">
               <div className="card-body">
                 <h2 className="card-title">Open Position</h2>
                 {/*  */}
@@ -2529,23 +2527,23 @@ function FutTrading() {
                 {bnfLongOrderId?.entryPrice &&
                   bnfLongOrderId?.callLong?.trading_symbol &&
                   bnfLongOrderId?.putShort?.trading_symbol && (
-                    <div className="long flex flex-col items-center">
-                      <div className="stats shadow mb-3 mt-3">
+                    <div className="flex flex-col items-center long">
+                      <div className="mt-3 mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Direction</div>
-                          <div className="font-bold text-xl">Long</div>
+                          <div className="text-xl font-bold">Long</div>
                         </div>
                         <div className="stat">
                           <div className="stat-title">Entry Price</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfLongOrderId?.entryPrice}
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow mb-3">
+                      <div className="mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Buy Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfLongOrderId?.callLong?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -2559,7 +2557,7 @@ function FutTrading() {
                         </div>
                         <div className="stat">
                           <div className="stat-title">Sell Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfLongOrderId?.putShort?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -2572,10 +2570,10 @@ function FutTrading() {
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow">
+                      <div className="shadow stats">
                         <div className="stat">
                           <div className="stat-title">Total</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {(
                               (bnfLongCallLtp -
                                 bnfLongOrderId?.callLong?.average_price +
@@ -2594,23 +2592,23 @@ function FutTrading() {
                 {bnfShortOrderId?.entryPrice &&
                   bnfShortOrderId?.putLong?.trading_symbol &&
                   bnfShortOrderId?.callShort?.trading_symbol && (
-                    <div className="short flex flex-col items-center">
-                      <div className="stats shadow mb-3 mt-3">
+                    <div className="flex flex-col items-center short">
+                      <div className="mt-3 mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Direction</div>
-                          <div className="font-bold text-xl">Short</div>
+                          <div className="text-xl font-bold">Short</div>
                         </div>
                         <div className="stat">
                           <div className="stat-title">Entry Price</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfShortOrderId?.entryPrice}
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow mb-3">
+                      <div className="mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Buy Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfShortOrderId?.putLong?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -2624,7 +2622,7 @@ function FutTrading() {
                         </div>
                         <div className="stat">
                           <div className="stat-title">Sell Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfShortOrderId?.callShort?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -2637,10 +2635,10 @@ function FutTrading() {
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow">
+                      <div className="shadow stats">
                         <div className="stat">
                           <div className="stat-title">Total</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {(
                               (bnfLongPutLtp -
                                 bnfShortOrderId?.putLong?.average_price +

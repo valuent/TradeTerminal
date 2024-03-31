@@ -29,8 +29,8 @@ function Supertrend() {
   } = useContext(DataContext);
 
   // Cannot be dynamicall set
-  const [niftyQty, setNiftyQty] = useState(200);
-  const [bnfQty, setBnfQty] = useState(60);
+  const [niftyQty, setNiftyQty] = useState(100);
+  const [bnfQty, setBnfQty] = useState(30);
 
   // Saves LTP every second
   const [niftyLtp, setNiftyLtp] = useState();
@@ -43,16 +43,12 @@ function Supertrend() {
   const [bnfRounded, setBnfRounded] = useState();
 
   const [niftyShortCallSell, setNiftyShortCallSell] = useState();
-  const [niftyShortPutBuy, setNiftyShortPutBuy] = useState();
 
   const [niftyLongPutSell, setNiftyLongPutSell] = useState();
-  const [niftyLongCallBuy, setNiftyLongCallBuy] = useState();
 
   const [bnfShortCallSell, setBnfShortCallSell] = useState();
-  const [bnfShortPutBuy, setBnfShortPutBuy] = useState();
 
   const [bnfLongPutSell, setBnfLongPutSell] = useState();
-  const [bnfLongCallBuy, setBnfLongCallBuy] = useState();
 
   const [niftyCandles, setNiftyCandles] = useState();
   const [bnfCandles, setBnfCandles] = useState();
@@ -69,20 +65,12 @@ function Supertrend() {
   const [niftyLongOrderId, setNiftyLongOrderId] = useState();
   const [niftyShortOrderId, setNiftyShortOrderId] = useState();
 
-  // Holds Long position LTPS
-  const [niftyLongPutLtp, setNiftyLongPutLtp] = useState();
-  const [niftyLongCallLtp, setNiftyLongCallLtp] = useState();
-
   // Holds Short position LTPS
   const [niftyShortCallLtp, setNiftyShortCallLtp] = useState();
   const [niftyShortPutLtp, setNiftyShortPutLtp] = useState();
 
   const [bnfLongOrderId, setBnfLongOrderId] = useState();
   const [bnfShortOrderId, setBnfShortOrderId] = useState();
-
-  // Holds Long position LTPS
-  const [bnfLongPutLtp, setBnfLongPutLtp] = useState();
-  const [bnfLongCallLtp, setBnfLongCallLtp] = useState();
 
   // Holds Short position LTPS
   const [bnfShortCallLtp, setBnfShortCallLtp] = useState();
@@ -92,7 +80,6 @@ function Supertrend() {
 
   const refreshOpenPos = () => {
     setRefreshExistingOrder(Math.random()); //
-    // console.log(refreshExistingOrder);
   };
 
   const toastHandler = (message) => {
@@ -136,7 +123,7 @@ function Supertrend() {
     // BNF filter
     const bnfLong = tickerData?.filter((data) => {
       return (
-        data.instrument_token === bnfShortOrderId?.putShort?.instrument_token
+        data.instrument_token === bnfLongOrderId?.putShort?.instrument_token
       );
     });
     const bnfShort = tickerData?.filter((data) => {
@@ -162,7 +149,7 @@ function Supertrend() {
     }
 
     if (niftyLong.length > 0) {
-      setNiftyLongPutLtp(niftyLong?.[0]?.last_price);
+      setNiftyShortPutLtp(niftyLong?.[0]?.last_price);
     }
     if (niftyShort.length > 0) {
       setNiftyShortCallLtp(niftyShort?.[0]?.last_price);
@@ -171,7 +158,7 @@ function Supertrend() {
     // BNF LTP
 
     if (bnfLong.length > 0) {
-      setBnfLongPutLtp(bnfLong?.[0]?.last_price);
+      setBnfShortPutLtp(bnfLong?.[0]?.last_price);
     }
     if (bnfShort.length > 0) {
       setBnfShortCallLtp(bnfShort?.[0]?.last_price);
@@ -252,14 +239,12 @@ function Supertrend() {
       doc(db, "5minSupertrend", "niftySuperTrend"),
       (doc) => {
         setNiftySuperTrend(doc.data());
-        console.log(doc.data());
       }
     );
     const unsub2 = onSnapshot(
       doc(db, "5minSupertrend", "bnfSuperTrend"),
       (doc) => {
         setBnfSuperTrend(doc.data());
-        console.log(doc.data());
       }
     );
   }, []);
@@ -351,109 +336,138 @@ function Supertrend() {
       let lowerBand = (prevCandleHigh + prevCandleLow) / 2 - 3 * atr;
 
       if (
+        bnfSuperTrend?.direction == "short" &&
         upperBand < bnfSuperTrend?.supertrend_value &&
         prevCandleClose < bnfSuperTrend?.supertrend_value
       ) {
-        await setDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
-          direction: "short",
-          supertrend_value: upperBand,
-        });
-      } else {
-        console.log("noChange");
+        await setDoc(
+          doc(db, "5minSupertrend", "bnfSuperTrend"),
+          {
+            direction: "short",
+            supertrend_value: upperBand,
+          },
+          { merge: true }
+        );
       }
       if (
+        bnfSuperTrend?.direction == "long" &&
         lowerBand > bnfSuperTrend?.supertrend_value &&
         prevCandleClose > bnfSuperTrend?.supertrend_value
       ) {
-        await setDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
-          direction: "long",
-          supertrend_value: lowerBand,
-        });
-      } else {
-        console.log("noChange");
+        await setDoc(
+          doc(db, "5minSupertrend", "bnfSuperTrend"),
+          {
+            direction: "long",
+            supertrend_value: lowerBand,
+          },
+          { merge: true }
+        );
       }
-
       if (
         bnfSuperTrend?.direction == "short" &&
         prevCandleClose > bnfSuperTrend?.supertrend_value
       ) {
-        await setDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
-          direction: "long",
-          supertrend_value: lowerBand,
-        });
-      } else if (
+        await setDoc(
+          doc(db, "5minSupertrend", "bnfSuperTrend"),
+          {
+            direction: "long",
+            supertrend_value: lowerBand,
+          },
+          { merge: true }
+        );
+      }
+      if (
         bnfSuperTrend?.direction == "long" &&
         prevCandleClose < bnfSuperTrend?.supertrend_value
       ) {
-        await setDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
-          direction: "long",
-          supertrend_value: upperBand,
-        });
-      } else {
-        console.log("No direction change");
+        await setDoc(
+          doc(db, "5minSupertrend", "bnfSuperTrend"),
+          {
+            direction: "long",
+            supertrend_value: upperBand,
+          },
+          { merge: true }
+        );
       }
     };
     const calculateSupertrendNifty = async () => {
       let atr = await calculateATR(niftyCandles?.slice(0, 20).reverse(), 10);
       let prevCandleHigh = niftyCandles?.[0]?.high;
       let prevCandleLow = niftyCandles?.[0]?.low;
-      let prevCandleClose = niftyCandles?.[0]?.close;
 
+      let prevCandleClose = niftyCandles?.[0]?.close;
       let upperBand = (prevCandleHigh + prevCandleLow) / 2 + 3 * atr;
       let lowerBand = (prevCandleHigh + prevCandleLow) / 2 - 3 * atr;
 
       if (
+        niftySuperTrend?.direction == "short" &&
         upperBand < niftySuperTrend?.supertrend_value &&
         prevCandleClose < niftySuperTrend?.supertrend_value
       ) {
-        await setDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
-          direction: "short",
-          supertrend_value: upperBand,
-        });
-      } else {
-        console.log("noChange");
+        await setDoc(
+          doc(db, "5minSupertrend", "niftySuperTrend"),
+          {
+            direction: "short",
+            supertrend_value: upperBand,
+          },
+          { merge: true }
+        );
       }
       if (
+        niftySuperTrend?.direction == "long" &&
         lowerBand > niftySuperTrend?.supertrend_value &&
         prevCandleClose > niftySuperTrend?.supertrend_value
       ) {
-        await setDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
-          direction: "long",
-          supertrend_value: lowerBand,
-        });
-      } else {
-        console.log("noChange");
+        await setDoc(
+          doc(db, "5minSupertrend", "niftySuperTrend"),
+          {
+            direction: "long",
+            supertrend_value: lowerBand,
+          },
+          { merge: true }
+        );
       }
 
       if (
         niftySuperTrend?.direction == "short" &&
         prevCandleClose > niftySuperTrend?.supertrend_value
       ) {
-        await setDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
-          direction: "long",
-          supertrend_value: lowerBand,
-        });
-      } else if (
+        await setDoc(
+          doc(db, "5minSupertrend", "niftySuperTrend"),
+          {
+            direction: "long",
+            supertrend_value: lowerBand,
+          },
+          { merge: true }
+        );
+      }
+      if (
         niftySuperTrend?.direction == "long" &&
         prevCandleClose < niftySuperTrend?.supertrend_value
       ) {
-        await setDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
-          direction: "long",
-          supertrend_value: upperBand,
-        });
-      } else {
-        console.log("No direction change");
+        await setDoc(
+          doc(db, "5minSupertrend", "niftySuperTrend"),
+          {
+            direction: "short",
+            supertrend_value: upperBand,
+          },
+          { merge: true }
+        );
       }
     };
     calculateSupertrendBnf();
     calculateSupertrendNifty();
   }, [niftyCandles, bnfCandles]);
 
+  let endTime = new Date();
+  endTime.setHours(15, 0, 0);
   const niftyLong = async () => {
-    if (!niftyLongOrderId.putShort) {
+    let now = new Date();
+
+    if (!niftyLongOrderId.putShort && now < endTime) {
       await axios
         .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFnoBnf?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
           `/api/placeOrderFno?tradingsymbol=${niftyLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
@@ -500,10 +514,10 @@ function Supertrend() {
               { merge: true }
             )
               .then((response) => {
-                toastHandler(`Nifty long order updated`);
+                toastHandler(`Super Trend Nifty long order updated`);
               })
               .catch((e) => {
-                toastHandler(`Nifty long error at firebase ${e}`);
+                toastHandler(`Super Trend Nifty long error at firebase ${e}`);
               });
           });
         });
@@ -512,10 +526,8 @@ function Supertrend() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "5minSupertrend", "niftyLong"), (doc) => {
-      if (doc?.data()?.putShort?.order_id) {
-        toastHandler(`Nifty Long order present`);
-      }
       setNiftyLongOrderId(doc.data());
+      //   console.log(doc.data());
 
       socket?.emit("niftyFutToken", [doc?.data()?.putShort?.instrument_token]);
     });
@@ -528,18 +540,19 @@ function Supertrend() {
   }, [niftyLongOrderId, refreshExistingOrder]);
 
   const niftyShort = async () => {
-    if (!niftyShortOrderId.callShort) {
+    let now = new Date();
+    if (!niftyShortOrderId.callShort && now < endTime) {
       await axios
         .get(
           `/api/placeOrderFno?tradingsymbol=${niftyShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFnoBnf?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response?.data?.order_id;
           if (orderId) {
-            toastHandler(`CE placed OID: ${orderId}`);
+            toastHandler(`Super Trend CE placed OID: ${orderId}`);
           } else {
-            toastHandler(`CE error ${response.data}`);
+            toastHandler(`Super Trend CE error ${response.data}`);
           }
           await axios.get(`/api/orderInfo`).then(async (res) => {
             let callShortId = res?.data?.filter((order) => {
@@ -578,10 +591,10 @@ function Supertrend() {
               { merge: true }
             )
               .then((response) => {
-                toastHandler(`Nifty short order updated`);
+                toastHandler(`Super Trend Nifty short order updated`);
               })
               .catch((e) => {
-                toastHandler(`Nifty short error at firebase ${e}`);
+                toastHandler(`Super Trend Nifty short error at firebase ${e}`);
               });
           });
         });
@@ -590,9 +603,6 @@ function Supertrend() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "5minSupertrend", "niftyShort"), (doc) => {
-      if (doc?.data()?.callShort?.order_id) {
-        toastHandler(`Nifty Short order present`);
-      }
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [doc?.data()?.callShort?.instrument_token]);
     });
@@ -625,10 +635,10 @@ function Supertrend() {
           { merge: true }
         )
           .then(() => {
-            toastHandler(`Nifty long order book updated`);
+            toastHandler(`Super Trend Nifty long order book updated`);
           })
           .catch((e) => {
-            toastHandler(`Nifty long order Book Error: ${e}`);
+            toastHandler(`Super Trend Nifty long order Book Error: ${e}`);
           });
       }
     });
@@ -653,10 +663,10 @@ function Supertrend() {
           { merge: true }
         )
           .then(() => {
-            toastHandler(`Nifty short order book updated`);
+            toastHandler(`Super Trend Nifty short order book updated`);
           })
           .catch((e) => {
-            toastHandler(`Nifty short order Book Error: ${e}`);
+            toastHandler(`Super Trend Nifty short order Book Error: ${e}`);
           });
       }
     });
@@ -671,7 +681,7 @@ function Supertrend() {
         },
         { merge: true }
       );
-      toastHandler(`Nifty Long SL points ${slPoints}`);
+      toastHandler(`Super Trend Nifty Long SL points ${slPoints}`);
     } else if (niftyShortOrderId?.callShort?.trading_symbol) {
       await setDoc(
         doc(db, "5minSupertrend", "niftyShort"),
@@ -680,9 +690,9 @@ function Supertrend() {
         },
         { merge: true }
       );
-      toastHandler(`Nifty Short SL points ${slPoints}`);
+      toastHandler(`Super Trend Nifty Short SL points ${slPoints}`);
     } else {
-      toastHandler(`Nifty no trades found`);
+      toastHandler(`Super Trend Nifty no trades found`);
     }
   };
 
@@ -695,7 +705,7 @@ function Supertrend() {
         },
         { merge: true }
       );
-      toastHandler(`Nifty Long TGT points ${tgtPoints}`);
+      toastHandler(`Super Trend Nifty Long TGT points ${tgtPoints}`);
     } else if (niftyShortOrderId?.callShort?.trading_symbol) {
       await setDoc(
         doc(db, "5minSupertrend", "niftyShort"),
@@ -704,9 +714,9 @@ function Supertrend() {
         },
         { merge: true }
       );
-      toastHandler(`Nifty Short TGT points ${tgtPoints}`);
+      toastHandler(`Super Trend Nifty Short TGT points ${tgtPoints}`);
     } else {
-      toastHandler(`Nifty no trades found`);
+      toastHandler(`Super Trend Nifty no trades found`);
     }
   };
 
@@ -714,23 +724,25 @@ function Supertrend() {
     if (niftyLongOrderId?.putShort?.trading_symbol) {
       await axios
         .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFnoBnf?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
           `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            toastHandler(`Nifty long exit done`);
+            toastHandler(`Super Trend Nifty long exit done`);
             await updateDoc(doc(db, "5minSupertrend", "niftyLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
             });
+          } else {
+            toastHandler(response?.data);
           }
         });
     } else {
-      toastHandler(`Nifty long no positions Found`);
+      toastHandler(`Super Trend Nifty long no positions Found`);
     }
   };
 
@@ -738,13 +750,13 @@ function Supertrend() {
     if (niftyShortOrderId?.callShort?.trading_symbol) {
       await axios
         .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFnoBnf?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
           `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            toastHandler(`Nifty short exit done`);
+            toastHandler(`Super Trend Nifty short exit done`);
             await updateDoc(doc(db, "5minSupertrend", "niftyShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
@@ -754,7 +766,7 @@ function Supertrend() {
           }
         });
     } else {
-      toastHandler(`Nifty Short no positions Found`);
+      toastHandler(response?.data);
     }
   };
 
@@ -772,26 +784,31 @@ function Supertrend() {
           niftyLongOrderId?.entryPrice + niftyLongOrderId?.tgtPoints;
         let relativeSl = niftyLongOrderId?.putShort?.average_price * 0.4;
         let mtm = niftyLongOrderId?.putShort?.average_price - niftyShortPutLtp;
-        // console.log(mtm);
+
         // console.log(niftyLongCallLtp);
         // console.log(niftyShortPutLtp);
 
         if (niftyFutLtp >= tgt_level || mtm >= niftyLongOrderId?.tgtPoints) {
           await niftyLongExit();
-          toastHandler(`Nifty long TGT reached`);
+          toastHandler(`Super Trend Nifty long TGT reached`);
         }
         if (
           niftyFutLtp <= sl_level ||
           mtm <= -niftyLongOrderId?.slPoints ||
           mtm <= -relativeSl
         ) {
+          // let num = 1;
+          // for (let i = 0; i < 10000000000; i++) {
+          //   num = num + 1;
+          // }
+          // console.log(num);
           await niftyLongExit();
-          toastHandler(`Nifty long SL reached`);
+          toastHandler(`Super Trend Nifty long SL reached`);
         }
       }
     };
     niftyLongSLManager();
-  }, [tickerData, niftyLongOrderId]);
+  }, [tickerData, niftyLongOrderId, niftyShortPutLtp]);
 
   useEffect(() => {
     const niftyShortSLManager = async () => {
@@ -818,7 +835,7 @@ function Supertrend() {
 
         if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
           await niftyShortExit();
-          toastHandler(`Nifty short TGT reached`);
+          toastHandler(`Super Trend Nifty short TGT reached`);
         }
 
         if (
@@ -827,28 +844,30 @@ function Supertrend() {
           mtm <= -relativeSl
         ) {
           await niftyShortExit();
-          toastHandler(`Nifty short SL reached`);
+          toastHandler(`Super Trend Nifty short SL reached`);
         }
       }
     };
     niftyShortSLManager();
-  }, [tickerData, niftyShortOrderId]);
+  }, [tickerData, niftyShortOrderId, niftyShortCallLtp]);
 
   //BNF
 
   const bnfLong = async () => {
-    if (!bnfLongOrderId.putShort) {
+    let now = new Date();
+
+    if (!bnfLongOrderId.putShort && now < endTime) {
       await axios
         .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFnoBnf?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response.data.order_id;
           if (orderId) {
-            toastHandler(`PE placed OID: ${orderId}`);
+            toastHandler(`Super Trend PE placed OID: ${orderId}`);
           } else {
-            toastHandler(`PE error ${response.data}`);
+            toastHandler(`Super Trend PE error ${response.data}`);
           }
           await axios.get(`/api/orderInfo`).then(async (res) => {
             // console.log(res);
@@ -885,10 +904,12 @@ function Supertrend() {
               { merge: true }
             )
               .then((response) => {
-                toastHandler(`Bank Nifty long order updated`);
+                toastHandler(`Super Trend Bank Nifty long order updated`);
               })
               .catch((e) => {
-                toastHandler(`Bank Nifty long error at firebase ${e}`);
+                toastHandler(
+                  `Super Trend Bank Nifty long error at firebase ${e}`
+                );
               });
           });
         });
@@ -897,9 +918,6 @@ function Supertrend() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "5minSupertrend", "bnfLong"), (doc) => {
-      if (doc?.data()?.putShort?.order_id) {
-        toastHandler(`Bank Nifty Long order present`);
-      }
       setBnfLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [doc?.data()?.putShort?.instrument_token]);
@@ -911,18 +929,20 @@ function Supertrend() {
   }, [bnfLongOrderId, refreshExistingOrder]);
 
   const bnfShort = async () => {
-    if (!bnfShortOrderId.callShort) {
+    let now = new Date();
+
+    if (!bnfShortOrderId.callShort && now < endTime) {
       await axios
         .get(
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFnoBnf?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response.data.order_id;
           if (orderId) {
-            toastHandler(`CE placed OID: ${orderId}`);
+            toastHandler(`Super Trend CE placed OID: ${orderId}`);
           } else {
-            toastHandler(`CE error ${response.data}`);
+            toastHandler(`Super Trend CE error ${response.data}`);
           }
           await axios.get(`/api/orderInfo`).then(async (res) => {
             let callShortId = res?.data?.filter((order) => {
@@ -960,10 +980,12 @@ function Supertrend() {
               { merge: true }
             )
               .then((response) => {
-                toastHandler(`Bank Nifty short order updated`);
+                toastHandler(`Super Trend Bank Nifty short order updated`);
               })
               .catch((e) => {
-                toastHandler(`Bank Nifty short error at firebase ${e}`);
+                toastHandler(
+                  `Super Trend Bank Nifty short error at firebase ${e}`
+                );
               });
           });
         });
@@ -972,9 +994,6 @@ function Supertrend() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "5minSupertrend", "bnfShort"), (doc) => {
-      if (doc?.data()?.callShort?.order_id) {
-        toastHandler(`Bank Nifty Short order present`);
-      }
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [doc?.data()?.callShort?.instrument_token]);
     });
@@ -1008,10 +1027,10 @@ function Supertrend() {
           { merge: true }
         )
           .then(() => {
-            toastHandler(`Bank Nifty long order book updated`);
+            toastHandler(`Super Trend Bank Nifty long order book updated`);
           })
           .catch((e) => {
-            toastHandler(`Bank Nifty long order Book Error: ${e}`);
+            toastHandler(`Super Trend Bank Nifty long order Book Error: ${e}`);
           });
       }
     });
@@ -1036,10 +1055,10 @@ function Supertrend() {
           { merge: true }
         )
           .then(() => {
-            toastHandler(`Bank Nifty short order book updated`);
+            toastHandler(`Super Trend Bank Nifty short order book updated`);
           })
           .catch((e) => {
-            toastHandler(`Bank Nifty short order Book Error: ${e}`);
+            toastHandler(`Super Trend Bank Nifty short order Book Error: ${e}`);
           });
       }
     });
@@ -1054,7 +1073,7 @@ function Supertrend() {
         },
         { merge: true }
       );
-      toastHandler(`Bank Nifty Long SL points ${slPoints}`);
+      toastHandler(`Super Trend Bank Nifty Long SL points ${slPoints}`);
     } else if (bnfShortOrderId?.callShort?.trading_symbol) {
       await setDoc(
         doc(db, "5minSupertrend", "bnfShort"),
@@ -1063,9 +1082,9 @@ function Supertrend() {
         },
         { merge: true }
       );
-      toastHandler(`Bank Nifty Short SL points ${slPoints}`);
+      toastHandler(`Super Trend Bank Nifty Short SL points ${slPoints}`);
     } else {
-      toastHandler(`Bank Nifty no trades found`);
+      toastHandler(`Super Trend Bank Nifty no trades found`);
     }
   };
 
@@ -1078,7 +1097,7 @@ function Supertrend() {
         },
         { merge: true }
       );
-      toastHandler(`Bank Nifty Long TGT points ${tgtPoints}`);
+      toastHandler(`Super Trend Bank Nifty Long TGT points ${tgtPoints}`);
     } else if (bnfShortOrderId?.callShort?.trading_symbol) {
       await setDoc(
         doc(db, "5minSupertrend", "bnfShort"),
@@ -1087,9 +1106,9 @@ function Supertrend() {
         },
         { merge: true }
       );
-      toastHandler(`Bank Nifty Short TGT points ${tgtPoints}`);
+      toastHandler(`Super Trend Bank Nifty Short TGT points ${tgtPoints}`);
     } else {
-      toastHandler(`Bank Nifty no trades found`);
+      toastHandler(`Super Trend Bank Nifty no trades found`);
     }
   };
 
@@ -1097,12 +1116,12 @@ function Supertrend() {
     if (bnfLongOrderId?.putShort?.trading_symbol) {
       await axios
         .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFnoBnf?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            toastHandler(`Bank Nifty long exit done`);
+            toastHandler(`Super Trend Bank Nifty long exit done`);
             await updateDoc(doc(db, "5minSupertrend", "bnfLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
@@ -1112,7 +1131,7 @@ function Supertrend() {
           }
         });
     } else {
-      toastHandler(`Bank Nifty long no positions Found`);
+      toastHandler(`Super Trend Bank Nifty long no positions Found`);
     }
   };
 
@@ -1120,12 +1139,12 @@ function Supertrend() {
     if (bnfShortOrderId?.callShort?.trading_symbol) {
       await axios
         .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderFnoBnf?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
           `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            toastHandler(`Bank Nifty short exit done`);
+            toastHandler(`Super Trend Bank Nifty short exit done`);
             await updateDoc(doc(db, "5minSupertrend", "bnfShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
@@ -1135,7 +1154,7 @@ function Supertrend() {
           }
         });
     } else {
-      toastHandler(`Bank Nifty long no positions Found`);
+      toastHandler(`Super Trend Bank Nifty long no positions Found`);
     }
   };
 
@@ -1155,7 +1174,7 @@ function Supertrend() {
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           await bnfLongExit();
-          toastHandler(`Bank Nifty long TGT reached`);
+          toastHandler(`Super Trend Bank Nifty long TGT reached`);
         }
         if (
           bnfFutLtp <= sl_level ||
@@ -1163,7 +1182,7 @@ function Supertrend() {
           mtm <= -relativeSl
         ) {
           await bnfLongExit();
-          toastHandler(`Bank Nifty long SL reached`);
+          toastHandler(`Super Trend Bank Nifty long SL reached`);
         }
       }
     };
@@ -1188,7 +1207,7 @@ function Supertrend() {
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
           await bnfShortExit();
-          toastHandler(`Bank Nifty short TGT reached`);
+          toastHandler(`Super Trend Bank Nifty short TGT reached`);
         }
 
         if (
@@ -1197,7 +1216,7 @@ function Supertrend() {
           mtm <= -relativeSl
         ) {
           await bnfShortExit();
-          toastHandler(`Bank Nifty short SL reached`);
+          toastHandler(`Super Trend Bank Nifty short SL reached`);
         }
       }
     };
@@ -1224,17 +1243,16 @@ function Supertrend() {
           niftyFutLtp > niftySuperTrend?.supertrend_value
         ) {
           await niftyShortExit();
-          toastHandler(`Nifty short Trailing SL reached`);
+          toastHandler(`Super Trend Nifty short Trailing SL reached`);
         } else {
-          toastHandler(`Nifty short TSL No reached`);
+          toastHandler(`Super Trend Nifty short TSL No reached`);
         }
       } else {
-        console.log("NiftyShort No positions");
+        console.log("Super Trend Nifty Short No positions");
       }
     };
     const monitorNiftyLongTrailing = async () => {
       if (
-        niftyLongOrderId?.callLong?.trading_symbol &&
         niftyLongOrderId?.putShort?.trading_symbol &&
         niftyLongOrderId?.entryPrice &&
         nextCheck !== null
@@ -1246,18 +1264,17 @@ function Supertrend() {
           niftyFutLtp < niftySuperTrend?.supertrend_value
         ) {
           await niftyLongExit();
-          toastHandler(`Nifty long Trailing SL reached`);
+          toastHandler(`Super Trend Nifty long Trailing SL reached`);
         } else {
-          toastHandler(`Nifty long TSL No reached`);
+          toastHandler(`Super Trend Nifty long TSL No reached`);
         }
       } else {
-        console.log("NiftyLong No positions");
+        console.log("Super Trend Nifty Long No positions");
       }
     };
 
     const monitorBnfShortTrailing = async () => {
       if (
-        bnfShortOrderId?.putLong?.trading_symbol &&
         bnfShortOrderId?.callShort?.trading_symbol &&
         bnfShortOrderId?.entryPrice &&
         nextCheck !== null
@@ -1268,17 +1285,16 @@ function Supertrend() {
           bnfFutLtp > bnfSuperTrend?.supertrend_value
         ) {
           bnfShortExit();
-          toastHandler(`Bank Nifty short Trailing SL reached`);
+          toastHandler(`Super Trend Bank Nifty short Trailing SL reached`);
         } else {
-          toastHandler(`Bank Nifty short TSL No reached`);
+          toastHandler(`Super Trend Bank Nifty short TSL No reached`);
         }
       } else {
-        console.log("BnfShort No positions");
+        console.log("Super Trend BnfShort No positions");
       }
     };
     const monitorBnfLongTrailing = async () => {
       if (
-        bnfLongOrderId?.callLong?.trading_symbol &&
         bnfLongOrderId?.putShort?.trading_symbol &&
         bnfLongOrderId?.entryPrice &&
         nextCheck !== null
@@ -1289,12 +1305,12 @@ function Supertrend() {
           bnfFutLtp < bnfSuperTrend?.supertrend_value
         ) {
           await bnfLongExit();
-          toastHandler(`Bank Nifty long Trailing SL reached`);
+          toastHandler(`Super Trend Bank Nifty long Trailing SL reached`);
         } else {
-          toastHandler(`Bank Nifty long TSL No reached`);
+          toastHandler(`Super Trend Bank Nifty long TSL No reached`);
         }
       } else {
-        console.log("BnfLong No positions");
+        console.log("Super Trend BnfLong No positions");
       }
     };
     if (nextCheck !== null) {
@@ -1305,36 +1321,59 @@ function Supertrend() {
     }
   }, [nextCheck]);
 
+  const monitorSideChangeNifty = async (side) => {
+    await updateDoc(doc(db, "5minSupertrend", "niftySuperTrend"), {
+      monitorSide: side,
+    });
+  };
+  const monitorSideChangeBnf = async (side) => {
+    await updateDoc(doc(db, "5minSupertrend", "bnfSuperTrend"), {
+      monitorSide: side,
+    });
+  };
+
   useEffect(() => {
     const checkNiftyLongEntry = async () => {
       if (!niftyLongOrderId?.putShort && nextEntryCheck !== null) {
-        if (niftyFutLtp > niftySuperTrend?.supertrend_value) {
+        if (
+          niftyFutLtp > niftySuperTrend?.supertrend_value &&
+          niftySuperTrend?.monitorSide === "long"
+        ) {
           await niftyLong();
-          toastHandler(`Nifty Long Auto Entry`);
+          await monitorSideChangeNifty("short");
+          toastHandler(`Super Trend Nifty Monitor Only Short`);
         } else {
           console.log("SuperTrend Long Entry not met");
         }
       } else {
-        toastHandler("Supertrend Long still open");
+        toastHandler("NIFTY Supertrend Long still open");
       }
     };
     const checkNiftyShortEntry = async () => {
       if (!niftyShortOrderId?.callShort && nextEntryCheck !== null) {
-        if (niftyFutLtp < niftySuperTrend?.supertrend_value) {
+        if (
+          niftyFutLtp < niftySuperTrend?.supertrend_value &&
+          niftySuperTrend?.monitorSide === "short"
+        ) {
           await niftyShort();
-          toastHandler(`Nifty Short Auto Entry`);
+          await monitorSideChangeNifty("long");
+          toastHandler(`Super Trend Nifty Monitor Only Long`);
         } else {
           console.log("SuperTrend Short Entry not met");
         }
       } else {
-        toastHandler("Supertrend Short still open");
+        toastHandler("NIFTY Supertrend Short still open");
       }
     };
     const checkBnfLongEntry = async () => {
       if (!bnfLongOrderId?.putShort && nextEntryCheck !== null) {
-        if (bnfFutLtp > bnfSuperTrend?.supertrend_value) {
+        if (
+          bnfFutLtp > bnfSuperTrend?.supertrend_value &&
+          bnfSuperTrend?.monitorSide === "long"
+        ) {
           await bnfLong();
-          toastHandler(`Bank Nifty Long Auto Entry`);
+          await monitorSideChangeBnf("short");
+          toastHandler(`Super Trend Bank Nifty Monitor Only Short`);
         } else {
           console.log("Bank Nifty SuperTrend Long Entry not met");
         }
@@ -1344,9 +1383,13 @@ function Supertrend() {
     };
     const checkBnfShortEntry = async () => {
       if (!bnfShortOrderId?.callShort && nextEntryCheck !== null) {
-        if (bnfFutLtp < bnfSuperTrend?.supertrend_value) {
+        if (
+          bnfFutLtp < bnfSuperTrend?.supertrend_value &&
+          bnfSuperTrend?.monitorSide === "short"
+        ) {
           await bnfShort();
-          toastHandler(`Bank Nifty Short Auto Entry`);
+          await monitorSideChangeBnf("long");
+          toastHandler(`Super Trend Bank Nifty Montior Only Long`);
         } else {
           console.log("Bank Nifty SuperTrend Short Entry not met");
         }
@@ -1376,56 +1419,37 @@ function Supertrend() {
   useEffect(() => {
     const slTgtRefresh = () => {
       if (niftyLongOrderId?.slPoints || niftyLongOrderId?.tgtPoints) {
-        document.getElementById("niftySl").value = niftyLongOrderId?.slPoints;
-        document.getElementById("niftyTgt").value = niftyLongOrderId?.tgtPoints;
+        document.getElementById("supertrendniftySl").value =
+          niftyLongOrderId?.slPoints;
+        document.getElementById("supertrendniftyTgt").value =
+          niftyLongOrderId?.tgtPoints;
       } else if (niftyShortOrderId?.slPoints || niftyShortOrderId?.tgtPoints) {
-        document.getElementById("niftySl").value = niftyShortOrderId?.slPoints;
-        document.getElementById("niftyTgt").value =
+        document.getElementById("supertrendniftySl").value =
+          niftyShortOrderId?.slPoints;
+        document.getElementById("supertrendniftyTgt").value =
           niftyShortOrderId?.tgtPoints;
       } else {
-        document.getElementById("niftySl").value = "";
-        document.getElementById("niftyTgt").value = "";
+        document.getElementById("supertrendniftySl").value = "";
+        document.getElementById("supertrendniftyTgt").value = "";
       }
 
       if (bnfLongOrderId?.slPoints || bnfLongOrderId?.tgtPoints) {
-        document.getElementById("bnfSl").value = bnfLongOrderId?.slPoints;
-        document.getElementById("bnfTgt").value = bnfLongOrderId?.tgtPoints;
+        document.getElementById("supertrendbnfSl").value =
+          bnfLongOrderId?.slPoints;
+        document.getElementById("supertrendbnfTgt").value =
+          bnfLongOrderId?.tgtPoints;
       } else if (bnfShortOrderId?.slPoints || bnfShortOrderId?.tgtPoints) {
-        document.getElementById("bnfSl").value = bnfShortOrderId?.slPoints;
-        document.getElementById("bnfTgt").value = bnfShortOrderId?.tgtPoints;
+        document.getElementById("supertrendbnfSl").value =
+          bnfShortOrderId?.slPoints;
+        document.getElementById("supertrendbnfTgt").value =
+          bnfShortOrderId?.tgtPoints;
       } else {
-        document.getElementById("bnfSl").value = "";
-        document.getElementById("bnfTgt").value = "";
+        document.getElementById("supertrendbnfSl").value = "";
+        document.getElementById("supertrendbnfTgt").value = "";
       }
     };
-    const levelRefresh = () => {
-      if (niftyLongOrderId?.entryLevel) {
-        document.getElementById("niftyLongLevel").value =
-          niftyLongOrderId?.entryLevel;
-      } else {
-        document.getElementById("niftyLongLevel").value = "";
-      }
-      if (niftyShortOrderId?.entryLevel) {
-        document.getElementById("niftyShortLevel").value =
-          niftyShortOrderId?.entryLevel;
-      } else {
-        document.getElementById("niftyShortLevel").value = "";
-      }
-      if (bnfLongOrderId?.entryLevel) {
-        document.getElementById("bnfLongLevel").value =
-          bnfLongOrderId?.entryLevel;
-      } else {
-        document.getElementById("bnfLongLevel").value = "";
-      }
-      if (bnfShortOrderId?.entryLevel) {
-        document.getElementById("bnfShortLevel").value =
-          bnfShortOrderId?.entryLevel;
-      } else {
-        document.getElementById("bnfShortLevel").value = "";
-      }
-    };
+
     slTgtRefresh();
-    levelRefresh();
   }, [niftyLongOrderId, niftyShortOrderId, bnfLongOrderId, bnfShortOrderId]);
 
   useEffect(() => {
@@ -1449,9 +1473,9 @@ function Supertrend() {
       {/* <h1>{JSON.stringify(expiries)}</h1> */}
       {/* {niftyRounded}:{bnfRounded} */}
 
-      <div className="w-full h-max p-2">
-        <div className="innerNav w-full h-full bg-neutral rounded-2xl shadow-lg flex justify-between">
-          <div className="nifty flex items-center">
+      <div className="w-full p-2 h-max">
+        <div className="flex justify-between w-full h-full shadow-lg innerNav bg-neutral rounded-2xl">
+          <div className="flex items-center nifty">
             <div className="m-3 ml-6">
               Nifty Expiry: {expiries?.niftyExpiryDates?.[0]?.slice(0, 10)} ||
               Strike Expiry: {niftyShortCallSell?.expiry.slice(0, 10)} ||
@@ -1466,14 +1490,14 @@ function Supertrend() {
             bnfSpotData?.instrument_token && (
               <div className="flex justify-end m-1">
                 <button
-                  className="btn btn-accent mr-4 text-black "
+                  className="mr-4 text-black btn btn-accent "
                   onClick={refreshOpenPos}
                 >
                   Refresh Position
                 </button>
               </div>
             )}
-          <div className="bnf flex items-center">
+          <div className="flex items-center bnf">
             <div className="m-3 mr-6">
               BNF Expiry: {expiries?.bnfExpiryDates?.[0]?.slice(0, 10)} ||
               Strike Expiry: {bnfShortCallSell?.expiry.slice(0, 10)} ||
@@ -1483,14 +1507,14 @@ function Supertrend() {
         </div>
       </div>
 
-      <div className="strikes flex flex-row justify-evenly items-center w-full ">
-        <div className="niftySection self-start">
-          <div className="Strikes flex justify-between ">
-            <div className="stats w-full shadow bg-neutral m-3">
-              <div className="stat text-center">
-                <div className="long text-xs text-slate-400 ">Long Strikes</div>
+      <div className="flex flex-row items-center w-full strikes justify-evenly ">
+        <div className="self-start niftySection">
+          <div className="flex justify-between Strikes ">
+            <div className="w-full m-3 shadow stats bg-neutral">
+              <div className="text-center stat">
+                <div className="text-xs long text-slate-400 ">Long Strikes</div>
                 <div className="stat-title">PE Sell</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {niftyLongPutSell?.strike}
                   {niftyLongPutSell?.instrument_type}
                 </div>
@@ -1498,12 +1522,12 @@ function Supertrend() {
               </div>
             </div>
 
-            <div className="stats w-full shadow m-3 bg-neutral">
-              <div className="stat text-center">
-                <div className="long text-xs text-slate-400">Short Strikes</div>
+            <div className="w-full m-3 shadow stats bg-neutral">
+              <div className="text-center stat">
+                <div className="text-xs long text-slate-400">Short Strikes</div>
 
                 <div className="stat-title">CE Sell</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {niftyShortCallSell?.strike}
                   {niftyShortCallSell?.instrument_type}
                 </div>
@@ -1512,52 +1536,73 @@ function Supertrend() {
             </div>
           </div>
           {/* SPOT AND FUT */}
-          <div className="ltps flex justify-between ">
-            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
-              <div className="stat overflow-hidden">
+          <div className="flex justify-between ltps ">
+            <div className="w-full m-3 overflow-hidden shadow stats bg-neutral">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Spot</div>
-                <div className="font-bold text-xl">{niftyLtp}</div>
+                <div className="text-xl font-bold">{niftyLtp}</div>
               </div>
 
-              <div className="stat overflow-hidden">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Future</div>
-                <div className="font-bold text-xl">{niftyFutLtp}</div>
+                <div className="text-xl font-bold">{niftyFutLtp}</div>
               </div>
             </div>
-            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
-              <div className="stat overflow-hidden">
+            <div className="w-full m-3 overflow-hidden shadow stats bg-neutral">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Long ST</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {niftySuperTrend?.direction === "long"
-                    ? niftySuperTrend?.supertrend_value
+                    ? niftySuperTrend?.supertrend_value.toFixed(2)
                     : "None"}
                 </div>
               </div>
 
-              <div className="stat overflow-hidden">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Short ST</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {niftySuperTrend?.direction === "short"
-                    ? niftySuperTrend?.supertrend_value
+                    ? niftySuperTrend?.supertrend_value.toFixed(2)
                     : "None"}
                 </div>
               </div>
             </div>
+          </div>
+          {/*  */}
+          {/* TOGGLE MONITOR SIDE*/}
+          {/*  */}
+
+          <div className="flex items-center justify-between mx-3 toggleMonitor">
+            <button
+              className="text-white bg-opacity-100 bg-neutral btn monitorSide"
+              onClick={() => {
+                if (niftySuperTrend?.monitorSide === "long") {
+                  monitorSideChangeNifty("short");
+                } else if (niftySuperTrend?.monitorSide === "short") {
+                  monitorSideChangeNifty("long");
+                }
+              }}
+            >
+              Monitoring: {niftySuperTrend?.monitorSide}
+            </button>
+            <button className="text-white bg-opacity-100 btn-disabled bg-neutral btn monitorSide">
+              Current Side: {niftySuperTrend?.direction}
+            </button>
           </div>
 
           {/*  */}
           {/* ENTRY BUTTONS */}
           {/*  */}
 
-          <div className="entryButtons flex w-full justify-between">
+          <div className="flex justify-between w-full entryButtons">
             <button
-              className="btn btn-secondary text-white w-48 m-3 "
+              className="w-48 m-3 text-white btn btn-secondary "
               onClick={niftyLong}
             >
               Long Nifty
             </button>
             <button
-              className="short btn btn-secondary text-white w-48 m-3"
+              className="w-48 m-3 text-white short btn btn-secondary"
               onClick={niftyShort}
             >
               Short Nifty
@@ -1568,15 +1613,12 @@ function Supertrend() {
           {/* EXIT BUTTONS */}
           {/*  */}
 
-          <div className="exitButtons flex w-full justify-between">
-            <button
-              className="btn  text-white w-48 m-3"
-              onClick={niftyLongExit}
-            >
+          <div className="flex justify-between w-full exitButtons">
+            <button className="w-48 m-3 text-white btn" onClick={niftyLongExit}>
               Exit Long Nifty
             </button>
             <button
-              className="short btn  text-white w-48 m-3"
+              className="w-48 m-3 text-white short btn"
               onClick={niftyShortExit}
             >
               Exit Short Nifty
@@ -1587,9 +1629,9 @@ function Supertrend() {
           {/* REFRESH ORDER */}
           {/*  */}
 
-          <div className="refreshOrder w-full p-3">
+          <div className="w-full p-3 refreshOrder">
             <button
-              className="btn btn-secondary w-full text-white"
+              className="w-full text-white btn btn-secondary"
               onClick={updateOrderBookNifty}
             >
               Refresh Order Book Nifty
@@ -1600,17 +1642,17 @@ function Supertrend() {
           {/* SL TGT SETTER */}
           {/*  */}
 
-          <div className="setSLTGT w-full flex justify-between p-3 pt-0">
+          <div className="flex justify-between w-full p-3 pt-0 setSLTGT">
             <div className="setSl join">
               <input
                 type="number"
-                id="niftySl"
-                className="input input-bordered input-md w-32 join-item"
+                id="supertrendniftySl"
+                className="w-32 input input-bordered input-md join-item"
               />
               <button
-                className="btn btn-secondary text-white join-item"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
-                  let sl = document.getElementById("niftySl").value;
+                  let sl = document.getElementById("supertrendniftySl").value;
                   niftySetSL(sl);
                 }}
               >
@@ -1620,13 +1662,13 @@ function Supertrend() {
             <div className="setTgt join ">
               <input
                 type="number"
-                id="niftyTgt"
-                className="input input-bordered input-md w-32 join-item"
+                id="supertrendniftyTgt"
+                className="w-32 input input-bordered input-md join-item"
               />
               <button
-                className="btn btn-secondary text-white join-item"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
-                  let tgt = document.getElementById("niftyTgt").value;
+                  let tgt = document.getElementById("supertrendniftyTgt").value;
                   niftySetTG(tgt);
                 }}
               >
@@ -1639,8 +1681,8 @@ function Supertrend() {
           {/* POSITION CARD*/}
           {/*  */}
 
-          <div className="openPosition p-2">
-            <div className="card w-full bg-base-200 shadow-xl">
+          <div className="p-2 openPosition">
+            <div className="w-full shadow-xl card bg-base-200">
               <div className="card-body">
                 <h2 className="card-title">Open Position</h2>
                 {/*  */}
@@ -1648,23 +1690,23 @@ function Supertrend() {
                 {/*  */}
                 {niftyLongOrderId?.entryPrice &&
                   niftyLongOrderId?.putShort?.trading_symbol && (
-                    <div className="long flex flex-col items-center">
-                      <div className="stats shadow mb-3 mt-3">
+                    <div className="flex flex-col items-center long">
+                      <div className="mt-3 mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Direction</div>
-                          <div className="font-bold text-xl">Long</div>
+                          <div className="text-xl font-bold">Long</div>
                         </div>
                         <div className="stat">
                           <div className="stat-title">Entry Price</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyLongOrderId?.entryPrice}
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow mb-3">
+                      <div className="mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyLongOrderId?.putShort?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -1677,10 +1719,10 @@ function Supertrend() {
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow">
+                      <div className="shadow stats">
                         <div className="stat">
                           <div className="stat-title">Total</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {(
                               (niftyLongOrderId?.putShort?.average_price -
                                 niftyShortPutLtp) *
@@ -1696,23 +1738,23 @@ function Supertrend() {
                 {/*  */}
                 {niftyShortOrderId?.entryPrice &&
                   niftyShortOrderId?.callShort?.trading_symbol && (
-                    <div className="short flex flex-col items-center">
-                      <div className="stats shadow mb-3 mt-3">
+                    <div className="flex flex-col items-center short">
+                      <div className="mt-3 mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Direction</div>
-                          <div className="font-bold text-xl">Short</div>
+                          <div className="text-xl font-bold">Short</div>
                         </div>
                         <div className="stat">
                           <div className="stat-title">Entry Price</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyShortOrderId?.entryPrice}
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow mb-3">
+                      <div className="mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {niftyShortOrderId?.callShort?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -1725,10 +1767,10 @@ function Supertrend() {
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow">
+                      <div className="shadow stats">
                         <div className="stat">
                           <div className="stat-title">Total</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {(
                               (niftyShortOrderId?.callShort?.average_price -
                                 niftyShortCallLtp) *
@@ -1746,26 +1788,26 @@ function Supertrend() {
         {/*  */}
         {/* BNF  */}
         {/*  */}
-        <div className="bnfSection self-start">
-          <div className="Strikes flex justify-between">
-            <div className="stats w-full shadow bg-neutral m-3">
-              <div className="stat text-center">
-                <div className="long text-xs text-slate-400">Long Strikes</div>
+        <div className="self-start bnfSection">
+          <div className="flex justify-between Strikes">
+            <div className="w-full m-3 shadow stats bg-neutral">
+              <div className="text-center stat">
+                <div className="text-xs long text-slate-400">Long Strikes</div>
 
                 <div className="stat-title">PE Sell</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {bnfLongPutSell?.strike}
                   {bnfLongPutSell?.instrument_type}
                 </div>
                 <div className="text-sm">LTP: {bnfShortPutLtp}</div>
               </div>
             </div>
-            <div className="stats w-full shadow m-3 bg-neutral">
-              <div className="stat text-center">
-                <div className="long text-xs text-slate-400">Short Strikes</div>
+            <div className="w-full m-3 shadow stats bg-neutral">
+              <div className="text-center stat">
+                <div className="text-xs long text-slate-400">Short Strikes</div>
 
                 <div className="stat-title">CE Sell</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {bnfShortCallSell?.strike}
                   {bnfShortCallSell?.instrument_type}
                 </div>
@@ -1774,54 +1816,75 @@ function Supertrend() {
             </div>
           </div>
           {/* SPOT AND FUT */}
-          <div className="ltps flex justify-between ">
-            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
-              <div className="stat overflow-hidden">
+          <div className="flex justify-between ltps ">
+            <div className="w-full m-3 overflow-hidden shadow stats bg-neutral">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Spot</div>
-                <div className="font-bold text-xl">{bnfLtp}</div>
+                <div className="text-xl font-bold">{bnfLtp}</div>
               </div>
 
-              <div className="stat overflow-hidden">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Future</div>
-                <div className="font-bold text-xl">{bnfFutLtp}</div>
+                <div className="text-xl font-bold">{bnfFutLtp}</div>
               </div>
             </div>
-            <div className="stats shadow m-3 bg-neutral w-full overflow-hidden">
-              <div className="stat overflow-hidden">
+            <div className="w-full m-3 overflow-hidden shadow stats bg-neutral">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Long ST</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {" "}
                   {bnfSuperTrend?.direction === "long"
-                    ? bnfSuperTrend?.supertrend_value
+                    ? bnfSuperTrend?.supertrend_value.toFixed(2)
                     : "None"}
                 </div>
               </div>
 
-              <div className="stat overflow-hidden">
+              <div className="overflow-hidden stat">
                 <div className="stat-title">Short ST</div>
-                <div className="font-bold text-xl">
+                <div className="text-xl font-bold">
                   {" "}
                   {bnfSuperTrend?.direction === "short"
-                    ? bnfSuperTrend?.supertrend_value
+                    ? bnfSuperTrend?.supertrend_value.toFixed(2)
                     : "None"}
                 </div>
               </div>
             </div>
+          </div>
+          {/*  */}
+          {/* TOGGLE MONITOR SIDE*/}
+          {/*  */}
+
+          <div className="flex items-center justify-between mx-3 toggleMonitor">
+            <button
+              className="text-white bg-opacity-100 bg-neutral btn monitorSide"
+              onClick={() => {
+                if (bnfSuperTrend?.monitorSide === "long") {
+                  monitorSideChangeBnf("short");
+                } else if (bnfSuperTrend?.monitorSide === "short") {
+                  monitorSideChangeBnf("long");
+                }
+              }}
+            >
+              Monitoring: {bnfSuperTrend?.monitorSide}
+            </button>
+            <button className="text-white bg-opacity-100 btn-disabled bg-neutral btn monitorSide">
+              Current Side: {bnfSuperTrend?.direction}
+            </button>
           </div>
 
           {/*  */}
           {/* ENTRY BUTTONS */}
           {/*  */}
 
-          <div className="entryButtons flex w-full justify-between">
+          <div className="flex justify-between w-full entryButtons">
             <button
-              className="btn btn-secondary text-white w-48 m-3"
+              className="w-48 m-3 text-white btn btn-secondary"
               onClick={bnfLong}
             >
               Long Bank Nifty
             </button>
             <button
-              className="short btn btn-secondary text-white w-48 m-3"
+              className="w-48 m-3 text-white short btn btn-secondary"
               onClick={bnfShort}
             >
               Short Bank Nifty
@@ -1832,12 +1895,12 @@ function Supertrend() {
           {/* EXIT BUTTONS */}
           {/*  */}
 
-          <div className="exitButtons flex w-full justify-between">
-            <button className="btn  text-white w-48 m-3" onClick={bnfLongExit}>
+          <div className="flex justify-between w-full exitButtons">
+            <button className="w-48 m-3 text-white btn" onClick={bnfLongExit}>
               Exit Long Bank Nifty
             </button>
             <button
-              className="short btn  text-white w-48 m-3"
+              className="w-48 m-3 text-white short btn"
               onClick={bnfShortExit}
             >
               Exit Short Bank Nifty
@@ -1848,9 +1911,9 @@ function Supertrend() {
           {/* REFRESH ORDER */}
           {/*  */}
 
-          <div className="refreshOrder w-full p-3">
+          <div className="w-full p-3 refreshOrder">
             <button
-              className="btn btn-secondary w-full text-white"
+              className="w-full text-white btn btn-secondary"
               onClick={updateOrderBookBnf}
             >
               Refresh Order Book Bank Nifty
@@ -1861,17 +1924,17 @@ function Supertrend() {
           {/* SL TGT SETTER */}
           {/*  */}
 
-          <div className="setSLTGT w-full flex justify-between p-3 pt-0 ">
+          <div className="flex justify-between w-full p-3 pt-0 setSLTGT ">
             <div className="setSl join">
               <input
                 type="number"
-                id="bnfSl"
-                className="input input-bordered input-md w-32 join-item"
+                id="supertrendbnfSl"
+                className="w-32 input input-bordered input-md join-item"
               />
               <button
-                className="btn btn-secondary join-item text-white"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
-                  let sl = document.getElementById("bnfSl").value;
+                  let sl = document.getElementById("supertrendbnfSl").value;
                   bnfSetSL(sl);
                 }}
               >
@@ -1881,13 +1944,13 @@ function Supertrend() {
             <div className="setTgt join">
               <input
                 type="number"
-                id="bnfTgt"
-                className="input input-bordered input-md w-32 join-item"
+                id="supertrendbnfTgt"
+                className="w-32 input input-bordered input-md join-item"
               />
               <button
-                className="btn btn-secondary text-white join-item"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
-                  let tgt = document.getElementById("bnfTgt").value;
+                  let tgt = document.getElementById("supertrendbnfTgt").value;
                   bnfSetTG(tgt);
                 }}
               >
@@ -1900,8 +1963,8 @@ function Supertrend() {
           {/* POSITION CARD*/}
           {/*  */}
 
-          <div className="openPosition p-2">
-            <div className="card w-full bg-base-200 shadow-xl">
+          <div className="p-2 openPosition">
+            <div className="w-full shadow-xl card bg-base-200">
               <div className="card-body">
                 <h2 className="card-title">Open Position</h2>
                 {/*  */}
@@ -1909,23 +1972,23 @@ function Supertrend() {
                 {/*  */}
                 {bnfLongOrderId?.entryPrice &&
                   bnfLongOrderId?.putShort?.trading_symbol && (
-                    <div className="long flex flex-col items-center">
-                      <div className="stats shadow mb-3 mt-3">
+                    <div className="flex flex-col items-center long">
+                      <div className="mt-3 mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Direction</div>
-                          <div className="font-bold text-xl">Long</div>
+                          <div className="text-xl font-bold">Long</div>
                         </div>
                         <div className="stat">
                           <div className="stat-title">Entry Price</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfLongOrderId?.entryPrice}
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow mb-3">
+                      <div className="mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Sell Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfLongOrderId?.putShort?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -1938,10 +2001,10 @@ function Supertrend() {
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow">
+                      <div className="shadow stats">
                         <div className="stat">
                           <div className="stat-title">Total</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {(
                               (bnfLongOrderId?.putShort?.average_price -
                                 bnfShortPutLtp) *
@@ -1956,25 +2019,24 @@ function Supertrend() {
                 {/* SHORT POSITION */}
                 {/*  */}
                 {bnfShortOrderId?.entryPrice &&
-                  bnfShortOrderId?.putLong?.trading_symbol &&
                   bnfShortOrderId?.callShort?.trading_symbol && (
-                    <div className="short flex flex-col items-center">
-                      <div className="stats shadow mb-3 mt-3">
+                    <div className="flex flex-col items-center short">
+                      <div className="mt-3 mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Direction</div>
-                          <div className="font-bold text-xl">Short</div>
+                          <div className="text-xl font-bold">Short</div>
                         </div>
                         <div className="stat">
                           <div className="stat-title">Entry Price</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfShortOrderId?.entryPrice}
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow mb-3">
+                      <div className="mb-3 shadow stats">
                         <div className="stat">
                           <div className="stat-title">Sell Strike</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {bnfShortOrderId?.callShort?.trading_symbol}
                           </div>
                           <div className="stat-desc">
@@ -1987,10 +2049,10 @@ function Supertrend() {
                           </div>
                         </div>
                       </div>
-                      <div className="stats shadow">
+                      <div className="shadow stats">
                         <div className="stat">
                           <div className="stat-title">Total</div>
-                          <div className="font-bold text-xl">
+                          <div className="text-xl font-bold">
                             {(
                               (bnfShortOrderId?.callShort?.average_price -
                                 bnfShortCallLtp) *

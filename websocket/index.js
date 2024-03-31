@@ -48,11 +48,11 @@ const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
 
 var now = new Date();
 var start = new Date();
-start.setHours(0, 15, 0);
+start.setHours(9, 15, 0);
 var end = new Date();
-end.setHours(23, 30, 5);
+end.setHours(15, 30, 5);
 var tickEnd = new Date();
-tickEnd.setHours(23, 29, 59, 900);
+tickEnd.setHours(15, 29, 59, 900);
 
 const startFetchJob = async (instTokenArray) => {
   const job = schedule.scheduleJob("* * * * *", async () => {
