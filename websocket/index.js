@@ -82,7 +82,7 @@ const startFiveFetchJob = async (instTokenArray) => {
 };
 
 const startThirtyFetchJob = async (instTokenArray) => {
-  const job = schedule.scheduleJob("2 15,45 * * * *", async () => {
+  const job = schedule.scheduleJob("1 15,45 * * * *", async () => {
     if (now >= start && now <= end) {
       instTokenArray?.forEach(async (token) => {
         await fetchThirtyCandle(token);
@@ -136,7 +136,7 @@ const fetchThirtyCandleFromDB = async (instTokenArray) => {
   } else {
     console.log("No candles market closed");
   }
-  const job = schedule.scheduleJob("3 15,45 * * * *", async () => {
+  const job = schedule.scheduleJob("5 15,45 * * * *", async () => {
     if (now >= start && now <= end) {
       instTokenArray?.forEach(async (token) => {
         let data = await thirtyCandleData
@@ -291,10 +291,10 @@ io.on("connection", (socket) => {
 
   socket.on("candleToken", (data) => {
     console.log(data);
-    // startFetchJob(data);
-    // startFiveFetchJob(data);
+    startFetchJob(data);
+    startFiveFetchJob(data);
     fetchFiveCandleFromDB(data);
-    // startThirtyFetchJob(data);
+    startThirtyFetchJob(data);
     fetchThirtyCandleFromDB(data);
     startSLMonitor();
     startSLMonitor30m();
