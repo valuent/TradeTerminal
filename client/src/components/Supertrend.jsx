@@ -383,7 +383,7 @@ function Supertrend() {
         await setDoc(
           doc(db, "5minSupertrend", "bnfSuperTrend"),
           {
-            direction: "long",
+            direction: "short",
             supertrend_value: upperBand,
           },
           { merge: true }
