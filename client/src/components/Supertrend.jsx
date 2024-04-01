@@ -1335,13 +1335,17 @@ function Supertrend() {
   useEffect(() => {
     const checkNiftyLongEntry = async () => {
       if (!niftyLongOrderId?.putShort && nextEntryCheck !== null) {
+        let lastClose = niftyCandles?.[0]?.close;
         if (
           niftyFutLtp > niftySuperTrend?.supertrend_value &&
-          niftySuperTrend?.monitorSide === "long"
+          niftySuperTrend?.monitorSide === "long" &&
+          niftyFutLtp - lastClose <= 30
         ) {
           await niftyLong();
           await monitorSideChangeNifty("short");
           toastHandler(`Super Trend Nifty Monitor Only Short`);
+        } else if (niftyFutLtp - lastClose > 30) {
+          await monitorSideChangeNifty("short");
         } else {
           console.log("SuperTrend Long Entry not met");
         }
@@ -1351,13 +1355,17 @@ function Supertrend() {
     };
     const checkNiftyShortEntry = async () => {
       if (!niftyShortOrderId?.callShort && nextEntryCheck !== null) {
+        let lastClose = niftyCandles?.[0]?.close;
         if (
           niftyFutLtp < niftySuperTrend?.supertrend_value &&
-          niftySuperTrend?.monitorSide === "short"
+          niftySuperTrend?.monitorSide === "short" &&
+          lastClose - niftyFutLtp <= 30
         ) {
           await niftyShort();
           await monitorSideChangeNifty("long");
           toastHandler(`Super Trend Nifty Monitor Only Long`);
+        } else if (lastClose - niftyFutLtp > 30) {
+          await monitorSideChangeNifty("long");
         } else {
           console.log("SuperTrend Short Entry not met");
         }
@@ -1367,13 +1375,17 @@ function Supertrend() {
     };
     const checkBnfLongEntry = async () => {
       if (!bnfLongOrderId?.putShort && nextEntryCheck !== null) {
+        let lastClose = bnfCandles?.[0]?.close;
         if (
           bnfFutLtp > bnfSuperTrend?.supertrend_value &&
-          bnfSuperTrend?.monitorSide === "long"
+          bnfSuperTrend?.monitorSide === "long" &&
+          bnfFutLtp - lastClose <= 100
         ) {
           await bnfLong();
           await monitorSideChangeBnf("short");
           toastHandler(`Super Trend Bank Nifty Monitor Only Short`);
+        } else if (bnfFutLtp - lastClose > 100) {
+          await monitorSideChangeBnf("short");
         } else {
           console.log("Bank Nifty SuperTrend Long Entry not met");
         }
@@ -1383,13 +1395,17 @@ function Supertrend() {
     };
     const checkBnfShortEntry = async () => {
       if (!bnfShortOrderId?.callShort && nextEntryCheck !== null) {
+        let lastClose = bnfCandles?.[0]?.close;
         if (
           bnfFutLtp < bnfSuperTrend?.supertrend_value &&
-          bnfSuperTrend?.monitorSide === "short"
+          bnfSuperTrend?.monitorSide === "short" &&
+          lastClose - bnfFutLtp <= 100
         ) {
           await bnfShort();
           await monitorSideChangeBnf("long");
           toastHandler(`Super Trend Bank Nifty Montior Only Long`);
+        } else if (lastClose - bnfFutLtp > 100) {
+          await monitorSideChangeBnf("long");
         } else {
           console.log("Bank Nifty SuperTrend Short Entry not met");
         }
