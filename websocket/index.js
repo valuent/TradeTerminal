@@ -207,9 +207,8 @@ const startEntryMonitor30m = () => {
 };
 
 const startExitAll = () => {
-  const job = schedule.scheduleJob("59 14 15 * * *", () => {
+  const job = schedule.scheduleJob("10 15 * * *", () => {
     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
-    now = new Date();
     // io.emit("checkEntry", now.getMinutes());
     io.emit("exitAll", "exitTimeNow");
   });
