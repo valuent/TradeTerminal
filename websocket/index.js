@@ -206,6 +206,15 @@ const startEntryMonitor30m = () => {
   });
 };
 
+const startExitAll = () => {
+  const job = schedule.scheduleJob("59 14 15 * * *", () => {
+    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
+    now = new Date();
+    // io.emit("checkEntry", now.getMinutes());
+    io.emit("exitAll", "exitTimeNow");
+  });
+};
+
 io.on("connection", (socket) => {
   console.log("Client connected");
 
@@ -300,6 +309,7 @@ io.on("connection", (socket) => {
     startSLMonitor30m();
     startEntryMonitor();
     startEntryMonitor30m();
+    startExitAll();
   });
 });
 

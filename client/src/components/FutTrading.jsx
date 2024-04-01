@@ -1485,6 +1485,7 @@ function FutTrading() {
 
   const [nextCheck, setNextCheck] = useState(null);
   const [nextEntryCheck, setNextEntryCheck] = useState(null);
+  const [exitAllCheck, setExitAllCheck] = useState(null);
 
   useEffect(() => {
     const monitorNiftyShortTrailing = async () => {
@@ -1828,12 +1829,28 @@ function FutTrading() {
       checkBnfShortEntry();
     }
   }, [nextEntryCheck]);
+  useEffect(() => {
+    const exitAllPositions = () => {
+      if (exitAllCheck === "exitTimeNow") {
+        niftyLongExit();
+        niftyShortExit();
+        bnfLongExit();
+        bnfShortExit();
+      }
+    };
+    if (exitAllCheck === "exitTimeNow") {
+      exitAllPositions();
+    }
+  }, [exitAllCheck]);
 
   socket?.on("checkSl", (data) => {
     setNextCheck(data);
   });
   socket?.on("checkEntry", (data) => {
     setNextEntryCheck(data);
+  });
+  socket?.on("exitAll", (data) => {
+    setExitAllCheck(data);
   });
 
   useEffect(() => {
