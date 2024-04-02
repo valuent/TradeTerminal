@@ -314,20 +314,20 @@ function Supertrend() {
       if (i < periods) {
         atrValue = tr;
       } else {
-        let atrCalcTemp =
-          (atr?.slice(-20)?.[i - 1] * (periods - 1) + tr) / periods;
+        let atrCalcTemp = (atr?.[i - 1] * (periods - 1) + tr) / periods;
         atrValue = atrCalcTemp;
         //   console.log(atrCalcTemp);
       }
       atr.push(atrValue);
       // console.log(atrValue, prices[i]?.open_time);
+      console.log(atrValue, prices[i]?.open_time);
     }
 
     return atr[atr.length - 1];
   };
   useEffect(() => {
     const calculateSupertrendBnf = async () => {
-      let atr = await calculateATR(bnfCandles?.slice(0, 20).reverse(), 10);
+      let atr = await calculateATR(bnfCandles?.slice(0, 45).reverse(), 10);
       let prevCandleHigh = bnfCandles?.[0]?.high;
       let prevCandleLow = bnfCandles?.[0]?.low;
       let prevCandleClose = bnfCandles?.[0]?.close;
@@ -391,7 +391,7 @@ function Supertrend() {
       }
     };
     const calculateSupertrendNifty = async () => {
-      let atr = await calculateATR(niftyCandles?.slice(0, 20).reverse(), 10);
+      let atr = await calculateATR(niftyCandles?.slice(0, 100).reverse(), 10);
       let prevCandleHigh = niftyCandles?.[0]?.high;
       let prevCandleLow = niftyCandles?.[0]?.low;
 
@@ -631,6 +631,8 @@ function Supertrend() {
               order_id: niftyLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
             },
+            slPoints: 25,
+            tgtPoints: 52,
           },
           { merge: true }
         )
@@ -659,6 +661,8 @@ function Supertrend() {
               order_id: niftyShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
             },
+            slPoints: 25,
+            tgtPoints: 52,
           },
           { merge: true }
         )
@@ -1023,6 +1027,8 @@ function Supertrend() {
               order_id: bnfLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
             },
+            slPoints: 85,
+            tgtPoints: 177,
           },
           { merge: true }
         )
@@ -1051,6 +1057,8 @@ function Supertrend() {
               order_id: bnfShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
             },
+            slPoints: 85,
+            tgtPoints: 177,
           },
           { merge: true }
         )
@@ -1063,6 +1071,25 @@ function Supertrend() {
       }
     });
   };
+
+  useEffect(() => {
+    if (
+      (niftyLongOrderId?.putShort?.orderId &&
+        !niftyLongOrderId?.putShort?.average_price) ||
+      (niftyShortOrderId?.callShort?.orderId &&
+        !niftyShortOrderId?.callShort?.average_price)
+    ) {
+      updateOrderBookNifty();
+    }
+    if (
+      (bnfLongOrderId?.putShort?.orderId &&
+        !bnfLongOrderId?.putShort?.average_price) ||
+      (bnfShortOrderId?.callShort?.orderId &&
+        !bnfShortOrderId?.callShort?.average_price)
+    ) {
+      updateOrderBookNifty();
+    }
+  }, [tickerData]);
 
   const bnfSetSL = async (slPoints) => {
     if (bnfLongOrderId?.putShort?.trading_symbol) {

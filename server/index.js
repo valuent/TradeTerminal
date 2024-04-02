@@ -128,9 +128,9 @@ app.get("/api/histData", async (req, res) => {
   try {
     let data = await kite.getHistoricalData(
       "13368834",
-      "5minute",
+      "minute",
       "2024-03-28",
-      "2024-03-28"
+      "2024-04-01"
     );
     res.send(data);
   } catch (error) {

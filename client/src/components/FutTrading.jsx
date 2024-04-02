@@ -668,6 +668,8 @@ function FutTrading() {
               order_id: niftyLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
             },
+            slPoints: 25,
+            tgtPoints: 52,
           },
           { merge: true }
         )
@@ -706,6 +708,8 @@ function FutTrading() {
               order_id: niftyShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
             },
+            slPoints: 25,
+            tgtPoints: 52,
           },
           { merge: true }
         )
@@ -1224,6 +1228,8 @@ function FutTrading() {
               order_id: bnfLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
             },
+            slPoints: 85,
+            tgtPoints: 177,
           },
           { merge: true }
         )
@@ -1262,6 +1268,8 @@ function FutTrading() {
               order_id: bnfShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
             },
+            slPoints: 85,
+            tgtPoints: 177,
           },
           { merge: true }
         )
