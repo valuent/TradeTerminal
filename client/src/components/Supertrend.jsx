@@ -623,7 +623,7 @@ function Supertrend() {
           order.status === "COMPLETE"
         );
       });
-      if (putShortId.length > 0) {
+      if (putShortId.length > 0 && putShortId?.[0]?.average_price !== "") {
         await setDoc(
           doc(db, "5minSupertrend", "niftyLong"),
           {
@@ -653,7 +653,7 @@ function Supertrend() {
           order.status === "COMPLETE"
         );
       });
-      if (callShortId.length > 0) {
+      if (callShortId.length > 0 && callShortId?.[0]?.average_price !== "") {
         await setDoc(
           doc(db, "5minSupertrend", "niftyShort"),
           {
@@ -1019,7 +1019,7 @@ function Supertrend() {
         );
       });
 
-      if (putShortId.length > 0) {
+      if (putShortId.length > 0 && putShortId?.[0]?.average_price !== "") {
         await setDoc(
           doc(db, "5minSupertrend", "bnfLong"),
           {
@@ -1049,7 +1049,7 @@ function Supertrend() {
           order.status === "COMPLETE"
         );
       });
-      if (callShortId.length > 0) {
+      if (callShortId.length > 0 && callShortId?.[0]?.average_price !== "") {
         await setDoc(
           doc(db, "5minSupertrend", "bnfShort"),
           {
@@ -1087,7 +1087,7 @@ function Supertrend() {
       (bnfShortOrderId?.callShort?.orderId &&
         !bnfShortOrderId?.callShort?.average_price)
     ) {
-      updateOrderBookNifty();
+      updateOrderBookBnf();
     }
   }, [tickerData]);
 

@@ -656,7 +656,12 @@ function FutTrading() {
           order.status === "COMPLETE"
         );
       });
-      if (callLongId.length > 0 && putShortId.length > 0) {
+      if (
+        callLongId.length > 0 &&
+        putShortId.length > 0 &&
+        callLongId?.[0]?.average_price !== "" &&
+        putShortId?.[0]?.average_price !== ""
+      ) {
         await setDoc(
           doc(db, "futFiveMin", "niftyFutLong"),
           {
@@ -696,7 +701,12 @@ function FutTrading() {
           order.status === "COMPLETE"
         );
       });
-      if (putLongId.length > 0 && callShortId.length > 0) {
+      if (
+        putLongId.length > 0 &&
+        callShortId.length > 0 &&
+        putLongId?.[0]?.average_price !== "" &&
+        callShortId?.[0]?.average_price !== ""
+      ) {
         await setDoc(
           doc(db, "futFiveMin", "niftyFutShort"),
           {
@@ -1216,7 +1226,12 @@ function FutTrading() {
         );
       });
 
-      if (callLongId.length > 0 && putShortId.length > 0) {
+      if (
+        callLongId.length > 0 &&
+        putShortId.length > 0 &&
+        callLongId?.[0]?.average_price !== "" &&
+        putShortId?.[0]?.average_price !== ""
+      ) {
         await setDoc(
           doc(db, "futFiveMin", "bnfFutLong"),
           {
@@ -1256,7 +1271,12 @@ function FutTrading() {
           order.status === "COMPLETE"
         );
       });
-      if (putLongId.length > 0 && callShortId.length > 0) {
+      if (
+        putLongId.length > 0 &&
+        callShortId.length > 0 &&
+        putLongId?.[0]?.average_price !== "" &&
+        callShortId?.[0]?.average_price !== ""
+      ) {
         await setDoc(
           doc(db, "futFiveMin", "bnfFutShort"),
           {
@@ -1282,6 +1302,33 @@ function FutTrading() {
       }
     });
   };
+
+  useEffect(() => {
+    if (
+      (niftyLongOrderId?.putShort?.orderId &&
+        niftyLongOrderId?.callLong?.orderId &&
+        (!niftyLongOrderId?.putShort?.average_price ||
+          !niftyLongOrderId?.callLong?.average_price)) ||
+      (niftyShortOrderId?.putLong?.orderId &&
+        niftyShortOrderId?.callShort?.orderId &&
+        (!niftyShortOrderId?.callShort?.average_price ||
+          !niftyShortOrderId?.putLong?.average_price))
+    ) {
+      updateOrderBookNifty();
+    }
+    if (
+      (bnfLongOrderId?.putShort?.orderId &&
+        bnfLongOrderId?.callLong?.orderId &&
+        (!bnfLongOrderId?.putShort?.average_price ||
+          !bnfLongOrderId?.callLong?.average_price)) ||
+      (bnfShortOrderId?.putLong?.orderId &&
+        bnfShortOrderId?.callShort?.orderId &&
+        (!bnfShortOrderId?.callShort?.average_price ||
+          !bnfShortOrderId?.putLong?.average_price))
+    ) {
+      updateOrderBookBnf();
+    }
+  }, [tickerData]);
 
   const bnfSetSL = async (slPoints) => {
     if (
