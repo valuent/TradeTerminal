@@ -810,6 +810,11 @@ function Supertrend() {
             slPoints: niftyLongOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
+          toastHandler(
+            `Super Trend Bank Nifty long SL Trailed to ${
+              niftyLongOrderId?.slPoints / 2
+            }`
+          );
         }
 
         if (
@@ -821,6 +826,7 @@ function Supertrend() {
             slPoints: 1,
             slAdjusted_2: true,
           });
+          toastHandler(`Super Trend Nifty long SL Trailed to 1`);
         }
 
         if (
@@ -870,6 +876,11 @@ function Supertrend() {
             slPoints: niftyShortOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
+          toastHandler(
+            `Super Trend Nifty short SL Trailed to ${
+              niftyShortOrderId?.slPoints / 2
+            }`
+          );
         }
 
         if (
@@ -881,6 +892,7 @@ function Supertrend() {
             slPoints: 1,
             slAdjusted_2: true,
           });
+          toastHandler(`Super Trend Nifty short SL Trailed to 1`);
         }
 
         if (
@@ -1258,6 +1270,11 @@ function Supertrend() {
             slPoints: bnfLongOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
+          toastHandler(
+            `Super Trend Bank Nifty long SL Trailed to ${
+              bnfLongOrderId?.slPoints / 2
+            }`
+          );
         }
 
         if (
@@ -1269,6 +1286,7 @@ function Supertrend() {
             slPoints: 1,
             slAdjusted_2: true,
           });
+          toastHandler(`Super Trend Bank Nifty long SL Trailed to 1`);
         }
 
         if (
@@ -1314,6 +1332,11 @@ function Supertrend() {
             slPoints: bnfShortOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
+          toastHandler(
+            `Super Trend Bank Nifty short SL Trailed to ${
+              bnfShortOrderId?.slPoints / 2
+            }`
+          );
         }
 
         if (
@@ -1325,6 +1348,7 @@ function Supertrend() {
             slPoints: 1,
             slAdjusted_2: true,
           });
+          toastHandler(`Super Trend Bank Nifty short SL Trailed to 1`);
         }
 
         if (
@@ -1462,7 +1486,11 @@ function Supertrend() {
           await niftyLong();
           await monitorSideChangeNifty("short");
           toastHandler(`Super Trend Nifty Monitor Only Short`);
-        } else if (niftyFutLtp - lastClose > 30) {
+        } else if (
+          niftyFutLtp > niftySuperTrend?.supertrend_value &&
+          niftySuperTrend?.monitorSide === "long" &&
+          niftyFutLtp - lastClose > 30
+        ) {
           await monitorSideChangeNifty("short");
         } else {
           console.log("SuperTrend Long Entry not met");
@@ -1482,7 +1510,11 @@ function Supertrend() {
           await niftyShort();
           await monitorSideChangeNifty("long");
           toastHandler(`Super Trend Nifty Monitor Only Long`);
-        } else if (lastClose - niftyFutLtp > 30) {
+        } else if (
+          niftyFutLtp < niftySuperTrend?.supertrend_value &&
+          niftySuperTrend?.monitorSide === "short" &&
+          lastClose - niftyFutLtp > 30
+        ) {
           await monitorSideChangeNifty("long");
         } else {
           console.log("SuperTrend Short Entry not met");
@@ -1502,7 +1534,11 @@ function Supertrend() {
           await bnfLong();
           await monitorSideChangeBnf("short");
           toastHandler(`Super Trend Bank Nifty Monitor Only Short`);
-        } else if (bnfFutLtp - lastClose > 100) {
+        } else if (
+          bnfFutLtp > bnfSuperTrend?.supertrend_value &&
+          bnfSuperTrend?.monitorSide === "long" &&
+          bnfFutLtp - lastClose > 100
+        ) {
           await monitorSideChangeBnf("short");
         } else {
           console.log("Bank Nifty SuperTrend Long Entry not met");
@@ -1522,7 +1558,11 @@ function Supertrend() {
           await bnfShort();
           await monitorSideChangeBnf("long");
           toastHandler(`Super Trend Bank Nifty Montior Only Long`);
-        } else if (lastClose - bnfFutLtp > 100) {
+        } else if (
+          bnfFutLtp < bnfSuperTrend?.supertrend_value &&
+          bnfSuperTrend?.monitorSide === "short" &&
+          lastClose - bnfFutLtp > 100
+        ) {
           await monitorSideChangeBnf("long");
         } else {
           console.log("Bank Nifty SuperTrend Short Entry not met");

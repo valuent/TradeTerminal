@@ -914,6 +914,11 @@ function FutTrading() {
             slPoints: niftyLongOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
+          toastHandler(
+            `Super Trend Bank Nifty long SL Trailed to ${
+              niftyLongOrderId?.slPoints / 2
+            }`
+          );
         }
 
         if (
@@ -925,6 +930,7 @@ function FutTrading() {
             slPoints: 1,
             slAdjusted_2: true,
           });
+          toastHandler(`Super Trend Nifty long SL Trailed to 1`);
         }
         if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
           await niftyLongExit();
@@ -976,6 +982,11 @@ function FutTrading() {
             slPoints: niftyShortOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
+          toastHandler(
+            `Super Trend Nifty short SL Trailed to ${
+              niftyShortOrderId?.slPoints / 2
+            }`
+          );
         }
 
         if (
@@ -987,6 +998,7 @@ function FutTrading() {
             slPoints: 1,
             slAdjusted_2: true,
           });
+          toastHandler(`Super Trend Nifty short SL Trailed to 1`);
         }
         if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
           await niftyShortExit();
@@ -1554,6 +1566,11 @@ function FutTrading() {
             slPoints: bnfLongOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
+          toastHandler(
+            `Super Trend Bank Nifty long SL Trailed to ${
+              bnfLongOrderId?.slPoints / 2
+            }`
+          );
         }
 
         if (
@@ -1565,6 +1582,7 @@ function FutTrading() {
             slPoints: 1,
             slAdjusted_2: true,
           });
+          toastHandler(`Super Trend Bank Nifty long SL Trailed to 1`);
         }
         if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
           await bnfLongExit();
@@ -1609,6 +1627,11 @@ function FutTrading() {
             slPoints: bnfShortOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
+          toastHandler(
+            `Super Trend Bank Nifty short SL Trailed to ${
+              bnfShortOrderId?.slPoints / 2
+            }`
+          );
         }
 
         if (
@@ -1620,6 +1643,7 @@ function FutTrading() {
             slPoints: 1,
             slAdjusted_2: true,
           });
+          toastHandler(`Super Trend Bank Nifty short SL Trailed to 1`);
         }
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
           await bnfShortExit();
