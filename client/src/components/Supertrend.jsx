@@ -29,8 +29,8 @@ function Supertrend() {
   } = useContext(DataContext);
 
   // Cannot be dynamicall set
-  const [niftyQty, setNiftyQty] = useState(100);
-  const [bnfQty, setBnfQty] = useState(30);
+  const [niftyQty, setNiftyQty] = useState(200);
+  const [bnfQty, setBnfQty] = useState(60);
 
   // Saves LTP every second
   const [niftyLtp, setNiftyLtp] = useState();
@@ -740,6 +740,8 @@ function Supertrend() {
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
             });
           } else {
             toastHandler(response?.data);
@@ -766,6 +768,8 @@ function Supertrend() {
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
             });
           }
         });
@@ -796,6 +800,29 @@ function Supertrend() {
           await niftyLongExit();
           toastHandler(`Super Trend Nifty long TGT reached`);
         }
+
+        if (
+          mtm >= niftyLongOrderId?.tgtPoints * 0.5 &&
+          !niftyLongOrderId?.slAdjusted_1 &&
+          niftyLongOrderId?.slAdjusted_1 !== true
+        ) {
+          await updateDoc(doc(db, "5minSupertrend", "niftyLong"), {
+            slPoints: niftyLongOrderId?.slPoints / 2,
+            slAdjusted_1: true,
+          });
+        }
+
+        if (
+          mtm >= niftyLongOrderId?.tgtPoints * 0.75 &&
+          !niftyLongOrderId?.slAdjusted_2 &&
+          niftyLongOrderId?.slAdjusted_2 !== true
+        ) {
+          await updateDoc(doc(db, "5minSupertrend", "niftyLong"), {
+            slPoints: 1,
+            slAdjusted_2: true,
+          });
+        }
+
         if (
           niftyFutLtp <= sl_level ||
           mtm <= -niftyLongOrderId?.slPoints ||
@@ -830,16 +857,30 @@ function Supertrend() {
         let mtm =
           niftyShortOrderId?.callShort?.average_price - niftyShortCallLtp;
 
-        // console.log(mtm);
-        // console.log("SL", sl_level);
-        // console.log("tgt", tgt_level);
-        // console.log(mtm);
-        // console.log(niftyLongPutLtp);
-        // console.log(niftyShortCallLtp);
-
         if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
           await niftyShortExit();
           toastHandler(`Super Trend Nifty short TGT reached`);
+        }
+        if (
+          mtm >= niftyShortOrderId?.tgtPoints * 0.5 &&
+          !niftyShortOrderId?.slAdjusted_1 &&
+          niftyShortOrderId?.slAdjusted_1 !== true
+        ) {
+          await updateDoc(doc(db, "5minSupertrend", "niftyShort"), {
+            slPoints: niftyShortOrderId?.slPoints / 2,
+            slAdjusted_1: true,
+          });
+        }
+
+        if (
+          mtm >= niftyShortOrderId?.tgtPoints * 0.75 &&
+          !niftyShortOrderId?.slAdjusted_2 &&
+          niftyShortOrderId?.slAdjusted_2 !== true
+        ) {
+          await updateDoc(doc(db, "5minSupertrend", "niftyShort"), {
+            slPoints: 1,
+            slAdjusted_2: true,
+          });
         }
 
         if (
@@ -1154,6 +1195,8 @@ function Supertrend() {
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
             });
           }
         });
@@ -1177,6 +1220,8 @@ function Supertrend() {
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
             });
           }
         });
@@ -1203,6 +1248,29 @@ function Supertrend() {
           await bnfLongExit();
           toastHandler(`Super Trend Bank Nifty long TGT reached`);
         }
+
+        if (
+          mtm >= bnfLongOrderId?.tgtPoints * 0.5 &&
+          !bnfLongOrderId?.slAdjusted_1 &&
+          bnfLongOrderId?.slAdjusted_1 !== true
+        ) {
+          await updateDoc(doc(db, "5minSupertrend", "bnfLong"), {
+            slPoints: bnfLongOrderId?.slPoints / 2,
+            slAdjusted_1: true,
+          });
+        }
+
+        if (
+          mtm >= bnfLongOrderId?.tgtPoints * 0.75 &&
+          !bnfLongOrderId?.slAdjusted_2 &&
+          bnfLongOrderId?.slAdjusted_2 !== true
+        ) {
+          await updateDoc(doc(db, "5minSupertrend", "bnfLong"), {
+            slPoints: 1,
+            slAdjusted_2: true,
+          });
+        }
+
         if (
           bnfFutLtp <= sl_level ||
           mtm <= -bnfLongOrderId?.slPoints ||
@@ -1235,6 +1303,28 @@ function Supertrend() {
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
           await bnfShortExit();
           toastHandler(`Super Trend Bank Nifty short TGT reached`);
+        }
+
+        if (
+          mtm >= bnfShortOrderId?.tgtPoints * 0.5 &&
+          !bnfShortOrderId?.slAdjusted_1 &&
+          bnfShortOrderId?.slAdjusted_1 !== true
+        ) {
+          await updateDoc(doc(db, "5minSupertrend", "bnfShort"), {
+            slPoints: bnfShortOrderId?.slPoints / 2,
+            slAdjusted_1: true,
+          });
+        }
+
+        if (
+          mtm >= bnfShortOrderId?.tgtPoints * 0.75 &&
+          !bnfShortOrderId?.slAdjusted_2 &&
+          bnfShortOrderId?.slAdjusted_2 !== true
+        ) {
+          await updateDoc(doc(db, "5minSupertrend", "bnfShort"), {
+            slPoints: 1,
+            slAdjusted_2: true,
+          });
         }
 
         if (

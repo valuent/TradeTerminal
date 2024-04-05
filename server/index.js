@@ -127,10 +127,10 @@ app.get("/api/orderInfo", async (req, res) => {
 app.get("/api/histData", async (req, res) => {
   try {
     let data = await kite.getHistoricalData(
-      "13368834",
-      "minute",
-      "2024-03-28",
-      "2024-04-01"
+      "13368322",
+      "5minute",
+      "2024-04-03",
+      "2024-04-04"
     );
     res.send(data);
   } catch (error) {

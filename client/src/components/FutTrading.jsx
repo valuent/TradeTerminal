@@ -825,6 +825,8 @@ function FutTrading() {
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
             });
           }
         });
@@ -866,6 +868,8 @@ function FutTrading() {
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
             });
           }
         });
@@ -899,6 +903,28 @@ function FutTrading() {
         if (niftyFutLtp >= tgt_level || mtm >= niftyLongOrderId?.tgtPoints) {
           await niftyLongExit();
           toastHandler(`Nifty long TGT reached`);
+        }
+
+        if (
+          mtm >= niftyLongOrderId?.tgtPoints * 0.5 &&
+          !niftyLongOrderId?.slAdjusted_1 &&
+          niftyLongOrderId?.slAdjusted_1 !== true
+        ) {
+          await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+            slPoints: niftyLongOrderId?.slPoints / 2,
+            slAdjusted_1: true,
+          });
+        }
+
+        if (
+          mtm >= niftyLongOrderId?.tgtPoints * 0.75 &&
+          !niftyLongOrderId?.slAdjusted_2 &&
+          niftyLongOrderId?.slAdjusted_2 !== true
+        ) {
+          await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+            slPoints: 1,
+            slAdjusted_2: true,
+          });
         }
         if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
           await niftyLongExit();
@@ -941,6 +967,27 @@ function FutTrading() {
           toastHandler(`Nifty short TGT reached`);
         }
 
+        if (
+          mtm >= niftyShortOrderId?.tgtPoints * 0.5 &&
+          !niftyShortOrderId?.slAdjusted_1 &&
+          niftyShortOrderId?.slAdjusted_1 !== true
+        ) {
+          await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+            slPoints: niftyShortOrderId?.slPoints / 2,
+            slAdjusted_1: true,
+          });
+        }
+
+        if (
+          mtm >= niftyShortOrderId?.tgtPoints * 0.75 &&
+          !niftyShortOrderId?.slAdjusted_2 &&
+          niftyShortOrderId?.slAdjusted_2 !== true
+        ) {
+          await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+            slPoints: 1,
+            slAdjusted_2: true,
+          });
+        }
         if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
           await niftyShortExit();
           toastHandler(`Nifty short SL reached`);
@@ -1423,6 +1470,8 @@ function FutTrading() {
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
             });
           }
         });
@@ -1464,6 +1513,8 @@ function FutTrading() {
               entryPrice: deleteField(),
               slPoints: deleteField(),
               tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
             });
           }
         });
@@ -1493,6 +1544,27 @@ function FutTrading() {
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           await bnfLongExit();
           toastHandler(`Bank Nifty long TGT reached`);
+        }
+        if (
+          mtm >= bnfLongOrderId?.tgtPoints * 0.5 &&
+          !bnfLongOrderId?.slAdjusted_1 &&
+          bnfLongOrderId?.slAdjusted_1 !== true
+        ) {
+          await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+            slPoints: bnfLongOrderId?.slPoints / 2,
+            slAdjusted_1: true,
+          });
+        }
+
+        if (
+          mtm >= bnfLongOrderId?.tgtPoints * 0.75 &&
+          !bnfLongOrderId?.slAdjusted_2 &&
+          bnfLongOrderId?.slAdjusted_2 !== true
+        ) {
+          await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+            slPoints: 1,
+            slAdjusted_2: true,
+          });
         }
         if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
           await bnfLongExit();
@@ -1528,7 +1600,27 @@ function FutTrading() {
           await bnfShortExit();
           toastHandler(`Bank Nifty short TGT reached`);
         }
+        if (
+          mtm >= bnfShortOrderId?.tgtPoints * 0.5 &&
+          !bnfShortOrderId?.slAdjusted_1 &&
+          bnfShortOrderId?.slAdjusted_1 !== true
+        ) {
+          await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+            slPoints: bnfShortOrderId?.slPoints / 2,
+            slAdjusted_1: true,
+          });
+        }
 
+        if (
+          mtm >= bnfShortOrderId?.tgtPoints * 0.75 &&
+          !bnfShortOrderId?.slAdjusted_2 &&
+          bnfShortOrderId?.slAdjusted_2 !== true
+        ) {
+          await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+            slPoints: 1,
+            slAdjusted_2: true,
+          });
+        }
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
           await bnfShortExit();
           toastHandler(`Bank Nifty short SL reached`);
