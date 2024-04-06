@@ -2,17 +2,16 @@ const express = require("express");
 const socketIo = require("socket.io");
 const KiteTicker = require("kiteconnect").KiteTicker;
 const cors = require("cors");
-const dbconnection = require("./dbconnection");
-const { fetchData } = require("./fetchCandle");
-const { fetchFiveCandle } = require("./fetchFiveCandle");
-const { fetchThirtyCandle } = require("./fetchThirtyCandle");
+const dbconnection = require("./controllers/dbconnection");
+const { fetchData } = require("./controllers/fetchCandle");
+const { fetchFiveCandle } = require("./controllers/fetchFiveCandle");
+const { fetchThirtyCandle } = require("./controllers/fetchThirtyCandle");
 require("dotenv").config();
-const tickData = require("./models/schema");
 const schedule = require("node-schedule");
-const { DateTime } = require("luxon");
 const mongoose = require("mongoose");
 const fiveCandleData = require("./models/fiveMinCandleSchema");
 const thirtyCandleData = require("./models/thirtyMinCandleSchema");
+const { saveDataToMongo } = require("./controllers/saveDataToMongo");
 
 const app = express();
 
@@ -26,26 +25,13 @@ const io = socketIo(server, {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
-  connectTimeout: 99999999, // 25 seconds interval
+  connectTimeout: 99999999,
 });
 app.use(cors());
 
 dbconnection.connectToDb();
 
 let ticker;
-const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
-  let exchTime = DateTime.fromJSDate(exchangeTime, { zone: "utc" })
-    .setZone("Asia/Kolkata")
-    .toISO({ includeOffset: false });
-  const tick = new tickData({
-    instrument_token: insToken,
-    last_price: lastPrice,
-    exchange_time: exchTime,
-  });
-  await tick.save();
-  console.log("Added Data");
-};
-
 var now = new Date();
 var start = new Date();
 start.setHours(9, 15, 0);
@@ -311,10 +297,3 @@ io.on("connection", (socket) => {
     startExitAll();
   });
 });
-
-// 109119239;
-
-// server.listen(3001, () => {
-//   console.log("Server running on port 3001");
-//   dbconnection.connectToDb();
-// });

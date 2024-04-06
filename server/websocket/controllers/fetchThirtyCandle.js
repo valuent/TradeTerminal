@@ -1,7 +1,7 @@
 const { DateTime } = require("luxon");
 const dbconnection = require("./dbconnection");
-const candleData = require("./models/minCandleSchema");
-const thirtyCandleData = require("./models/thirtyMinCandleSchema");
+const candleData = require("../models/minCandleSchema");
+const thirtyCandleData = require("../models/thirtyMinCandleSchema");
 
 dbconnection.connectToDb();
 

@@ -51,15 +51,6 @@ app.get("/auth", async (req, res) => {
   }
 });
 
-app.get("/api/holdings", async (req, res) => {
-  try {
-    const holdings = await kite.getHoldings();
-    res.send(holdings);
-  } catch (error) {
-    res.status(500).send("Error occurred while fetching holdings");
-  }
-});
-
 app.get("/api/instruments", async (req, res) => {
   try {
     const data = await kite.getInstruments();
@@ -67,15 +58,6 @@ app.get("/api/instruments", async (req, res) => {
   } catch (error) {
     res.status(500).send(`Error occurred while fetching holdings ${error}`);
     console.log(error);
-  }
-});
-
-app.get("/api/ltp/:inst", async (req, res) => {
-  try {
-    let data = await kite.getLTP(req.params.inst);
-    res.send(data);
-  } catch (error) {
-    res.status(500).send(`Error occurred while fetching ltp ${error.message}`);
   }
 });
 
