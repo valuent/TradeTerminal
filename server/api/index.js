@@ -61,7 +61,51 @@ app.get("/api/instruments", async (req, res) => {
   }
 });
 
+app.get("/api/ltp/:inst", async (req, res) => {
+  try {
+    let data = await kite.getLTP(req.params.inst);
+    res.send(data);
+  } catch (error) {
+    res.status(500).send(`Error occurred while fetching ltp ${error.message}`);
+  }
+});
+
 app.get("/api/placeOrderFno", limiter, async (req, res) => {
+  let orderInfo = {
+    exchange: "NFO",
+    tradingsymbol: req.query.tradingsymbol,
+    transaction_type: req.query.transaction_type,
+    quantity: req.query.quantity,
+    product: req.query.product,
+    order_type: req.query.order_type,
+  };
+  try {
+    let data = await kite.placeOrder("regular", orderInfo);
+    res.send(data);
+    console.log(data);
+  } catch (error) {
+    res.send(`Error occurred while placing Order ${error.message}`);
+  }
+});
+
+app.get("/api/placeOrderStrangleCall", limiter, async (req, res) => {
+  let orderInfo = {
+    exchange: "NFO",
+    tradingsymbol: req.query.tradingsymbol,
+    transaction_type: req.query.transaction_type,
+    quantity: req.query.quantity,
+    product: req.query.product,
+    order_type: req.query.order_type,
+  };
+  try {
+    let data = await kite.placeOrder("regular", orderInfo);
+    res.send(data);
+    console.log(data);
+  } catch (error) {
+    res.send(`Error occurred while placing Order ${error.message}`);
+  }
+});
+app.get("/api/placeOrderStranglePut", limiter, async (req, res) => {
   let orderInfo = {
     exchange: "NFO",
     tradingsymbol: req.query.tradingsymbol,

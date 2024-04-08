@@ -16,7 +16,7 @@ const { saveDataToMongo } = require("./controllers/saveDataToMongo");
 const app = express();
 
 const server = app.listen(3001, () => {
-  console.log("Server running on port 3001");
+  console.log("Server is running on http://localhost:3001");
   dbconnection.connectToDb();
 });
 
@@ -36,9 +36,9 @@ var now = new Date();
 var start = new Date();
 start.setHours(9, 15, 0);
 var end = new Date();
-end.setHours(15, 30, 5);
+end.setHours(23, 30, 5);
 var tickEnd = new Date();
-tickEnd.setHours(15, 29, 59, 900);
+tickEnd.setHours(23, 29, 59, 900);
 
 const startFetchJob = async (instTokenArray) => {
   const job = schedule.scheduleJob("* * * * *", async () => {
@@ -242,20 +242,6 @@ io.on("connection", (socket) => {
 
     ticker.on("ticks", (ticks) => {
       socket.emit("ticks", ticks);
-
-      ticks.forEach((tick) => {
-        now = new Date();
-        if (now >= start && now <= tickEnd) {
-          saveDataToMongo(
-            tick.instrument_token,
-            tick.last_price,
-            tick.exchange_timestamp
-          );
-        } else {
-          console.log("Market Closed");
-          console.log(now);
-        }
-      });
     });
   });
 
@@ -285,10 +271,30 @@ io.on("connection", (socket) => {
 
   socket.on("candleToken", (data) => {
     console.log(data);
-    startFetchJob(data);
-    startFiveFetchJob(data);
+    ticker.on("ticks", (ticks) => {
+      ticks.forEach((tick) => {
+        now = new Date();
+        if (now >= start && now <= tickEnd) {
+          if (
+            tick?.instrument_token == data[0] ||
+            tick?.instrument_token == data[1]
+          ) {
+            saveDataToMongo(
+              tick.instrument_token,
+              tick.last_price,
+              tick.exchange_timestamp
+            );
+          }
+        } else {
+          console.log("Market Closed");
+          console.log(now);
+        }
+      });
+    });
+    // startFetchJob(data);
+    // startFiveFetchJob(data);
     fetchFiveCandleFromDB(data);
-    startThirtyFetchJob(data);
+    // startThirtyFetchJob(data);
     fetchThirtyCandleFromDB(data);
     startSLMonitor();
     startSLMonitor30m();

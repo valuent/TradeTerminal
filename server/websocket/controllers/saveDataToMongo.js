@@ -11,6 +11,6 @@ const saveDataToMongo = async (insToken, lastPrice, exchangeTime) => {
     exchange_time: exchTime,
   });
   await tick.save();
-  console.log("Added Data");
+  console.log("Added Data", tick);
 };
 exports.saveDataToMongo = saveDataToMongo;

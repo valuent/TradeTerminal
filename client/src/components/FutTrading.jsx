@@ -19,12 +19,15 @@ function FutTrading() {
     expiries,
     niftyOptChainData,
     bnfOptChainData,
+    fnfOptChainData,
     socket,
     tickerData,
     niftyFutData,
     bnfFutData,
+    fnfFutData,
     niftySpotData,
     bnfSpotData,
+    fnfSpotData,
     isSuccess,
   } = useContext(DataContext);
 
@@ -317,8 +320,10 @@ function FutTrading() {
     await socket?.emit("defaultTokens", [
       niftyFutData?.instrument_token,
       bnfFutData?.instrument_token,
+      fnfFutData?.instrument_token,
       niftySpotData?.instrument_token,
       bnfSpotData?.instrument_token,
+      fnfSpotData?.instrument_token,
     ]);
   };
   socket?.on(niftyFutData?.instrument_token, (data) => {

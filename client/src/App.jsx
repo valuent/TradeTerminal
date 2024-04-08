@@ -10,12 +10,19 @@ import io from "socket.io-client";
 
 function App() {
   const [expiries, setExpiries] = useState();
+
   const [niftyOptChainData, setNiftyOptChainData] = useState();
   const [bnfOptChainData, setBnfOptChainData] = useState();
+  const [fnfOptChainData, setFnfOptChainData] = useState();
+
   const [niftyFutData, setNiftyFutData] = useState();
   const [bnfFutData, setBnfFutData] = useState();
+  const [fnfFutData, setFnfFutData] = useState();
+
   const [niftySpotData, setNiftySpotData] = useState();
   const [bnfSpotData, setBnfSpotData] = useState();
+  const [fnfSpotData, setFnfSpotData] = useState();
+
   const [tokenAvailable, setTokenAvailable] = useState(null);
 
   // Socket Related States
@@ -49,6 +56,11 @@ function App() {
       setBnfOptChainData(doc.data());
     });
   }, []);
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "user", "fnfOptChain"), (doc) => {
+      setFnfOptChainData(doc.data());
+    });
+  }, []);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftyFut"), (doc) => {
@@ -61,6 +73,11 @@ function App() {
       setBnfFutData(doc.data());
     });
   }, []);
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "user", "fnfFut"), (doc) => {
+      setFnfFutData(doc.data());
+    });
+  }, []);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "niftySpot"), (doc) => {
@@ -71,6 +88,12 @@ function App() {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "user", "bnfSpot"), (doc) => {
       setBnfSpotData(doc.data());
+    });
+  }, []);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "user", "fnfSpot"), (doc) => {
+      setFnfSpotData(doc.data());
     });
   }, []);
 
@@ -131,12 +154,15 @@ function App() {
           expiries,
           niftyOptChainData,
           bnfOptChainData,
+          fnfOptChainData,
           socket,
           tickerData,
           niftyFutData,
           bnfFutData,
+          fnfFutData,
           niftySpotData,
           bnfSpotData,
+          fnfSpotData,
           isSuccess,
         }}
       >
