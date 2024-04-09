@@ -9,9 +9,11 @@ function Terminal() {
   return (
     <div>
       <SaveExpiries />
-      <Strangle />
       <FutTrading />
       <hr className="m-5 mt-10 text-xl text-center"></hr>
+      <Strangle />
+      <hr className="m-5 mt-10 text-xl text-center"></hr>
+
       {/* <div className="m-5 mt-10 text-xl text-center">
         5 Mins Super Trend Trades
       </div>

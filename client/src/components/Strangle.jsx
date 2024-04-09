@@ -34,9 +34,9 @@ function Strangle() {
   const [currentIndex, setCurrentIndex] = useState();
   const [indexLtp, setIndexLtp] = useState();
   const [indexQuantity, setIndexQuantity] = useState({
-    NIFTY: 50,
-    BANKNIFTY: 15,
-    FINNIFTY: 40,
+    NIFTY: 500,
+    BANKNIFTY: 225,
+    FINNIFTY: 480,
   });
 
   const [roundedLtp, setRoundedLtp] = useState();
@@ -83,13 +83,15 @@ function Strangle() {
   const [oneStepCloseCallLtp, setOneStepCloseCallLtp] = useState();
   const [twoStepCloseCallLtp, setTwoStepCloseCallLtp] = useState();
 
+  const [liveMTM, setLiveMTM] = useState();
+
   const toastHandler = (message) => {
     toast(message, {
       position: "top-right",
-      autoClose: 5000,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
-      pauseOnHover: true,
+      pauseOnHover: false,
       draggable: true,
       progress: undefined,
       theme: "dark",
@@ -277,7 +279,7 @@ function Strangle() {
       }
     };
     sendOptionChainTokens();
-  }, [optionChainCall]);
+  }, [currentIndex]);
 
   useEffect(() => {
     const selectedPutTicks = tickerData?.filter((data) => {
@@ -548,10 +550,16 @@ function Strangle() {
           });
 
           let price;
+          let calcSL;
+          let calcTGT;
           if (putShortId?.[0]?.average_price) {
             price = putShortId?.[0].average_price;
+            calcSL = putShortId?.[0]?.average_price * 1.3;
+            calcTGT = putShortId?.[0]?.average_price * 0.5;
           } else {
             price = "";
+            calcSL = "";
+            calcTGT = "";
           }
 
           await setDoc(
@@ -563,6 +571,9 @@ function Strangle() {
                 instrument_token: parseInt(putInfo?.instrument_token),
                 tradingsymbol: putInfo?.tradingsymbol,
                 strike: putInfo?.strike,
+                slPoints: calcSL,
+                tgtPoints: calcTGT,
+                quantity: qty,
               },
             },
             { merge: true }
@@ -691,10 +702,16 @@ function Strangle() {
           });
 
           let price;
+          let calcSL;
+          let calcTGT;
           if (callShortId?.[0]?.average_price) {
             price = callShortId?.[0].average_price;
+            calcSL = callShortId?.[0]?.average_price * 1.3;
+            calcTGT = callShortId?.[0]?.average_price * 0.5;
           } else {
             price = "";
+            calcSL = "";
+            calcTGT = "";
           }
 
           await setDoc(
@@ -706,6 +723,9 @@ function Strangle() {
                 instrument_token: parseInt(callInfo?.instrument_token),
                 tradingsymbol: callInfo?.tradingsymbol,
                 strike: callInfo?.strike,
+                slPoints: calcSL,
+                tgtPoints: calcTGT,
+                quantity: qty,
               },
             },
             { merge: true }
@@ -813,10 +833,235 @@ function Strangle() {
     }
   };
 
-  const setPutSL = () => {};
-  const setPutTGT = () => {};
-  const setCallSL = () => {};
-  const setCallTGT = () => {};
+  const updateOrderBookStrangle = async () => {
+    await axios.get(`/api/orderInfo`).then(async (response) => {
+      // console.log(response);
+      let callShortId = response?.data?.filter((order) => {
+        return (
+          order.order_id === openPositions?.callShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let putShortId = response?.data?.filter((order) => {
+        return (
+          order.order_id === openPositions?.putShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      if (callShortId.length > 0 && callShortId?.[0]?.average_price !== "") {
+        let calcSL = callShortId?.[0]?.average_price * 1.3;
+        let calcTGT = callShortId?.[0]?.average_price * 0.5;
+
+        await setDoc(
+          doc(db, "strangleExpiry", currentIndex),
+          {
+            callShort: {
+              average_price: callShortId?.[0]?.average_price,
+              slPoints: calcSL,
+              tgtPoints: calcTGT,
+            },
+          },
+          { merge: true }
+        )
+          .then(() => {
+            toastHandler(`${currentIndex} order book updated`);
+          })
+          .catch((e) => {
+            toastHandler(`${currentIndex} order Book Error: ${e}`);
+          });
+      }
+
+      if (putShortId.length > 0 && putShortId?.[0]?.average_price !== "") {
+        let calcSL = putShortId?.[0]?.average_price * 1.3;
+        let calcTGT = putShortId?.[0]?.average_price * 0.5;
+        await setDoc(
+          doc(db, "strangleExpiry", currentIndex),
+          {
+            putShort: {
+              average_price: putShortId?.[0]?.average_price,
+              slPoints: calcSL,
+              tgtPoints: calcTGT,
+            },
+          },
+          { merge: true }
+        )
+          .then(() => {
+            toastHandler(`${currentIndex} order book updated`);
+          })
+          .catch((e) => {
+            toastHandler(`${currentIndex} order Book Error: ${e}`);
+          });
+      }
+    });
+
+    await axios.get(`/api/orderInfo`).then(async (response) => {
+      // console.log(response);
+      let putLongId = response?.data?.filter((order) => {
+        return (
+          order.order_id === niftyShortOrderId?.putLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let callLongId = response?.data?.filter((order) => {
+        return (
+          order.order_id === niftyShortOrderId?.callShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      if (
+        putLongId.length > 0 &&
+        callLongId.length > 0 &&
+        putLongId?.[0]?.average_price !== "" &&
+        callLongId?.[0]?.average_price !== ""
+      ) {
+        await setDoc(
+          doc(db, "strangleExpiry", currentIndex),
+          {
+            putLong: {
+              average_price: putLongId?.[0]?.average_price,
+            },
+            callLong: {
+              average_price: callLongId?.[0]?.average_price,
+            },
+          },
+          { merge: true }
+        )
+          .then(() => {
+            toastHandler(`${currentIndex} order book updated`);
+          })
+          .catch((e) => {
+            toastHandler(`${currentIndex} order Book Error: ${e}`);
+          });
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (
+      (openPositions?.putShort?.orderId &&
+        openPositions?.putShort?.average_price !== "") ||
+      (openPositions?.callShort?.orderId &&
+        openPositions?.callShort?.average_price !== "") ||
+      (openPositions?.putLong?.orderId &&
+        openPositions?.putLong?.average_price !== "") ||
+      (openPositions?.callLong?.orderId &&
+        openPositions?.callLong?.average_price !== "")
+    ) {
+      updateOrderBookStrangle();
+    }
+  }, [tickerData]);
+
+  const setPutSL = async (slPoints) => {
+    if (openPositions?.putShort) {
+      await setDoc(
+        doc(db, "strangleExpiry", currentIndex),
+        {
+          putShort: {
+            slPoints: parseFloat(slPoints),
+          },
+        },
+        { merge: true }
+      );
+      toastHandler(`${currentIndex} Long SL points ${slPoints}`);
+    }
+  };
+  const setPutTGT = async (tgtPoints) => {
+    if (openPositions?.putShort) {
+      await setDoc(
+        doc(db, "strangleExpiry", currentIndex),
+        {
+          putShort: {
+            tgtPoints: parseFloat(tgtPoints),
+          },
+        },
+        { merge: true }
+      );
+      toastHandler(`Bank Nifty Long TGT points ${tgtPoints}`);
+    }
+  };
+  const setCallSL = async (slPoints) => {
+    if (openPositions?.callShort) {
+      await setDoc(
+        doc(db, "strangleExpiry", currentIndex),
+        {
+          callShort: {
+            slPoints: parseFloat(slPoints),
+          },
+        },
+        { merge: true }
+      );
+      toastHandler(`${currentIndex} Long SL points ${slPoints}`);
+    }
+  };
+  const setCallTGT = async (tgtPoints) => {
+    if (openPositions?.callShort) {
+      await setDoc(
+        doc(db, "strangleExpiry", currentIndex),
+        {
+          callShort: {
+            tgtPoints: parseFloat(tgtPoints),
+          },
+        },
+        { merge: true }
+      );
+      toastHandler(`Bank Nifty Long TGT points ${tgtPoints}`);
+    }
+  };
+
+  useEffect(() => {
+    const monitorPutShortSLTGT = async () => {
+      if (
+        openPositions?.putShort &&
+        openPositions?.putShort?.average_price &&
+        openPositions?.putShort?.slPoints &&
+        openPositions?.putShort?.tgtPoints
+      ) {
+        if (
+          currentStrikePutLtp?.last_price >= openPositions?.putShort?.slPoints
+        ) {
+          await putShortExit(openPositions?.putShort, adjustmentQty);
+          await putShort(oneStepRiskOffPE, adjustmentQty);
+          toastHandler("PUT SL TAKEN ROLLED 1 STEP");
+        }
+
+        if (
+          currentStrikePutLtp?.last_price <= openPositions?.putShort?.tgtPoints
+        ) {
+          await putShortExit(openPositions?.putShort, adjustmentQty);
+          await putShort(oneStepRiskOnPE, adjustmentQty);
+          toastHandler("PUT TGT TAKEN ROLLED 1 STEP");
+        }
+      }
+    };
+    const monitorCallShortSLTGT = async () => {
+      if (
+        openPositions?.callShort &&
+        openPositions?.callShort?.average_price &&
+        openPositions?.callShort?.slPoints &&
+        openPositions?.callShort?.tgtPoints
+      ) {
+        if (
+          currentStrikeCallLtp?.last_price >= openPositions?.callShort?.slPoints
+        ) {
+          await callShortExit(openPositions?.callShort, adjustmentQty);
+          await callShort(oneStepRiskOffCE, adjustmentQty);
+          toastHandler("CALL SL TAKEN ROLLED 1 STEP");
+        }
+
+        if (
+          currentStrikeCallLtp?.last_price <=
+          openPositions?.callShort?.tgtPoints
+        ) {
+          await callShortExit(openPositions?.callShort, adjustmentQty);
+          await callShort(oneStepRiskOnCE, adjustmentQty);
+          toastHandler("CALL TGT TAKEN ROLLED 1 STEP");
+        }
+      }
+    };
+    monitorPutShortSLTGT();
+    monitorCallShortSLTGT();
+  }, [tickerData]);
 
   const toggleAdjustmentQty = () => {
     if (adjustmentQty === indexQuantity?.[currentIndex]) {
@@ -839,8 +1084,40 @@ function Strangle() {
   };
 
   useEffect(() => {
-    console.log(currentStrikePutLtp);
-  }, [currentStrikePutLtp]);
+    const slTgtRefresh = () => {
+      if (
+        openPositions?.putShort?.slPoints ||
+        openPositions?.putShort?.tgtPoints
+      ) {
+        document.getElementById("putSl").value =
+          openPositions?.putShort?.slPoints;
+        document.getElementById("putTgt").value =
+          openPositions?.putShort?.tgtPoints;
+      } else {
+        document.getElementById("putSl").value = "";
+        document.getElementById("putTgt").value = "";
+      }
+
+      if (
+        openPositions?.callShort?.slPoints ||
+        openPositions?.callShort?.tgtPoints
+      ) {
+        document.getElementById("callSl").value =
+          openPositions?.callShort?.slPoints;
+        document.getElementById("callTgt").value =
+          openPositions?.callShort?.tgtPoints;
+      } else {
+        document.getElementById("callSl").value = "";
+        document.getElementById("callTgt").value = "";
+      }
+    };
+
+    slTgtRefresh();
+  }, [openPositions]);
+
+  // useEffect(() => {
+  //   console.log(currentStrikePutLtp);
+  // }, [currentStrikePutLtp]);
 
   return (
     <>
@@ -882,6 +1159,12 @@ function Strangle() {
               <option value="FINNIFTY">FINNIFTY</option>
             </select>
           </div>
+          <button
+            className="refresh btn btn-accent"
+            onClick={updateOrderBookStrangle}
+          >
+            Refresh Order Book
+          </button>
           <div className="flex items-center justify-center w-full selectionInfo">
             Index: {currentIndex} || Expiry:{" "}
             {optionChainCall?.[0]?.expiry?.slice(0, 10)}
@@ -961,7 +1244,7 @@ function Strangle() {
               </span>
             </div>
             <button
-              className="h-12 mt-3 btn btn-accent toggleAdjustQty join-item"
+              className="h-12 mt-3 btn btn-base toggleAdjustQty join-item"
               onClick={() => {
                 toggleAdjustmentQty();
               }}
@@ -1116,7 +1399,15 @@ function Strangle() {
                 name="sl"
                 id="putSl"
               />
-              <button className="btn btn-neutral join-item">Put SL</button>
+              <button
+                className="btn btn-neutral join-item"
+                onClick={() => {
+                  let sl = document.getElementById("putSl").value;
+                  setPutSL(sl);
+                }}
+              >
+                Put SL
+              </button>
             </div>
             <div className="tgt join">
               <input
@@ -1125,7 +1416,15 @@ function Strangle() {
                 name="tgt"
                 id="putTgt"
               />
-              <button className="btn btn-neutral join-item">Put TGT</button>
+              <button
+                className="btn btn-neutral join-item"
+                onClick={() => {
+                  let tgt = document.getElementById("putTgt").value;
+                  setPutTGT(tgt);
+                }}
+              >
+                Put TGT
+              </button>
             </div>
           </div>
         </div>
@@ -1200,7 +1499,7 @@ function Strangle() {
               </span>
             </div>
             <button
-              className="h-12 mt-3 btn btn-accent toggleAdjustQty join-item"
+              className="h-12 mt-3 btn btn-base toggleAdjustQty join-item"
               onClick={() => {
                 toggleAdjustmentQty();
               }}
@@ -1342,7 +1641,7 @@ function Strangle() {
             }}
           >
             {" "}
-            EXIT PUTS
+            EXIT CALLS
           </button>
 
           {/*  */}
@@ -1357,7 +1656,15 @@ function Strangle() {
                 name="sl"
                 id="callSl"
               />
-              <button className="btn btn-neutral join-item">Call SL</button>
+              <button
+                className="btn btn-neutral join-item"
+                onClick={() => {
+                  let sl = document.getElementById("callSl").value;
+                  setCallSL(sl);
+                }}
+              >
+                Call SL
+              </button>
             </div>
             <div className="tgt join">
               <input
@@ -1366,7 +1673,15 @@ function Strangle() {
                 name="tgt"
                 id="callTgt"
               />
-              <button className="btn btn-neutral join-item">Call TGT</button>
+              <button
+                className="btn btn-neutral join-item"
+                onClick={() => {
+                  let tgt = document.getElementById("callTgt").value;
+                  setCallTGT(tgt);
+                }}
+              >
+                Call TGT
+              </button>
             </div>
           </div>
         </div>

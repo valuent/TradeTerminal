@@ -164,8 +164,6 @@ app.get("/api/histData", async (req, res) => {
   }
 });
 
-console.log(Date.now() + 5);
-
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
