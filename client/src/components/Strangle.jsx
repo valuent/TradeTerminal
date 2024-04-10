@@ -343,6 +343,7 @@ function Strangle() {
         }
       }
     };
+    // #fsgdfg
     const setRiskOnStrikesPE = () => {
       if (openPositions?.putShort) {
         if (currentIndex === "BANKNIFTY") {
@@ -940,13 +941,13 @@ function Strangle() {
   useEffect(() => {
     if (
       (openPositions?.putShort?.orderId &&
-        openPositions?.putShort?.average_price !== "") ||
+        openPositions?.putShort?.average_price == "") ||
       (openPositions?.callShort?.orderId &&
-        openPositions?.callShort?.average_price !== "") ||
+        openPositions?.callShort?.average_price == "") ||
       (openPositions?.putLong?.orderId &&
-        openPositions?.putLong?.average_price !== "") ||
+        openPositions?.putLong?.average_price == "") ||
       (openPositions?.callLong?.orderId &&
-        openPositions?.callLong?.average_price !== "")
+        openPositions?.callLong?.average_price == "")
     ) {
       updateOrderBookStrangle();
     }
@@ -1121,25 +1122,6 @@ function Strangle() {
 
   return (
     <>
-      {/* {selectedPutLtp}
-      {selectedCallLtp} */}
-      {/* {roundedLtp} */}
-      {/* {optionChainPut?.map((e) => {
-        return (
-          <>
-            <h3>{e.strike}</h3>
-            <br />
-          </>
-        );
-      })}
-      {optionChainCall?.map((e) => {
-        return (
-          <>
-            <h3>{e.strike}</h3>
-            <br />
-          </>
-        );
-      })} */}
       <div className="w-full p-2 h-max">
         <div className="flex justify-between w-full h-full shadow-lg innerNav bg-neutral rounded-2xl">
           <div className="flex items-center justify-center w-full">
@@ -1181,12 +1163,12 @@ function Strangle() {
         {/* PUT SIDE TERMINAL */}
         {/*  */}
         <div className="flex flex-col items-center justify-start w-full puts">
-          <div className="strikeSelection join">
-            <div className="flex items-center justify-center p-3 text-center join-item bg-neutral w-fit">
+          <div className="justify-center w-4/5 align-middle strikeSelection join">
+            <div className="flex items-center justify-center w-full p-3 text-center join-item bg-neutral ">
               Select PUT
             </div>
             <select
-              className="select select-bordered join-item"
+              className="w-full select select-bordered join-item"
               name="puts"
               id="putStrike"
               onChange={(e) => {
@@ -1208,7 +1190,7 @@ function Strangle() {
                 );
               })}
             </select>
-            <div className="flex items-center justify-center p-3 text-center join-item bg-neutral w-fit">
+            <div className="flex items-center justify-center w-full p-3 text-center join-item bg-neutral w-fit">
               LTP: {selectedPutLtp}
             </div>
             <button
@@ -1218,7 +1200,7 @@ function Strangle() {
               }}
             >
               {" "}
-              SELL Selected Put
+              SELL PUT
             </button>
             <button
               className="text-white btn btn-neutral join-item"
@@ -1227,15 +1209,15 @@ function Strangle() {
               }}
             >
               {" "}
-              BUY Selected Put
+              BUY CALL
             </button>
           </div>
 
           {/*  */}
           {/* CURRENT STRIKE */}
           {/*  */}
-          <div className="strikeQty join">
-            <div className="flex flex-col items-center justify-center w-64 h-12 mt-3 rounded-lg shadow-sm join-item currentEnteredStrike bg-neutral">
+          <div className="justify-center w-4/5 strikeQty join">
+            <div className="flex flex-col items-center justify-center w-3/5 h-12 mt-3 rounded-lg shadow-sm join-item currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 Current Strike: {openPositions?.putShort?.strike} PE
               </span>
@@ -1244,7 +1226,7 @@ function Strangle() {
               </span>
             </div>
             <button
-              className="h-12 mt-3 btn btn-base toggleAdjustQty join-item"
+              className="w-2/5 h-12 mt-3 btn btn-base toggleAdjustQty join-item"
               onClick={() => {
                 toggleAdjustmentQty();
               }}
@@ -1257,11 +1239,11 @@ function Strangle() {
           {/* RISK OFF STRIKES */}
           {/*  */}
 
-          <span className="p-3 py-0 mt-1 font-light rounded-t bg-neutral">
+          <span className="p-3 py-0 mt-1 font-light rounded-t bg-neutral join-item">
             Risk Off Strikes
           </span>
-          <div className="riskOff join">
-            <div className="flex flex-col items-center justify-center w-64 rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
+          <div className="flex justify-center w-4/5 riskOff join">
+            <div className="flex flex-col items-center justify-center w-full rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 One Step : {oneStepRiskOffPE?.strike} PE
               </span>
@@ -1269,7 +1251,7 @@ function Strangle() {
                 LTP: {oneStepAwayPutLtp}
               </span>
             </div>
-            <div className="flex flex-col items-center justify-center w-64 rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
+            <div className="flex flex-col items-center justify-center w-full rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 Two Step : {twoStepRiskOffPE?.strike} PE
               </span>
@@ -1285,8 +1267,8 @@ function Strangle() {
           <span className="p-3 py-0 mt-1 font-light rounded-t bg-neutral">
             Risk On Strikes
           </span>
-          <div className="riskOn join">
-            <div className="flex flex-col items-center justify-center w-64 rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
+          <div className="justify-center w-4/5 riskOn join">
+            <div className="flex flex-col items-center justify-center w-full rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 One Step : {oneStepRiskOnPE?.strike} PE
               </span>
@@ -1294,7 +1276,7 @@ function Strangle() {
                 LTP: {oneStepClosePutLtp}
               </span>
             </div>
-            <div className="flex flex-col items-center justify-center w-64 rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
+            <div className="flex flex-col items-center justify-center w-full rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 Two Step : {twoStepRiskOnPE?.strike} PE
               </span>
@@ -1305,19 +1287,12 @@ function Strangle() {
           </div>
 
           {/*  */}
-          {/* ADJUSTMENT QTY */}
-          {/*  */}
-
-          {/* value={() => {
-                return indexQuantity?.[currentIndex] / 2;
-              }} */}
-          {/*  */}
           {/* RISK OFF BUTTONS */}
           {/*  */}
 
-          <div className="flex w-4/5 mt-3 enterPuts justify-evenly">
+          <div className="flex justify-between w-4/5 mt-3 enterPuts">
             <button
-              className="text-white btn btn-secondary "
+              className="w-1/3 text-white btn btn-secondary "
               onClick={async () => {
                 if (openPositions?.putShort) {
                   await putShortExit(openPositions?.putShort, adjustmentQty);
@@ -1329,7 +1304,7 @@ function Strangle() {
               RISK OFF ONE STEP
             </button>
             <button
-              className="text-white btn btn-secondary "
+              className="w-1/3 text-white btn btn-secondary"
               onClick={async () => {
                 if (openPositions?.putShort) {
                   await putShortExit(openPositions?.putShort, adjustmentQty);
@@ -1346,9 +1321,9 @@ function Strangle() {
           {/* RISK ON BUTTONS */}
           {/*  */}
 
-          <div className="flex w-4/5 mt-3 enterPuts justify-evenly">
+          <div className="flex justify-between w-4/5 mt-3 enterPuts">
             <button
-              className="text-black btn btn-accent "
+              className="w-1/3 text-black btn btn-accent"
               onClick={async () => {
                 if (openPositions?.putShort) {
                   await putShortExit(openPositions?.putShort, adjustmentQty);
@@ -1360,7 +1335,7 @@ function Strangle() {
               RISK ON ONE STEP
             </button>
             <button
-              className="text-black btn btn-accent "
+              className="w-1/3 text-black btn btn-accent"
               onClick={async () => {
                 if (openPositions?.putShort) {
                   await putShortExit(openPositions?.putShort, adjustmentQty);
@@ -1374,33 +1349,19 @@ function Strangle() {
           </div>
 
           {/*  */}
-          {/* EXIT ALL BUTTON */}
-          {/*  */}
-
-          <button
-            className="mt-2 text-black btn btn-accent btn-wide"
-            onClick={async () => {
-              await putShortExit(openPositions?.putShort, adjustmentQty);
-            }}
-          >
-            {" "}
-            EXIT PUTS
-          </button>
-
-          {/*  */}
           {/* SET SL TGT */}
           {/*  */}
 
-          <div className="flex w-4/5 px-3 mt-3 SLTGT justify-evenly">
-            <div className="sl join">
+          <div className="flex justify-between w-4/5 mt-3 SLTGT">
+            <div className="w-1/3 sl join">
               <input
-                className="w-24 input input-bordered join-item"
+                className="w-full input input-bordered join-item"
                 type="number"
                 name="sl"
                 id="putSl"
               />
               <button
-                className="btn btn-neutral join-item"
+                className="text-white btn join-item btn-secondary"
                 onClick={() => {
                   let sl = document.getElementById("putSl").value;
                   setPutSL(sl);
@@ -1409,15 +1370,15 @@ function Strangle() {
                 Put SL
               </button>
             </div>
-            <div className="tgt join">
+            <div className="w-1/3 tgt join">
               <input
-                className="w-24 input input-bordered join-item"
+                className="w-full input input-bordered join-item"
                 type="number"
                 name="tgt"
                 id="putTgt"
               />
               <button
-                className="btn btn-neutral join-item"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
                   let tgt = document.getElementById("putTgt").value;
                   setPutTGT(tgt);
@@ -1427,6 +1388,20 @@ function Strangle() {
               </button>
             </div>
           </div>
+
+          {/*  */}
+          {/* EXIT ALL BUTTON */}
+          {/*  */}
+
+          <button
+            className="w-4/5 mt-2 text-white btn btn-base"
+            onClick={async () => {
+              await putShortExit(openPositions?.putShort, adjustmentQty);
+            }}
+          >
+            {" "}
+            EXIT PUTS
+          </button>
         </div>
 
         {/*  */}
@@ -1434,12 +1409,12 @@ function Strangle() {
         {/*  */}
 
         <div className="flex flex-col items-center justify-start w-full calls">
-          <div className="strikeSelection join">
-            <div className="flex items-center justify-center p-3 text-center join-item bg-neutral w-fit">
+          <div className="justify-center w-4/5 align-middle strikeSelection join">
+            <div className="flex items-center justify-center w-full p-3 text-center join-item bg-neutral ">
               Select CALL
             </div>
             <select
-              className="select select-bordered join-item"
+              className="w-full select select-bordered join-item"
               name="call"
               id="callStrike"
               onChange={(e) => {
@@ -1462,7 +1437,7 @@ function Strangle() {
                 );
               })}
             </select>
-            <div className="flex items-center justify-center p-3 text-center join-item bg-neutral w-fit">
+            <div className="flex items-center justify-center w-full p-3 text-center join-item bg-neutral ">
               LTP: {selectedCallLtp}
             </div>
 
@@ -1473,7 +1448,7 @@ function Strangle() {
               }}
             >
               {" "}
-              SELL Selected Call
+              SELL CALL
             </button>
             <button
               className="text-white btn btn-neutral join-item"
@@ -1482,15 +1457,15 @@ function Strangle() {
               }}
             >
               {" "}
-              BUY Selected Call
+              BUY CALL
             </button>
           </div>
 
           {/*  */}
           {/* CURRENT STRIKE */}
           {/*  */}
-          <div className="strikeQty join">
-            <div className="flex flex-col items-center justify-center w-64 h-12 mt-3 rounded-lg shadow-sm join-item currentEnteredStrike bg-neutral">
+          <div className="justify-center w-4/5 strikeQty join">
+            <div className="flex flex-col items-center justify-center w-3/5 h-12 mt-3 rounded-lg shadow-sm join-item currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 Current Strike: {openPositions?.callShort?.strike} CE
               </span>
@@ -1499,7 +1474,7 @@ function Strangle() {
               </span>
             </div>
             <button
-              className="h-12 mt-3 btn btn-base toggleAdjustQty join-item"
+              className="w-2/5 h-12 mt-3 btn btn-base toggleAdjustQty join-item"
               onClick={() => {
                 toggleAdjustmentQty();
               }}
@@ -1515,8 +1490,8 @@ function Strangle() {
           <span className="p-3 py-0 mt-1 font-light rounded-t bg-neutral">
             Risk Off Strikes
           </span>
-          <div className="riskOff join">
-            <div className="flex flex-col items-center justify-center w-64 rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
+          <div className="flex justify-center w-4/5 riskOff join">
+            <div className="flex flex-col items-center justify-center w-full rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 One Step : {oneStepRiskOffCE?.strike} CE{" "}
               </span>
@@ -1524,7 +1499,7 @@ function Strangle() {
                 LTP: {oneStepAwayCallLtp}
               </span>
             </div>
-            <div className="flex flex-col items-center justify-center w-64 rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
+            <div className="flex flex-col items-center justify-center w-full rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 Two Step : {twoStepRiskOffCE?.strike} CE{" "}
               </span>
@@ -1541,8 +1516,8 @@ function Strangle() {
           <span className="p-3 py-0 mt-1 font-light rounded-t bg-neutral">
             Risk On Strikes
           </span>
-          <div className="riskOn join">
-            <div className="flex flex-col items-center justify-center w-64 rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
+          <div className="justify-center w-4/5 riskOn join">
+            <div className="flex flex-col items-center justify-center w-full rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 One Step : {oneStepRiskOnCE?.strike} CE{" "}
               </span>
@@ -1550,7 +1525,7 @@ function Strangle() {
                 LTP: {oneStepCloseCallLtp}
               </span>
             </div>
-            <div className="flex flex-col items-center justify-center w-64 rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
+            <div className="flex flex-col items-center justify-center w-full rounded-lg shadow-sm join-item h-fit currentEnteredStrike bg-neutral">
               <span className="mt-1 text-lg">
                 Two Step : {twoStepRiskOnCE?.strike} CE{" "}
               </span>
@@ -1562,19 +1537,12 @@ function Strangle() {
           </div>
 
           {/*  */}
-          {/* ADJUSTMENT QTY */}
+          {/* #RISK OFF BUTTONS */}
           {/*  */}
 
-          {/* value={() => {
-                return indexQuantity?.[currentIndex] / 2;
-              }} */}
-          {/*  */}
-          {/* RISK OFF BUTTONS */}
-          {/*  */}
-
-          <div className="flex w-4/5 mt-3 enterPuts justify-evenly">
+          <div className="flex justify-between w-4/5 mt-3 enterPuts">
             <button
-              className="text-white btn btn-secondary "
+              className="w-1/3 text-white btn btn-secondary "
               onClick={async () => {
                 if (openPositions?.callShort) {
                   await callShortExit(openPositions?.callShort, adjustmentQty);
@@ -1586,7 +1554,7 @@ function Strangle() {
               RISK OFF ONE STEP
             </button>
             <button
-              className="text-white btn btn-secondary "
+              className="w-1/3 text-white btn btn-secondary "
               onClick={async () => {
                 if (openPositions?.callShort) {
                   await callShortExit(openPositions?.callShort, adjustmentQty);
@@ -1603,9 +1571,9 @@ function Strangle() {
           {/* RISK ON BUTTONS */}
           {/*  */}
 
-          <div className="flex w-4/5 mt-3 enterPuts justify-evenly">
+          <div className="flex justify-between w-4/5 mt-3 enterPuts">
             <button
-              className="text-black btn btn-accent "
+              className="w-1/3 text-black btn btn-accent"
               onClick={async () => {
                 if (openPositions?.callShort) {
                   await callShortExit(openPositions?.callShort, adjustmentQty);
@@ -1617,7 +1585,7 @@ function Strangle() {
               RISK ON ONE STEP
             </button>
             <button
-              className="text-black btn btn-accent "
+              className="w-1/3 text-black btn btn-accent"
               onClick={async () => {
                 if (openPositions?.callShort) {
                   await callShortExit(openPositions?.callShort, adjustmentQty);
@@ -1631,33 +1599,19 @@ function Strangle() {
           </div>
 
           {/*  */}
-          {/* EXIT ALL BUTTON */}
-          {/*  */}
-
-          <button
-            className="mt-2 text-black btn btn-accent btn-wide"
-            onClick={async () => {
-              await callShortExit(openPositions?.callShort, adjustmentQty);
-            }}
-          >
-            {" "}
-            EXIT CALLS
-          </button>
-
-          {/*  */}
           {/* SET SL TGT */}
           {/*  */}
 
-          <div className="flex w-2/3 mt-3 SLTGT justify-evenly">
-            <div className="sl join">
+          <div className="flex justify-between w-4/5 mt-3 SLTGT">
+            <div className="w-1/3 sl join">
               <input
-                className="w-24 input input-bordered join-item"
+                className="w-full input input-bordered join-item"
                 type="number"
                 name="sl"
                 id="callSl"
               />
               <button
-                className="btn btn-neutral join-item"
+                className="text-white btn join-item btn-secondary"
                 onClick={() => {
                   let sl = document.getElementById("callSl").value;
                   setCallSL(sl);
@@ -1666,15 +1620,15 @@ function Strangle() {
                 Call SL
               </button>
             </div>
-            <div className="tgt join">
+            <div className="w-1/3 tgt join">
               <input
-                className="w-24 input input-bordered join-item"
+                className="w-full input input-bordered join-item"
                 type="number"
                 name="tgt"
                 id="callTgt"
               />
               <button
-                className="btn btn-neutral join-item"
+                className="text-white btn btn-secondary join-item"
                 onClick={() => {
                   let tgt = document.getElementById("callTgt").value;
                   setCallTGT(tgt);
@@ -1684,6 +1638,20 @@ function Strangle() {
               </button>
             </div>
           </div>
+
+          {/*  */}
+          {/* EXIT ALL BUTTON */}
+          {/*  */}
+
+          <button
+            className="w-4/5 mt-2 text-white btn btn-base"
+            onClick={async () => {
+              await callShortExit(openPositions?.callShort, adjustmentQty);
+            }}
+          >
+            {" "}
+            EXIT CALLS
+          </button>
         </div>
       </div>
       {/*  */}

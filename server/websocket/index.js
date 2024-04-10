@@ -36,9 +36,9 @@ var now = new Date();
 var start = new Date();
 start.setHours(9, 15, 0);
 var end = new Date();
-end.setHours(15, 30, 5);
+end.setHours(23, 30, 5);
 var tickEnd = new Date();
-tickEnd.setHours(15, 29, 59, 900);
+tickEnd.setHours(23, 29, 59, 900);
 
 const startFetchJob = async (instTokenArray) => {
   const job = schedule.scheduleJob("* * * * *", async () => {
@@ -291,10 +291,10 @@ io.on("connection", (socket) => {
         }
       });
     });
-    startFetchJob(data);
-    startFiveFetchJob(data);
+    // startFetchJob(data);
+    // startFiveFetchJob(data);
     fetchFiveCandleFromDB(data);
-    startThirtyFetchJob(data);
+    // startThirtyFetchJob(data);
     fetchThirtyCandleFromDB(data);
     startSLMonitor();
     startSLMonitor30m();
