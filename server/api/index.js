@@ -88,24 +88,7 @@ app.get("/api/placeOrderFno", limiter, async (req, res) => {
   }
 });
 
-app.get("/api/placeOrderStrangleCall", limiter, async (req, res) => {
-  let orderInfo = {
-    exchange: "NFO",
-    tradingsymbol: req.query.tradingsymbol,
-    transaction_type: req.query.transaction_type,
-    quantity: req.query.quantity,
-    product: req.query.product,
-    order_type: req.query.order_type,
-  };
-  try {
-    let data = await kite.placeOrder("regular", orderInfo);
-    res.send(data);
-    console.log(data);
-  } catch (error) {
-    res.send(`Error occurred while placing Order ${error.message}`);
-  }
-});
-app.get("/api/placeOrderStranglePut", limiter, async (req, res) => {
+app.get("/api/placeOrderFnoBnf", limiter, async (req, res) => {
   let orderInfo = {
     exchange: "NFO",
     tradingsymbol: req.query.tradingsymbol,
@@ -123,9 +106,27 @@ app.get("/api/placeOrderStranglePut", limiter, async (req, res) => {
   }
 });
 
-app.get("/api/placeOrderFnoBnf", limiter, async (req, res) => {
+app.get("/api/placeOrderStrangleCall", limiter, async (req, res) => {
   let orderInfo = {
-    exchange: "NFO",
+    exchange: "NSE",
+    tradingsymbol: req.query.tradingsymbol,
+    transaction_type: req.query.transaction_type,
+    quantity: req.query.quantity,
+    product: req.query.product,
+    order_type: req.query.order_type,
+  };
+  try {
+    let data = await kite.placeOrder("regular", orderInfo);
+    res.send(data);
+    console.log(data);
+  } catch (error) {
+    res.send(`Error occurred while placing Order ${error.message}`);
+  }
+});
+
+app.get("/api/placeOrderStranglePut", limiter, async (req, res) => {
+  let orderInfo = {
+    exchange: "NSE",
     tradingsymbol: req.query.tradingsymbol,
     transaction_type: req.query.transaction_type,
     quantity: req.query.quantity,

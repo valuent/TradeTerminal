@@ -1369,26 +1369,18 @@ function FutTrading() {
 
   useEffect(() => {
     if (
-      (niftyLongOrderId?.putShort?.orderId &&
-        niftyLongOrderId?.callLong?.orderId &&
-        (!niftyLongOrderId?.putShort?.average_price ||
-          !niftyLongOrderId?.callLong?.average_price)) ||
-      (niftyShortOrderId?.putLong?.orderId &&
-        niftyShortOrderId?.callShort?.orderId &&
-        (!niftyShortOrderId?.callShort?.average_price ||
-          !niftyShortOrderId?.putLong?.average_price))
+      niftyLongOrderId?.putShort?.average_price == "" ||
+      niftyLongOrderId?.callLong?.average_price == "" ||
+      niftyShortOrderId?.callShort?.average_price == "" ||
+      niftyShortOrderId?.putLong?.average_price == ""
     ) {
       updateOrderBookNifty();
     }
     if (
-      (bnfLongOrderId?.putShort?.orderId &&
-        bnfLongOrderId?.callLong?.orderId &&
-        (!bnfLongOrderId?.putShort?.average_price ||
-          !bnfLongOrderId?.callLong?.average_price)) ||
-      (bnfShortOrderId?.putLong?.orderId &&
-        bnfShortOrderId?.callShort?.orderId &&
-        (!bnfShortOrderId?.callShort?.average_price ||
-          !bnfShortOrderId?.putLong?.average_price))
+      bnfLongOrderId?.putShort?.average_price === "" ||
+      bnfLongOrderId?.callLong?.average_price === "" ||
+      bnfShortOrderId?.callShort?.average_price === "" ||
+      bnfShortOrderId?.putLong?.average_price === ""
     ) {
       updateOrderBookBnf();
     }
@@ -2430,6 +2422,19 @@ function FutTrading() {
                             ).toFixed(2)}
                           </div>
                         </div>
+                        <div className="stat">
+                          <div className="stat-title">Total</div>
+                          <div className="text-xl font-bold">
+                            {(
+                              (niftyLongCallLtp -
+                                niftyLongOrderId?.callLong?.average_price +
+                                niftyLongOrderId?.putShort?.average_price -
+                                niftyShortPutLtp) *
+                              niftyQty *
+                              30
+                            ).toFixed(2)}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -2492,6 +2497,19 @@ function FutTrading() {
                                 niftyShortOrderId?.callShort?.average_price -
                                 niftyShortCallLtp) *
                               niftyQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Total</div>
+                          <div className="text-xl font-bold">
+                            {(
+                              (niftyLongPutLtp -
+                                niftyShortOrderId?.putLong?.average_price +
+                                niftyShortOrderId?.callShort?.average_price -
+                                niftyShortCallLtp) *
+                              niftyQty *
+                              30
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -2776,6 +2794,19 @@ function FutTrading() {
                             ).toFixed(2)}
                           </div>
                         </div>
+                        <div className="stat">
+                          <div className="stat-title">Total</div>
+                          <div className="text-xl font-bold">
+                            {(
+                              (bnfLongCallLtp -
+                                bnfLongOrderId?.callLong?.average_price +
+                                bnfLongOrderId?.putShort?.average_price -
+                                bnfShortPutLtp) *
+                              bnfQty *
+                              30
+                            ).toFixed(2)}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -2838,6 +2869,19 @@ function FutTrading() {
                                 bnfShortOrderId?.callShort?.average_price -
                                 bnfShortCallLtp) *
                               bnfQty
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Total</div>
+                          <div className="text-xl font-bold">
+                            {(
+                              (bnfLongPutLtp -
+                                bnfShortOrderId?.putLong?.average_price +
+                                bnfShortOrderId?.callShort?.average_price -
+                                bnfShortCallLtp) *
+                              bnfQty *
+                              30
                             ).toFixed(2)}
                           </div>
                         </div>
