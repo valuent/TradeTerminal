@@ -108,7 +108,7 @@ app.get("/api/placeOrderFnoBnf", limiter, async (req, res) => {
 
 app.get("/api/placeOrderStrangleCall", limiter, async (req, res) => {
   let orderInfo = {
-    exchange: "NSE",
+    exchange: "NFO",
     tradingsymbol: req.query.tradingsymbol,
     transaction_type: req.query.transaction_type,
     quantity: req.query.quantity,
@@ -126,7 +126,7 @@ app.get("/api/placeOrderStrangleCall", limiter, async (req, res) => {
 
 app.get("/api/placeOrderStranglePut", limiter, async (req, res) => {
   let orderInfo = {
-    exchange: "NSE",
+    exchange: "NFO",
     tradingsymbol: req.query.tradingsymbol,
     transaction_type: req.query.transaction_type,
     quantity: req.query.quantity,
