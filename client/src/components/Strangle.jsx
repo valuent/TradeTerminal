@@ -32,6 +32,7 @@ function Strangle() {
   } = useContext(DataContext);
 
   const [currentIndex, setCurrentIndex] = useState();
+
   const [indexLtp, setIndexLtp] = useState();
   const [indexQuantity, setIndexQuantity] = useState({
     NIFTY: 500,
@@ -126,6 +127,7 @@ function Strangle() {
     };
     indexLtpStream();
   }, [tickerData, currentIndex]);
+
   useEffect(() => {
     socket?.emit("defaultTokens", [
       niftySpotData?.instrument_token,
@@ -254,32 +256,33 @@ function Strangle() {
     }
   }, [roundedLtp, currentIndex]);
 
-  useEffect(() => {
-    const sendOptionChainTokens = () => {
-      if (optionChainCall?.length > 0 && optionChainPut?.length > 0) {
-        let tokenArray = [];
-        let callTokens = optionChainCall?.map((data) => {
-          let token = data.instrument_token;
-          return token;
-        });
-        let putTokens = optionChainPut?.map((data) => {
-          let token = data.instrument_token;
-          return token;
-        });
+  const sendOptionChainTokens = () => {
+    if (optionChainCall?.length > 0 && optionChainPut?.length > 0) {
+      let tokenArray = [];
+      let callTokens = optionChainCall?.map((data) => {
+        let token = data.instrument_token;
+        return token;
+      });
+      let putTokens = optionChainPut?.map((data) => {
+        let token = data.instrument_token;
+        return token;
+      });
 
-        callTokens?.forEach((token) => {
-          tokenArray.push(parseInt(token));
-        });
-        putTokens?.forEach((token) => {
-          tokenArray.push(parseInt(token));
-        });
+      callTokens?.forEach((token) => {
+        tokenArray.push(parseInt(token));
+      });
+      putTokens?.forEach((token) => {
+        tokenArray.push(parseInt(token));
+      });
 
-        if (tokenArray.length > 0) {
-          socket?.emit("defaultTokens", tokenArray);
-        }
+      if (tokenArray.length > 0) {
+        socket?.emit("defaultTokens", tokenArray);
       }
-    };
+    }
+  };
+  useEffect(() => {
     sendOptionChainTokens();
+    console.log(optionChainCall, optionChainPut);
   }, [currentIndex]);
 
   useEffect(() => {
@@ -349,7 +352,7 @@ function Strangle() {
         }
       }
     };
-    // #fsgdfg
+
     const setRiskOnStrikesPE = () => {
       if (openPositions?.putShort) {
         if (currentIndex === "BANKNIFTY") {
@@ -427,7 +430,7 @@ function Strangle() {
     setRiskOffStrikesCE();
     setRiskOnStrikesCE();
     // console.log(oneStepRiskOffCE);
-  }, [openPositions, currentIndex, optionChainCall, optionChainPut]);
+  }, [openPositions, currentIndex]);
 
   useEffect(() => {
     const currentStrikePELtp = tickerData?.filter((data) => {
@@ -1136,7 +1139,10 @@ function Strangle() {
       if (allExecPositions?.callLegCount > 0) {
         for (let i = 1; i <= allExecPositions?.callLegCount; i++) {
           let legName = "callLeg_" + i;
-          if (allExecPositions?.[legName]?.callExit) {
+          if (
+            allExecPositions?.[legName]?.callExit &&
+            allExecPositions?.[legName]?.callExit?.average_price !== ""
+          ) {
             callMtmPoints =
               callMtmPoints +
               allExecPositions?.[legName]?.callEntry?.average_price -
@@ -1147,7 +1153,10 @@ function Strangle() {
       if (allExecPositions?.putLegCount > 0) {
         for (let i = 1; i <= allExecPositions?.putLegCount; i++) {
           let legName = "putLeg_" + i;
-          if (allExecPositions?.[legName]?.putExit) {
+          if (
+            allExecPositions?.[legName]?.putExit &&
+            allExecPositions?.[legName]?.putExit?.average_price !== ""
+          ) {
             putMtmPoints =
               putMtmPoints +
               allExecPositions?.[legName]?.putEntry?.average_price -
@@ -1157,6 +1166,7 @@ function Strangle() {
       }
 
       setClosedMTM(callMtmPoints + putMtmPoints);
+      console.log(callMtmPoints, putMtmPoints);
     };
     calculateMTM();
   }, [allExecPositions]);
@@ -1212,53 +1222,70 @@ function Strangle() {
       }
     };
     const monitorMTMSL = async () => {
-      let liveMTM =
-        closedMTM +
-        (openPositions?.callShort?.average_price -
-          currentStrikeCallLtp?.last_price +
-          openPositions?.putShort?.average_price -
-          currentStrikePutLtp?.last_price) *
-          indexQuantity?.[currentIndex];
+      if (
+        ((openPositions?.callShort &&
+          openPositions?.callShort?.average_price !== "") ||
+          (openPositions?.putShort &&
+            openPositions?.putShort?.average_price !== "")) &&
+        openPositions?.mtmSL
+      ) {
+        let liveMTM =
+          closedMTM +
+          (openPositions?.callShort?.average_price -
+            currentStrikeCallLtp?.last_price +
+            openPositions?.putShort?.average_price -
+            currentStrikePutLtp?.last_price) *
+            indexQuantity?.[currentIndex];
 
-      let mtmSL = openPositions?.mtmSL;
-      if (liveMTM <= -mtmSL) {
-        await putShortExit(openPositions?.putShort, adjustmentQty);
-        await callShortExit(openPositions?.callShort, adjustmentQty);
-        await setDoc(
-          doc(db, "strangleExpiry", currentIndex),
-          {
-            mtmSL: deleteField(),
-          },
-          { merge: true }
-        );
-      }
+        let mtmSL = openPositions?.mtmSL;
+        if (liveMTM <= -mtmSL) {
+          await putShortExit(openPositions?.putShort, adjustmentQty);
+          await callShortExit(openPositions?.callShort, adjustmentQty);
+          await setDoc(
+            doc(db, "strangleExpiry", currentIndex),
+            {
+              mtmSL: deleteField(),
+            },
+            { merge: true }
+          );
+        }
 
-      if (liveMTM >= mtmSL) {
-        await setDoc(
-          doc(db, "strangleExpiry", currentIndex),
-          {
-            mtmSL: parseFloat(mtmSL / 2),
-          },
-          { merge: true }
-        );
-        toastHandler(`${currentIndex} MTM SL points ${mtmSL}`);
-      }
-      if (liveMTM >= mtmSL * 1.5) {
-        await setDoc(
-          doc(db, "strangleExpiry", currentIndex),
-          {
-            mtmSL: 1,
-          },
-          { merge: true }
-        );
-        toastHandler(`${currentIndex} MTM SL points ${mtmSL}`);
+        if (liveMTM >= mtmSL) {
+          await setDoc(
+            doc(db, "strangleExpiry", currentIndex),
+            {
+              mtmSL: parseFloat(mtmSL / 2),
+            },
+            { merge: true }
+          );
+          toastHandler(`${currentIndex} MTM SL points ${mtmSL}`);
+        }
+        if (liveMTM >= mtmSL * 1.5) {
+          await setDoc(
+            doc(db, "strangleExpiry", currentIndex),
+            {
+              mtmSL: 1,
+            },
+            { merge: true }
+          );
+          toastHandler(`${currentIndex} MTM SL points ${mtmSL}`);
+        }
       }
     };
 
     monitorMTMSL();
     monitorPutShortSLTGT();
     monitorCallShortSLTGT();
-  }, [tickerData]);
+  }, [tickerData, allExecPositions, openPositions]);
+
+  const clearDayHist = async () => {
+    await setDoc(doc(db, "strangleExpiry", `${currentIndex}ALLEXEC`), {}).catch(
+      (err) => {
+        console.log(err);
+      }
+    );
+    toastHandler("Cleared Day History");
+  };
 
   const toggleAdjustmentQty = () => {
     if (adjustmentQty === indexQuantity?.[currentIndex]) {
@@ -1326,9 +1353,9 @@ function Strangle() {
     <>
       <div className="w-full p-2 h-max">
         <div className="flex justify-between w-full h-full shadow-lg innerNav bg-neutral rounded-2xl">
-          <div className="flex items-center justify-center w-full">
+          <div className="flex items-center justify-center w-full join">
             <select
-              className="select select-md select-accent"
+              className="select select-md select-accent join-item"
               name="index"
               id="index"
               onChange={(e) => {
@@ -1342,6 +1369,12 @@ function Strangle() {
               <option value="BANKNIFTY">BANKNIFTY</option>
               <option value="FINNIFTY">FINNIFTY</option>
             </select>
+            <button
+              className="join-item btn btn-accent"
+              onClick={sendOptionChainTokens}
+            >
+              Fetch LTP
+            </button>
           </div>
           <button
             className="refresh btn btn-accent"
@@ -1860,92 +1893,107 @@ function Strangle() {
       {/*  */}
       {/* POSITIONS TABLE */}
       {/*  */}
-
-      <div className="flex justify-center w-full overflow-x-auto">
-        <table className="table w-4/5">
-          {/* head */}
-          <thead>
-            <tr>
-              <th></th>
-              <th>STRIKE</th>
-              <th>AVERAGE</th>
-              <th>LTP</th>
-              <th>PNL</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* row 1 */}
-            <tr>
-              <th>CALL</th>
-              <td>
-                {currentIndex} {openPositions?.callShort?.strike} CE
-              </td>
-              <td>{openPositions?.callShort?.average_price}</td>
-              <td>{currentStrikeCallLtp?.last_price}</td>
-              <td
-                className={
-                  openPositions?.callShort?.average_price -
-                    currentStrikeCallLtp?.last_price >=
-                  0
-                    ? "text-green-400"
-                    : "text-red-400"
-                }
-              >
-                {(openPositions?.callShort?.average_price -
-                  currentStrikeCallLtp?.last_price) *
-                  indexQuantity?.[currentIndex]}
-              </td>
-            </tr>
-            {/* row 2 */}
-            <tr>
-              <th>PUT</th>
-              <td>
-                {currentIndex} {openPositions?.putShort?.strike} PE
-              </td>
-              <td>{openPositions?.putShort?.average_price}</td>
-              <td>{currentStrikePutLtp?.last_price}</td>
-              <td
-                className={
-                  openPositions?.putShort?.average_price -
-                    currentStrikePutLtp?.last_price >=
-                  0
-                    ? "text-green-400"
-                    : "text-red-400"
-                }
-              >
-                {(openPositions?.putShort?.average_price -
-                  currentStrikePutLtp?.last_price) *
-                  indexQuantity?.[currentIndex]}
-              </td>
-            </tr>
-            {/* row 3 */}
-            <tr>
-              <th>TOTAL</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td
-                className={
-                  openPositions?.callShort?.average_price -
-                    currentStrikeCallLtp?.last_price +
+      {openPositions?.callShort || openPositions?.putShort ? (
+        <div className="flex justify-center w-full overflow-x-auto">
+          <table className="table w-4/5">
+            {/* head */}
+            <thead>
+              <tr>
+                <th></th>
+                <th>STRIKE</th>
+                <th>AVERAGE</th>
+                <th>LTP</th>
+                <th>PNL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* row 1 */}
+              <tr>
+                <th>CALL</th>
+                <td>
+                  {currentIndex} {openPositions?.callShort?.strike} CE
+                </td>
+                <td>{openPositions?.callShort?.average_price}</td>
+                <td>{currentStrikeCallLtp?.last_price}</td>
+                <td
+                  className={
+                    openPositions?.callShort?.average_price -
+                      currentStrikeCallLtp?.last_price >=
+                    0
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }
+                >
+                  {(
+                    (openPositions?.callShort?.average_price -
+                      currentStrikeCallLtp?.last_price) *
+                    indexQuantity?.[currentIndex]
+                  ).toFixed(2)}
+                </td>
+              </tr>
+              {/* row 2 */}
+              <tr>
+                <th>PUT</th>
+                <td>
+                  {currentIndex} {openPositions?.putShort?.strike} PE
+                </td>
+                <td>{openPositions?.putShort?.average_price}</td>
+                <td>{currentStrikePutLtp?.last_price}</td>
+                <td
+                  className={
                     openPositions?.putShort?.average_price -
-                    currentStrikePutLtp?.last_price >=
-                  0
-                    ? "text-green-400"
-                    : "text-red-400"
-                }
-              >
-                {closedMTM +
-                  (openPositions?.callShort?.average_price -
-                    currentStrikeCallLtp?.last_price +
-                    openPositions?.putShort?.average_price -
-                    currentStrikePutLtp?.last_price) *
-                    indexQuantity?.[currentIndex]}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                      currentStrikePutLtp?.last_price >=
+                    0
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }
+                >
+                  {(
+                    (openPositions?.putShort?.average_price -
+                      currentStrikePutLtp?.last_price) *
+                    indexQuantity?.[currentIndex]
+                  ).toFixed(2)}
+                </td>
+              </tr>
+              {/* row 3 */}
+              <tr>
+                <th>TOTAL</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td
+                  className={
+                    openPositions?.callShort?.average_price -
+                      currentStrikeCallLtp?.last_price +
+                      openPositions?.putShort?.average_price -
+                      currentStrikePutLtp?.last_price >=
+                    0
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }
+                >
+                  {closedMTM
+                    ? (
+                        closedMTM +
+                        (openPositions?.callShort?.average_price -
+                          currentStrikeCallLtp?.last_price +
+                          openPositions?.putShort?.average_price -
+                          currentStrikePutLtp?.last_price) *
+                          indexQuantity?.[currentIndex]
+                      ).toFixed(2)
+                    : (
+                        (openPositions?.callShort?.average_price -
+                          currentStrikeCallLtp?.last_price +
+                          openPositions?.putShort?.average_price -
+                          currentStrikePutLtp?.last_price) *
+                        indexQuantity?.[currentIndex]
+                      ).toFixed(2)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      ) : null}
       {/*  */}
       {/* SET MTM SL TSL*/}
       {/*  */}
@@ -1968,6 +2016,10 @@ function Strangle() {
             MTM SL
           </button>
         </div>
+
+        <button className="btn btn-accent" onClick={clearDayHist}>
+          Clear day history
+        </button>
       </div>
     </>
   );
