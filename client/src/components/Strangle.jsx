@@ -1165,6 +1165,22 @@ function Strangle() {
     ) {
       updateOrderBookStrangle();
     }
+    if (allExecPositions?.putLegCount > 0) {
+      for (let i = 1; i <= allExecPositions?.putLegCount; i++) {
+        let legName = "putLeg_" + i;
+        if (allExecPositions?.[legName]?.average_price == "") {
+          updateOrderBookStrangle();
+        }
+      }
+    }
+    if (allExecPositions?.callLegCount > 0) {
+      for (let i = 1; i <= allExecPositions?.callLegCount; i++) {
+        let legName = "callLeg_" + i;
+        if (allExecPositions?.[legName]?.average_price == "") {
+          updateOrderBookStrangle();
+        }
+      }
+    }
   }, [tickerData, currentIndex, openPositions]);
 
   const setPutSL = async (slPoints) => {
