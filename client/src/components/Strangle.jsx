@@ -36,7 +36,7 @@ function Strangle() {
   const [indexLtp, setIndexLtp] = useState();
   const [indexQuantity, setIndexQuantity] = useState({
     NIFTY: 500,
-    BANKNIFTY: 225,
+    BANKNIFTY: 240,
     FINNIFTY: 480,
   });
 
@@ -1261,7 +1261,8 @@ function Strangle() {
           let legName = "callLeg_" + i;
           if (
             allExecPositions?.[legName]?.callExit &&
-            allExecPositions?.[legName]?.callExit?.average_price !== ""
+            allExecPositions?.[legName]?.callExit?.average_price !== "" &&
+            allExecPositions?.[legName]?.callEntry?.average_price !== ""
           ) {
             callMtmPoints =
               callMtmPoints +
@@ -1275,7 +1276,8 @@ function Strangle() {
           let legName = "putLeg_" + i;
           if (
             allExecPositions?.[legName]?.putExit &&
-            allExecPositions?.[legName]?.putExit?.average_price !== ""
+            allExecPositions?.[legName]?.putExit?.average_price !== "" &&
+            allExecPositions?.[legName]?.putEntry?.average_price !== ""
           ) {
             putMtmPoints =
               putMtmPoints +

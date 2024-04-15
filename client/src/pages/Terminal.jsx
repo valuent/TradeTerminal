@@ -2,6 +2,7 @@ import React from "react";
 import SaveExpiries from "../components/SaveExpiries";
 import Strangle from "../components/Strangle";
 import FutTrading from "../components/FutTrading";
+import FutTradingOneMin from "../components/FutTradingOneMin";
 import PositionalSpread from "../components/PositionalSpread";
 import Supertrend from "../components/Supertrend";
 
@@ -10,6 +11,8 @@ function Terminal() {
     <div>
       <SaveExpiries />
       <FutTrading />
+      <hr className="m-5 mt-10 text-xl text-center"></hr>
+      <FutTradingOneMin />
       <hr className="m-5 mt-10 text-xl text-center"></hr>
       <Strangle />
       <hr className="m-5 mt-10 text-xl text-center"></hr>
