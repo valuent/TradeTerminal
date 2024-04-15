@@ -295,83 +295,239 @@ function SaveExpiries() {
       });
   };
 
+  const toggleRightNav = () => {
+    let rightNav = document.getElementById("navRight");
+
+    rightNav.classList.toggle("mr-[-280px]");
+  };
+
+  const toggleLeftNav = () => {
+    let rightNav = document.getElementById("navLeft");
+    rightNav.classList.toggle("ml-[-280px]");
+  };
+
   return (
     <>
-      <div className="w-full p-2 h-max">
-        <div className="w-full h-full shadow-lg innerNav bg-neutral rounded-2xl">
-          <div className="flex justify-between">
-            <div className="m-2 join join-horizontal">
+      <div
+        id="navRight"
+        className="fixed right-0 z-50 flex flex-col items-end w-64 h-full p-2 overflow-hidden transition-all duration-200 ease-in-out sideNavRight bg-base-300 bg-opacity-80 backdrop-blur-md rounded-tl-xl rounded-bl-xl"
+      >
+        <button
+          className="absolute z-50 text-black right-1 top-1 btn btn-circle btn-xs btn-accent"
+          onClick={toggleRightNav}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <div className="w-full p-3 text-lg text-center rounded-lg title bg-neutral-800 backdrop-blur-md bg-opacity-10">
+          Data resources update
+        </div>
+
+        <div className="w-full p-3 border-double taskTitle border-neutral border-[1px] rounded-lg text-center mt-5 ">
+          Fetch instrument data
+          <div className="flex justify-start w-full mt-3 join join-vertical">
+            <button
+              className="text-black rounded-md join-item btn btn-accent "
+              onClick={() => {
+                getInstForExp();
+              }}
+            >
+              Fetch Data
+            </button>
+            {instObject ? (
               <button
-                className="text-white rounded-md join-item btn btn-secondary"
+                className="text-black join-item btn btn-accent"
                 onClick={() => {
-                  getInstForExp();
+                  filterInst();
                 }}
               >
-                Fetch Data
+                Filter
               </button>
-              {instObject ? (
-                <button
-                  className="text-white join-item btn btn-secondary"
-                  onClick={() => {
-                    filterInst();
-                  }}
-                >
-                  Filter
-                </button>
-              ) : null}
-              {filteredInstObject && bnfFilteredInstObject ? (
-                <button
-                  className="text-white join-item btn btn-secondary"
-                  onClick={() => {
-                    saveExpiryArray();
-                  }}
-                >
-                  Sort Expiries
-                </button>
-              ) : null}
-              {expiryArray.length != 0 && bnfExpiryArray.length != 0 ? (
-                <button
-                  className="text-white join-item btn btn-secondary"
-                  onClick={() => {
-                    expiriesToFirebase();
-                  }}
-                >
-                  Save To firebase
-                </button>
-              ) : null}
-            </div>
-            {/*  */}
-            <div className="self-center text-xl head">Trading Terminal</div>
-            {/* Option Chain */}
-            <div className="m-2 join join-horizontal">
+            ) : null}
+            {filteredInstObject && bnfFilteredInstObject ? (
               <button
-                className="text-white join-item btn btn-secondary"
-                onClick={saveLtp}
+                className="text-black join-item btn btn-accent"
+                onClick={() => {
+                  saveExpiryArray();
+                }}
               >
-                Get Chain Range
+                Sort Expiries
               </button>
-              {niftyLtp && bnfLtp ? (
-                <button
-                  className="text-white join-item btn btn-secondary"
-                  onClick={() => {
-                    filterNiftyChain();
-                    filterBnfChain();
-                    filterFnfChain();
-                  }}
+            ) : null}
+            {expiryArray.length != 0 && bnfExpiryArray.length != 0 ? (
+              <button
+                className="text-black join-item btn btn-accent"
+                onClick={() => {
+                  expiriesToFirebase();
+                }}
+              >
+                Save To firebase
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="w-full p-3 border-double taskTitle border-neutral border-[1px] rounded-lg text-center mt-5 ">
+          Fetch Option chain data
+          <div className="flex justify-start w-full mt-3 join join-vertical">
+            <button
+              className="text-black join-item btn btn-accent"
+              onClick={saveLtp}
+            >
+              Get Chain Range
+            </button>
+            {niftyLtp && bnfLtp ? (
+              <button
+                className="text-black join-item btn btn-accent"
+                onClick={() => {
+                  filterNiftyChain();
+                  filterBnfChain();
+                  filterFnfChain();
+                }}
+              >
+                Create Option Chain
+              </button>
+            ) : null}
+            {niftyChain && bnfChain ? (
+              <button
+                className="text-black join-item btn btn-accent"
+                onClick={() => {
+                  optChainToFirebase();
+                }}
+              >
+                Chain to DB
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="navLeft"
+        className="fixed left-0 z-50 flex flex-col items-end w-64 h-full p-2 overflow-hidden transition-all duration-200 ease-in-out sideNavRight bg-base-300 bg-opacity-80 backdrop-blur-md rounded-tr-xl rounded-br-xl"
+      >
+        <button
+          className="absolute z-50 text-black left-1 top-1 btn btn-circle btn-xs btn-accent"
+          onClick={toggleLeftNav}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <div className="w-full p-3 text-lg text-center rounded-lg title bg-neutral-800 backdrop-blur-md bg-opacity-10">
+          Select strategy
+        </div>
+
+        <div className="w-full p-3 border-double taskTitle border-neutral border-[1px] rounded-lg text-center mt-5 ">
+          Fetch instrument data
+          <button
+            className="w-full mt-3 text-black rounded-md join-item btn btn-accent "
+            onClick={() => {
+              getInstForExp();
+            }}
+          >
+            Fetch Data
+          </button>
+        </div>
+
+        <div className="w-full p-3 border-double taskTitle border-neutral border-[1px] rounded-lg text-center mt-5 ">
+          Fetch Option chain data
+          <div className="flex justify-start w-full mt-3 join join-vertical">
+            <button
+              className="text-black join-item btn btn-accent"
+              onClick={saveLtp}
+            >
+              Get Chain Range
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="w-full px-2 pt-2 mt-1">
+        <div className="w-full shadow-lg h-fit innerNav bg-neutral rounded-2xl">
+          <div className="flex items-center justify-between h-full">
+            <div className="self-start w-1/3 p-1 text-xl text-left">
+              <div className="w-20 rounded-xl btn" onClick={toggleLeftNav}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
                 >
-                  Create Option Chain
-                </button>
-              ) : null}
-              {niftyChain && bnfChain ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="flex items-center w-1/3 h-full text-xl text-center ">
+              <div className="justify-center w-full tabButtons join">
                 <button
-                  className="text-white join-item btn btn-secondary"
-                  onClick={() => {
-                    optChainToFirebase();
-                  }}
+                  id="fut5min"
+                  className="join-item btn btn-accent btn-sm"
                 >
-                  Chain to DB
+                  FUTURE 5 MINS
                 </button>
-              ) : null}
+                <button
+                  id="fut1min"
+                  className="join-item btn btn-accent btn-sm"
+                >
+                  FUTURE 1 MIN
+                </button>
+                <button
+                  id="strangle"
+                  className="join-item btn btn-accent btn-sm"
+                >
+                  STRANGLE
+                </button>
+              </div>
+            </div>
+            <div
+              className="self-end w-1/3 p-1 text-xl text-right"
+              onClick={toggleRightNav}
+            >
+              <div className="w-20 rounded-xl btn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
         </div>

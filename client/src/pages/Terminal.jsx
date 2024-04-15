@@ -8,14 +8,20 @@ import Supertrend from "../components/Supertrend";
 
 function Terminal() {
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <SaveExpiries />
-      <FutTrading />
-      <hr className="m-5 mt-10 text-xl text-center"></hr>
-      <FutTradingOneMin />
-      <hr className="m-5 mt-10 text-xl text-center"></hr>
-      <Strangle />
-      <hr className="m-5 mt-10 text-xl text-center"></hr>
+
+      <div id="tabpanel">
+        <FutTrading />
+      </div>
+
+      <div id="tabpanel">
+        <FutTradingOneMin />
+      </div>
+
+      <div id="tabpanel">
+        <Strangle />
+      </div>
 
       {/* <div className="m-5 mt-10 text-xl text-center">
         5 Mins Super Trend Trades

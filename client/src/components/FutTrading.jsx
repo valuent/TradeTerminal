@@ -88,6 +88,11 @@ function FutTrading() {
   const [bnfShortCallLtp, setBnfShortCallLtp] = useState();
   const [bnfShortPutLtp, setBnfShortPutLtp] = useState();
 
+  const [enable10SMAnifty, setEnable10SMAnifty] = useState(true);
+  const [enable20SMAnifty, setEnable20SMAnifty] = useState(true);
+  const [enable10SMAbnf, setEnable10SMAbnf] = useState(true);
+  const [enable20SMAbnf, setEnable20SMAbnf] = useState(true);
+
   const [refreshExistingOrder, setRefreshExistingOrder] = useState();
 
   const refreshOpenPos = () => {
@@ -2215,11 +2220,27 @@ function FutTrading() {
               <div className="overflow-hidden stat">
                 <div className="stat-title">10 SMA</div>
                 <div className="text-xl font-bold">{nifty10SMA}</div>
+                {/* <button
+                  className="mt-2 btn btn-xs btn-accent"
+                  onClick={() => {
+                    setEnable10SMAnifty(enable10SMAnifty ? false : true);
+                  }}
+                >
+                  {enable10SMAnifty ? "Disable" : "Enable"}
+                </button> */}
               </div>
 
               <div className="overflow-hidden stat">
                 <div className="stat-title">20 SMA</div>
                 <div className="text-xl font-bold">{nifty20SMA}</div>
+                {/* <button
+                  className="mt-2 btn btn-xs btn-accent"
+                  onClick={() => {
+                    setEnable20SMAnifty(enable20SMAnifty ? false : true);
+                  }}
+                >
+                  {enable20SMAnifty ? "Disable" : "Enable"}
+                </button> */}
               </div>
             </div>
           </div>

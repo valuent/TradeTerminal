@@ -1181,7 +1181,7 @@ function Strangle() {
         }
       }
     }
-  }, [tickerData, currentIndex, openPositions]);
+  }, [tickerData, currentIndex, openPositions, allExecPositions]);
 
   const setPutSL = async (slPoints) => {
     if (openPositions?.putShort) {
