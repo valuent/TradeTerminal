@@ -1373,21 +1373,42 @@ function Strangle() {
           );
         }
 
-        if (liveMTM >= mtmSL) {
+        if (liveMTM >= mtmSL && openPositions?.mtmSLAdjusted < 1) {
           await setDoc(
             doc(db, "strangleExpiry", currentIndex),
             {
               mtmSL: parseFloat(mtmSL / 2),
+              prevMtmSl: mtmSL,
+              mtmSLAdjusted: 1,
             },
             { merge: true }
           );
           toastHandler(`${currentIndex} MTM SL points ${mtmSL}`);
         }
-        if (liveMTM >= mtmSL * 1.5) {
+        if (
+          liveMTM >= openPositions?.prevMtmSl * 1.5 &&
+          openPositions?.mtmSLAdjusted == 1
+        ) {
           await setDoc(
             doc(db, "strangleExpiry", currentIndex),
             {
               mtmSL: 1,
+              mtmSLAdjusted: 2,
+            },
+            { merge: true }
+          );
+          toastHandler(`${currentIndex} MTM SL points ${mtmSL}`);
+        }
+
+        if (
+          liveMTM >= openPositions?.prevMtmSl * 2 &&
+          openPositions?.mtmSLAdjusted == 2
+        ) {
+          await setDoc(
+            doc(db, "strangleExpiry", currentIndex),
+            {
+              mtmSL: openPositions?.prevMtmSl * -0.25,
+              mtmSLAdjusted: 3,
             },
             { merge: true }
           );

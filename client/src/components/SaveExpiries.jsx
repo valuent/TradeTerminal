@@ -310,7 +310,7 @@ function SaveExpiries() {
     <>
       <div
         id="navRight"
-        className="fixed right-0 z-50 flex flex-col items-end w-64 h-full p-2 overflow-hidden transition-all duration-200 ease-in-out sideNavRight bg-base-300 bg-opacity-80 backdrop-blur-md rounded-tl-xl rounded-bl-xl"
+        className="fixed mr-[-280px] right-0 z-50 flex flex-col items-end w-64 h-full p-2 overflow-hidden transition-all duration-200 ease-in-out sideNavRight bg-base-300 bg-opacity-80 backdrop-blur-md rounded-tl-xl rounded-bl-xl"
       >
         <button
           className="absolute z-50 text-black right-1 top-1 btn btn-circle btn-xs btn-accent"
@@ -416,7 +416,7 @@ function SaveExpiries() {
 
       <div
         id="navLeft"
-        className="fixed left-0 z-50 flex flex-col items-end w-64 h-full p-2 overflow-hidden transition-all duration-200 ease-in-out sideNavRight bg-base-300 bg-opacity-80 backdrop-blur-md rounded-tr-xl rounded-br-xl"
+        className="fixed ml-[-280px] left-0 z-50 flex flex-col items-end w-64 h-full p-2 overflow-hidden transition-all duration-200 ease-in-out sideNavRight bg-base-300 bg-opacity-80 backdrop-blur-md rounded-tr-xl rounded-br-xl"
       >
         <button
           className="absolute z-50 text-black left-1 top-1 btn btn-circle btn-xs btn-accent"

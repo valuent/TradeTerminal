@@ -470,6 +470,16 @@ function FutTrading() {
               tgtPoint = "";
             }
 
+            // let tradeCount;
+            // let tradeCountKey;
+            // if (allExecPositions?.callLegCount) {
+            //   tradeCount = allExecPositions?.tradeCount + 1;
+            //   tradeCountKey = "trade_" + (allExecPositions?.tradeCount + 1);
+            // } else {
+            //   tradeCount = 1;
+            //   tradeCountKey = "trade_1";
+            // }
+
             await setDoc(
               doc(db, "futFiveMin", "niftyFutLong"),
               {
@@ -494,6 +504,27 @@ function FutTrading() {
               .catch((e) => {
                 toastHandler(`Nifty long error at firebase ${e}`);
               });
+
+            // await setDoc(
+            //   doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
+            //   {
+            //     tradeCount: tradeCount,
+            //     [tradeCountKey]: {
+            //       entryPrice: niftyFutLtp,
+            //       slPoints: slPoint,
+            //       tgtPoints: tgtPoint,
+            //       putShort: {
+            //         order_id: orderId,
+            //         average_price: price,
+            //         instrument_token: parseInt(
+            //           niftyLongPutSell?.instrument_token
+            //         ),
+            //         trading_symbol: niftyLongPutSell.tradingsymbol,
+            //       },
+            //     },
+            //   },
+            //   { merge: true }
+            // );
           });
         });
     }
@@ -501,9 +532,6 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutLong"), (doc) => {
-      if (doc?.data()?.callLong?.order_id || doc?.data()?.putShort?.order_id) {
-        toastHandler(`Nifty Long order present`);
-      }
       setNiftyLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -633,9 +661,6 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutShort"), (doc) => {
-      if (doc?.data()?.putLong?.order_id || doc?.data()?.callShort?.order_id) {
-        toastHandler(`Nifty Short order present`);
-      }
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [
         doc?.data()?.putLong?.instrument_token,
@@ -1131,9 +1156,6 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "bnfFutLong"), (doc) => {
-      if (doc?.data()?.callLong?.order_id || doc?.data()?.putShort?.order_id) {
-        toastHandler(`Bank Nifty Long order present`);
-      }
       setBnfLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -1261,9 +1283,6 @@ function FutTrading() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "bnfFutShort"), (doc) => {
-      if (doc?.data()?.putLong?.order_id || doc?.data()?.callShort?.order_id) {
-        toastHandler(`Bank Nifty Short order present`);
-      }
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [
         doc?.data()?.putLong?.instrument_token,
