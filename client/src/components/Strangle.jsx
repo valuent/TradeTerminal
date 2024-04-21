@@ -87,6 +87,13 @@ function Strangle() {
 
   const [closedMTM, setClosedMTM] = useState();
 
+  const [rollOnSL, setRollOnSL] = useState(true);
+
+  const [selectedStrategy, setSelectedStrategy] = useState();
+  const [selectedStrategyQty, setSelectedStrategyQty] = useState(
+    indexQuantity?.[currentIndex]
+  );
+
   const toastHandler = (message) => {
     toast(message, {
       position: "top-left",
@@ -129,12 +136,14 @@ function Strangle() {
   }, [tickerData, currentIndex]);
 
   useEffect(() => {
-    socket?.emit("defaultTokens", [
-      niftySpotData?.instrument_token,
-      bnfSpotData?.instrument_token,
-      fnfSpotData?.instrument_token,
-    ]);
-  }, [currentIndex]);
+    socket?.emit("defaultTokens", [niftySpotData?.instrument_token]);
+  }, [niftySpotData]);
+  useEffect(() => {
+    socket?.emit("defaultTokens", [bnfSpotData?.instrument_token]);
+  }, [bnfSpotData]);
+  useEffect(() => {
+    socket?.emit("defaultTokens", [fnfSpotData?.instrument_token]);
+  }, [fnfSpotData]);
 
   useEffect(() => {
     const round = () => {
@@ -256,14 +265,105 @@ function Strangle() {
     }
   }, [roundedLtp, currentIndex]);
 
-  const sendOptionChainTokens = () => {
-    if (optionChainCall?.length > 0 && optionChainPut?.length > 0) {
+  const sendOptionChainTokensNifty = async () => {
+    const niftyChainFilterPut = niftyOptChainData?.niftyChain?.filter(
+      (data) => {
+        return (
+          data.instrument_type === "PE" &&
+          data.expiry === expiries?.niftyExpiryDates?.[0]
+        );
+      }
+    );
+    const niftyChainFilterCall = niftyOptChainData?.niftyChain?.filter(
+      (data) => {
+        return (
+          data.instrument_type === "CE" &&
+          data.expiry === expiries?.niftyExpiryDates?.[0]
+        );
+      }
+    );
+
+    if (niftyChainFilterCall?.length > 0 && niftyChainFilterPut?.length > 0) {
       let tokenArray = [];
-      let callTokens = optionChainCall?.map((data) => {
+      let callTokens = niftyChainFilterCall?.map((data) => {
         let token = data.instrument_token;
         return token;
       });
-      let putTokens = optionChainPut?.map((data) => {
+      let putTokens = niftyChainFilterPut?.map((data) => {
+        let token = data.instrument_token;
+        return token;
+      });
+
+      callTokens?.forEach((token) => {
+        tokenArray.push(parseInt(token));
+      });
+      putTokens?.forEach((token) => {
+        tokenArray.push(parseInt(token));
+      });
+
+      if (tokenArray.length > 0) {
+        socket?.emit("defaultTokens", tokenArray);
+      }
+    }
+  };
+  const sendOptionChainTokensBnf = async () => {
+    const bnfChainFilterPut = bnfOptChainData?.bnfChain?.filter((data) => {
+      return (
+        data.instrument_type === "PE" &&
+        data.expiry === expiries?.bnfExpiryDates?.[0]
+      );
+    });
+    const bnfChainFilterCall = bnfOptChainData?.bnfChain?.filter((data) => {
+      return (
+        data.instrument_type === "CE" &&
+        data.expiry === expiries?.bnfExpiryDates?.[0]
+      );
+    });
+
+    if (bnfChainFilterCall?.length > 0 && bnfChainFilterPut?.length > 0) {
+      let tokenArray = [];
+      let callTokens = bnfChainFilterCall?.map((data) => {
+        let token = data.instrument_token;
+        return token;
+      });
+      let putTokens = bnfChainFilterPut?.map((data) => {
+        let token = data.instrument_token;
+        return token;
+      });
+
+      callTokens?.forEach((token) => {
+        tokenArray.push(parseInt(token));
+      });
+      putTokens?.forEach((token) => {
+        tokenArray.push(parseInt(token));
+      });
+
+      if (tokenArray.length > 0) {
+        socket?.emit("defaultTokens", tokenArray);
+      }
+    }
+  };
+  const sendOptionChainTokensFnf = async () => {
+    const fnfChainFilterPut = fnfOptChainData?.fnfChain?.filter((data) => {
+      return (
+        data.instrument_type === "PE" &&
+        data.expiry === expiries?.fnfExpiryDates?.[0]
+      );
+    });
+    const fnfChainFilterCall = fnfOptChainData?.fnfChain?.filter((data) => {
+      return (
+        data.instrument_type === "CE" &&
+        data.expiry === expiries?.fnfExpiryDates?.[0]
+      );
+    });
+
+    if (fnfChainFilterCall?.length > 0 && fnfChainFilterPut?.length > 0) {
+      let tokenArray = [];
+      let callTokens = fnfChainFilterCall?.map((data) => {
+        let token = data.instrument_token;
+        return token;
+      });
+      let putTokens = fnfChainFilterPut?.map((data) => {
         let token = data.instrument_token;
         return token;
       });
@@ -281,15 +381,24 @@ function Strangle() {
     }
   };
   useEffect(() => {
-    sendOptionChainTokens();
-  }, [currentIndex]);
+    sendOptionChainTokensNifty();
+  }, [niftyOptChainData]);
+  useEffect(() => {
+    sendOptionChainTokensBnf();
+  }, [bnfOptChainData]);
+  useEffect(() => {
+    sendOptionChainTokensFnf();
+  }, [fnfOptChainData]);
 
   useEffect(() => {
+    // console.time("selectedTick");
     const selectedPutTicks = tickerData?.filter((data) => {
       return (
         data?.instrument_token === parseInt(manualPutSelect?.instrument_token)
       );
     });
+    // console.timeEnd("selectedTick", selectedPutTicks);
+
     const selectedCallTicks = tickerData?.filter((data) => {
       return (
         data?.instrument_token === parseInt(manualCallSelect?.instrument_token)
@@ -1155,6 +1264,31 @@ function Strangle() {
     });
   };
 
+  const deployIronFly = async () => {
+    await putShort(optionChainPut?.[0], indexQuantity?.[currentIndex]);
+    await callShort(optionChainCall?.[0], indexQuantity?.[currentIndex]);
+    await putLong(optionChainPut?.[5], indexQuantity?.[currentIndex]);
+    await callLong(optionChainCall?.[5], indexQuantity?.[currentIndex]);
+  };
+  const deploy1StepCondor = async () => {
+    await putShort(optionChainPut?.[1], indexQuantity?.[currentIndex]);
+    await callShort(optionChainCall?.[1], indexQuantity?.[currentIndex]);
+    await putLong(optionChainPut?.[4], indexQuantity?.[currentIndex]);
+    await callLong(optionChainCall?.[4], indexQuantity?.[currentIndex]);
+  };
+  const deploy2StepCondor = async () => {
+    await putShort(optionChainPut?.[2], indexQuantity?.[currentIndex]);
+    await callShort(optionChainCall?.[2], indexQuantity?.[currentIndex]);
+    await putLong(optionChainPut?.[5], indexQuantity?.[currentIndex]);
+    await callLong(optionChainCall?.[5], indexQuantity?.[currentIndex]);
+  };
+  const deploy3StepCondor = async () => {
+    await putShort(optionChainPut?.[3], indexQuantity?.[currentIndex]);
+    await callShort(optionChainCall?.[3], indexQuantity?.[currentIndex]);
+    await putLong(optionChainPut?.[6], indexQuantity?.[currentIndex]);
+    await callLong(optionChainCall?.[6], indexQuantity?.[currentIndex]);
+  };
+
   useEffect(() => {
     if (
       openPositions?.putShort?.average_price === "" ||
@@ -1303,19 +1437,37 @@ function Strangle() {
         openPositions?.putShort?.tgtPoints
       ) {
         if (
-          currentStrikePutLtp?.last_price >= openPositions?.putShort?.slPoints
+          currentStrikePutLtp?.last_price >=
+            openPositions?.putShort?.slPoints &&
+          rollOnSL == true
         ) {
           await putShortExit(openPositions?.putShort, adjustmentQty);
           await putShort(oneStepRiskOffPE, adjustmentQty);
           toastHandler("PUT SL TAKEN ROLLED 1 STEP");
+        } else if (
+          currentStrikePutLtp?.last_price >=
+            openPositions?.putShort?.slPoints &&
+          rollOnSL == false
+        ) {
+          await putShortExit(openPositions?.putShort, adjustmentQty);
+          toastHandler("PUT SL TAKEN FULL EXIT");
         }
 
         if (
-          currentStrikePutLtp?.last_price <= openPositions?.putShort?.tgtPoints
+          currentStrikePutLtp?.last_price <=
+            openPositions?.putShort?.tgtPoints &&
+          rollOnSL == true
         ) {
           await putShortExit(openPositions?.putShort, adjustmentQty);
           await putShort(oneStepRiskOnPE, adjustmentQty);
           toastHandler("PUT TGT TAKEN ROLLED 1 STEP");
+        } else if (
+          currentStrikePutLtp?.last_price <=
+            openPositions?.putShort?.tgtPoints &&
+          rollOnSL == false
+        ) {
+          await putShortExit(openPositions?.putShort, adjustmentQty);
+          toastHandler("PUT TGT TAKEN FULL EXIT");
         }
       }
     };
@@ -1327,20 +1479,37 @@ function Strangle() {
         openPositions?.callShort?.tgtPoints
       ) {
         if (
-          currentStrikeCallLtp?.last_price >= openPositions?.callShort?.slPoints
+          currentStrikeCallLtp?.last_price >=
+            openPositions?.callShort?.slPoints &&
+          rollOnSL == true
         ) {
           await callShortExit(openPositions?.callShort, adjustmentQty);
           await callShort(oneStepRiskOffCE, adjustmentQty);
           toastHandler("CALL SL TAKEN ROLLED 1 STEP");
+        } else if (
+          currentStrikeCallLtp?.last_price >=
+            openPositions?.callShort?.slPoints &&
+          rollOnSL == false
+        ) {
+          await callShortExit(openPositions?.callShort, adjustmentQty);
+          toastHandler("CALL SL TAKEN FULL EXIT");
         }
 
         if (
           currentStrikeCallLtp?.last_price <=
-          openPositions?.callShort?.tgtPoints
+            openPositions?.callShort?.tgtPoints &&
+          rollOnSL == true
         ) {
           await callShortExit(openPositions?.callShort, adjustmentQty);
           await callShort(oneStepRiskOnCE, adjustmentQty);
           toastHandler("CALL TGT TAKEN ROLLED 1 STEP");
+        } else if (
+          currentStrikeCallLtp?.last_price <=
+            openPositions?.callShort?.tgtPoints &&
+          rollOnSL == false
+        ) {
+          await callShortExit(openPositions?.callShort, adjustmentQty);
+          toastHandler("CALL TGT TAKEN FULL EXIT");
         }
       }
     };
@@ -1507,26 +1676,51 @@ function Strangle() {
                 setCurrentIndex(e.target.value);
               }}
             >
-              <option value="">Please Select Index</option>
+              <option selected disabled>
+                Please Select Index
+              </option>
               <option className="m-3" value="NIFTY">
                 NIFTY
               </option>
               <option value="BANKNIFTY">BANKNIFTY</option>
               <option value="FINNIFTY">FINNIFTY</option>
             </select>
-            <button
-              className="join-item btn btn-accent"
-              onClick={sendOptionChainTokens}
+          </div>
+
+          <div className="join w-">
+            <select
+              className="select-md select select-accent select-bordered join-item"
+              onChange={(e) => {
+                setSelectedStrategy(e.target.value);
+              }}
             >
-              Fetch LTP
+              <option disabled selected>
+                Please Select strategy
+              </option>
+              <option value={"ironfly"}>ATM IRON FLY</option>
+              <option value={"1stepcondor"}>1 STEP CONDOR</option>
+              <option value={"2stepcondor"}>2 STEP CONDOR</option>
+              <option value={"3stepcondor"}>3 STEP CONDOR</option>
+            </select>
+
+            <button
+              className="btn join-item btn-accent"
+              onClick={async () => {
+                if (selectedStrategy === "ironfly") {
+                  await deployIronFly();
+                } else if (selectedStrategy === "1stepcondor") {
+                  await deploy1StepCondor();
+                } else if (selectedStrategy === "2stepcondor") {
+                  await deploy2StepCondor();
+                } else if (selectedStrategy === "3stepcondor") {
+                  await deploy3StepCondor();
+                }
+              }}
+            >
+              Deploy
             </button>
           </div>
-          <button
-            className="refresh btn btn-accent"
-            onClick={updateOrderBookStrangle}
-          >
-            Refresh Order Book
-          </button>
+
           <div className="flex items-center justify-center w-full selectionInfo">
             Index: {currentIndex} || Expiry:{" "}
             {optionChainCall?.[0]?.expiry?.slice(0, 10)}
@@ -1560,10 +1754,10 @@ function Strangle() {
               <option key={null} value="">
                 Select Strike
               </option>
-              {optionChainPut?.map((e) => {
+              {optionChainPut?.map((e, i) => {
                 return (
                   <>
-                    <option key={e.instrument_token} value={JSON.stringify(e)}>
+                    <option key={i} value={JSON.stringify(e)}>
                       {e.strike} {e.instrument_type}
                     </option>
                   </>
@@ -2143,8 +2337,8 @@ function Strangle() {
       {/* SET MTM SL TSL*/}
       {/*  */}
 
-      <div className="flex w-full px-3 mt-3 SLTGT justify-evenly">
-        <div className="sl join">
+      <div className="flex justify-between w-full px-3 mt-3 mb-5 SLTGT">
+        <div className="flex justify-center w-1/3 sl join">
           <input
             className="w-44 input input-bordered join-item"
             type="number"
@@ -2161,10 +2355,29 @@ function Strangle() {
             MTM SL
           </button>
         </div>
+        <div className="options">
+          <button
+            className="btn"
+            onClick={() => {
+              rollOnSL ? setRollOnSL(false) : setRollOnSL(true);
+            }}
+          >
+            On SL: {rollOnSL ? "Roll" : "Full Exit"}
+          </button>
+        </div>
 
-        <button className="btn btn-accent" onClick={clearDayHist}>
-          Clear day history
-        </button>
+        <div className="flex justify-center w-1/3 btnCont join">
+          <button
+            className=" btn join-item btn-accent"
+            onClick={updateOrderBookStrangle}
+          >
+            Refresh Order Book
+          </button>
+
+          <button className="btn join-item btn-accent" onClick={clearDayHist}>
+            Clear day history
+          </button>
+        </div>
       </div>
     </>
   );
