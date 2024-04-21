@@ -282,7 +282,6 @@ function Strangle() {
   };
   useEffect(() => {
     sendOptionChainTokens();
-    console.log(optionChainCall, optionChainPut);
   }, [currentIndex]);
 
   useEffect(() => {
@@ -1288,7 +1287,9 @@ function Strangle() {
       }
 
       setClosedMTM(callMtmPoints + putMtmPoints);
-      console.log(callMtmPoints, putMtmPoints);
+      console.log(
+        (callMtmPoints + putMtmPoints) * indexQuantity?.[currentIndex]
+      );
     };
     calculateMTM();
   }, [allExecPositions]);
@@ -2118,7 +2119,7 @@ function Strangle() {
                 >
                   {closedMTM
                     ? (
-                        closedMTM +
+                        closedMTM * indexQuantity?.[currentIndex] +
                         (openPositions?.callShort?.average_price -
                           currentStrikeCallLtp?.last_price +
                           openPositions?.putShort?.average_price -
