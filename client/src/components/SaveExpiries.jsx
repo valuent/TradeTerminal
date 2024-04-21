@@ -132,21 +132,56 @@ function SaveExpiries() {
   }, [fnfFut]);
 
   const filterInst = () => {
-    const niftyOptions = instObject.filter((data) => {
+    const niftyOptions = instObject?.filter((data) => {
       return (
         data.exchange === "NFO" &&
         data.name === "NIFTY" &&
         data.segment === "NFO-OPT"
       );
     });
-    const BnfOptions = instObject.filter((data) => {
+    setFilteredInstObject(niftyOptions);
+    const BnfOptions = instObject?.filter((data) => {
       return (
         data.exchange === "NFO" &&
         data.name === "BANKNIFTY" &&
         data.segment === "NFO-OPT"
       );
     });
-    const FnfOptions = instObject.filter((data) => {
+    setBnfFilteredInstObject(BnfOptions);
+    const FnfOptions = instObject?.filter((data) => {
+      return (
+        data.exchange === "NFO" &&
+        data.name === "FINNIFTY" &&
+        data.segment === "NFO-OPT"
+      );
+    });
+    setFnfFilteredInstObject(FnfOptions);
+  };
+
+  useEffect(() => {
+    const niftyOptions = instObject?.filter((data) => {
+      return (
+        data.exchange === "NFO" &&
+        data.name === "NIFTY" &&
+        data.segment === "NFO-OPT"
+      );
+    });
+    setFilteredInstObject(niftyOptions);
+  }, [niftyFut]);
+
+  useEffect(() => {
+    const BnfOptions = instObject?.filter((data) => {
+      return (
+        data.exchange === "NFO" &&
+        data.name === "BANKNIFTY" &&
+        data.segment === "NFO-OPT"
+      );
+    });
+    setBnfFilteredInstObject(BnfOptions);
+  }, [bnfFut]);
+
+  useEffect(() => {
+    const FnfOptions = instObject?.filter((data) => {
       return (
         data.exchange === "NFO" &&
         data.name === "FINNIFTY" &&
@@ -154,25 +189,23 @@ function SaveExpiries() {
       );
     });
 
-    setFilteredInstObject(niftyOptions);
-    setBnfFilteredInstObject(BnfOptions);
     setFnfFilteredInstObject(FnfOptions);
-  };
+  }, [fnfFut]);
 
   const saveExpiryArray = () => {
     let arrayInst = [];
     let bnfArrayInst = [];
     let fnfArrayInst = [];
 
-    filteredInstObject.forEach((element) => {
+    filteredInstObject?.forEach((element) => {
       arrayInst.push(element.expiry);
     });
 
-    bnfFilteredInstObject.forEach((element) => {
+    bnfFilteredInstObject?.forEach((element) => {
       bnfArrayInst.push(element.expiry);
     });
 
-    fnfFilteredInstObject.forEach((element) => {
+    fnfFilteredInstObject?.forEach((element) => {
       fnfArrayInst.push(element.expiry);
     });
 
@@ -196,6 +229,53 @@ function SaveExpiries() {
     setFnfExpiryArray(arrayOfObjectsFnf);
   };
 
+  useEffect(() => {
+    let arrayInst = [];
+
+    filteredInstObject?.forEach((element) => {
+      arrayInst.push(element.expiry);
+    });
+
+    let setOfDates = new Set(arrayInst);
+
+    let arrayOfObjects = Array.from(setOfDates);
+
+    arrayOfObjects.sort((a, b) => new Date(a) - new Date(b));
+
+    setExpiryArray(arrayOfObjects);
+  }, [filteredInstObject]);
+
+  useEffect(() => {
+    let bnfArrayInst = [];
+
+    bnfFilteredInstObject?.forEach((element) => {
+      bnfArrayInst.push(element.expiry);
+    });
+
+    let setOfDatesBnf = new Set(bnfArrayInst);
+
+    let arrayOfObjectsBnf = Array.from(setOfDatesBnf);
+
+    arrayOfObjectsBnf.sort((a, b) => new Date(a) - new Date(b));
+
+    setBnfExpiryArray(arrayOfObjectsBnf);
+  }, [bnfFilteredInstObject]);
+
+  useEffect(() => {
+    let fnfArrayInst = [];
+
+    fnfFilteredInstObject?.forEach((element) => {
+      fnfArrayInst.push(element.expiry);
+    });
+
+    let setOfDatesFnf = new Set(fnfArrayInst);
+    let arrayOfObjectsFnf = Array.from(setOfDatesFnf);
+
+    arrayOfObjectsFnf.sort((a, b) => new Date(a) - new Date(b));
+
+    setFnfExpiryArray(arrayOfObjectsFnf);
+  }, [fnfFilteredInstObject]);
+
   const expiriesToFirebase = async () => {
     const expiriesRef = doc(db, "user", "expiries");
     await updateDoc(expiriesRef, {
@@ -210,6 +290,12 @@ function SaveExpiries() {
         console.log("Error: ", e);
       });
   };
+
+  useState(() => {
+    if (expiryArray && bnfExpiryArray && fnfExpiryArray) {
+      expiriesToFirebase();
+    }
+  }, [expiryArray, bnfExpiryArray, fnfExpiryArray]);
 
   const saveLtp = async () => {
     await axios.get("/api/ltp/NSE:NIFTY 50").then((response) => {
@@ -232,32 +318,46 @@ function SaveExpiries() {
     });
   };
 
+  useState(() => {
+    saveLtp();
+    console.log("Saved ltp");
+  }, [expiryArray, bnfExpiryArray, fnfExpiryArray]);
+
   const filterNiftyChain = () => {
     let upperRange = niftyLtp + 1000;
     let lowerRange = niftyLtp - 1000;
-    const niftyChainFilter = filteredInstObject.filter((data) => {
+    const niftyChainFilter = filteredInstObject?.filter((data) => {
       return data.strike >= lowerRange && data.strike <= upperRange;
     });
     setNiftyChain(niftyChainFilter);
   };
+  useEffect(() => {
+    filterNiftyChain();
+  }, [niftyLtp, filteredInstObject]);
 
   const filterBnfChain = () => {
     let upperRange = bnfLtp + 1500;
     let lowerRange = bnfLtp - 1500;
-    const bnfChainFilter = bnfFilteredInstObject.filter((data) => {
+    const bnfChainFilter = bnfFilteredInstObject?.filter((data) => {
       return data.strike >= lowerRange && data.strike <= upperRange;
     });
     setBnfChain(bnfChainFilter);
   };
+  useEffect(() => {
+    filterBnfChain();
+  }, [bnfLtp, bnfFilteredInstObject]);
 
   const filterFnfChain = () => {
     let upperRange = fnfLtp + 1000;
     let lowerRange = fnfLtp - 1000;
-    const fnfChainFilter = fnfFilteredInstObject.filter((data) => {
+    const fnfChainFilter = fnfFilteredInstObject?.filter((data) => {
       return data.strike >= lowerRange && data.strike <= upperRange;
     });
     setFnfChain(fnfChainFilter);
   };
+  useEffect(() => {
+    filterFnfChain();
+  }, [fnfLtp, fnfFilteredInstObject]);
 
   const optChainToFirebase = async () => {
     const niftyChainRef = doc(db, "user", "niftyOptChain");
@@ -294,6 +394,12 @@ function SaveExpiries() {
         console.log("Error: ", e);
       });
   };
+
+  useEffect(() => {
+    if (niftyChain && bnfChain && fnfChain) {
+      optChainToFirebase();
+    }
+  }, [niftyChain, bnfChain, fnfChain]);
 
   const toggleRightNav = () => {
     let rightNav = document.getElementById("navRight");
@@ -356,7 +462,9 @@ function SaveExpiries() {
                 Filter
               </button>
             ) : null}
-            {filteredInstObject && bnfFilteredInstObject ? (
+            {filteredInstObject &&
+            bnfFilteredInstObject &&
+            fnfFilteredInstObject ? (
               <button
                 className="text-black join-item btn btn-accent"
                 onClick={() => {
@@ -366,7 +474,9 @@ function SaveExpiries() {
                 Sort Expiries
               </button>
             ) : null}
-            {expiryArray.length != 0 && bnfExpiryArray.length != 0 ? (
+            {expiryArray.length != 0 &&
+            bnfExpiryArray.length != 0 &&
+            fnfExpiryArray.length != 0 ? (
               <button
                 className="text-black join-item btn btn-accent"
                 onClick={() => {
@@ -388,7 +498,7 @@ function SaveExpiries() {
             >
               Get Chain Range
             </button>
-            {niftyLtp && bnfLtp ? (
+            {niftyLtp && bnfLtp && fnfChain ? (
               <button
                 className="text-black join-item btn btn-accent"
                 onClick={() => {
@@ -400,7 +510,7 @@ function SaveExpiries() {
                 Create Option Chain
               </button>
             ) : null}
-            {niftyChain && bnfChain ? (
+            {niftyChain && bnfChain && fnfChain ? (
               <button
                 className="text-black join-item btn btn-accent"
                 onClick={() => {
