@@ -102,8 +102,8 @@ function FutTrading() {
 
   const toastHandler = (message) => {
     toast(message, {
-      position: "top-right",
-      autoClose: 5000,
+      position: "top-left",
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -1695,7 +1695,7 @@ function FutTrading() {
           await niftyShortExit();
           toastHandler(`Nifty short Trailing SL reached`);
         } else {
-          toastHandler(`Nifty short TSL No reached`);
+          toastHandler(`Nifty short TSL Not reached`);
         }
       } else {
         console.log("NiftyShort No positions");
@@ -1716,7 +1716,7 @@ function FutTrading() {
           await niftyLongExit();
           toastHandler(`Nifty long Trailing SL reached`);
         } else {
-          toastHandler(`Nifty long TSL No reached`);
+          toastHandler(`Nifty long TSL Not reached`);
         }
       } else {
         console.log("NiftyLong No positions");
@@ -1737,7 +1737,7 @@ function FutTrading() {
           bnfShortExit();
           toastHandler(`Bank Nifty short Trailing SL reached`);
         } else {
-          toastHandler(`Bank Nifty short TSL No reached`);
+          toastHandler(`Bank Nifty short TSL Not reached`);
         }
       } else {
         console.log("BnfShort No positions");
@@ -1757,7 +1757,7 @@ function FutTrading() {
           await bnfLongExit();
           toastHandler(`Bank Nifty long Trailing SL reached`);
         } else {
-          toastHandler(`Bank Nifty long TSL No reached`);
+          toastHandler(`Bank Nifty long TSL Not reached`);
         }
       } else {
         console.log("BnfLong No positions");

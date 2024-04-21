@@ -292,9 +292,14 @@ function SaveExpiries() {
   };
 
   useState(() => {
-    if (expiryArray && bnfExpiryArray && fnfExpiryArray) {
+    if (
+      expiryArray.length !== 0 &&
+      bnfExpiryArray.length !== 0 &&
+      fnfExpiryArray.length !== 0
+    ) {
       expiriesToFirebase();
     }
+    console.log(expiryArray, bnfExpiryArray, fnfExpiryArray);
   }, [expiryArray, bnfExpiryArray, fnfExpiryArray]);
 
   const saveLtp = async () => {

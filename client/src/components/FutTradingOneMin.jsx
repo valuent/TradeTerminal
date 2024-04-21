@@ -97,8 +97,8 @@ function FutTradingOneMin() {
 
   const toastHandler = (message) => {
     toast(message, {
-      position: "top-right",
-      autoClose: 5000,
+      position: "top-left",
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -495,9 +495,6 @@ function FutTradingOneMin() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futOneMin", "niftyFutLong"), (doc) => {
-      if (doc?.data()?.callLong?.order_id || doc?.data()?.putShort?.order_id) {
-        toastHandler(`Nifty Long order present`);
-      }
       setNiftyLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -627,9 +624,6 @@ function FutTradingOneMin() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futOneMin", "niftyFutShort"), (doc) => {
-      if (doc?.data()?.putLong?.order_id || doc?.data()?.callShort?.order_id) {
-        toastHandler(`Nifty Short order present`);
-      }
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [
         doc?.data()?.putLong?.instrument_token,
@@ -1125,9 +1119,6 @@ function FutTradingOneMin() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futOneMin", "bnfFutLong"), (doc) => {
-      if (doc?.data()?.callLong?.order_id || doc?.data()?.putShort?.order_id) {
-        toastHandler(`Bank Nifty Long order present`);
-      }
       setBnfLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -1255,9 +1246,6 @@ function FutTradingOneMin() {
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futOneMin", "bnfFutShort"), (doc) => {
-      if (doc?.data()?.putLong?.order_id || doc?.data()?.callShort?.order_id) {
-        toastHandler(`Bank Nifty Short order present`);
-      }
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [
         doc?.data()?.putLong?.instrument_token,
