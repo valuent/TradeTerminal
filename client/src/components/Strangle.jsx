@@ -73,6 +73,9 @@ function Strangle() {
   const [currentStrikePutLtp, setCurrentStrikePutLtp] = useState();
   const [currentStrikeCallLtp, setCurrentStrikeCallLtp] = useState();
 
+  const [currentStrikePutHedgeLtp, setCurrentStrikePutHedgeLtp] = useState();
+  const [currentStrikeCallHedgeLtp, setCurrentStrikeCallHedgeLtp] = useState();
+
   const [oneStepAwayPutLtp, setOneStepAwayPutLtp] = useState();
   const [twoStepAwayPutLtp, setTwoStepAwayPutLtp] = useState();
 
@@ -554,6 +557,19 @@ function Strangle() {
       );
     });
 
+    const currentStrikeHedgePELtp = tickerData?.filter((data) => {
+      return (
+        data?.instrument_token ===
+        parseInt(openPositions?.putLong?.instrument_token)
+      );
+    });
+    const currentStrikeHedgeCELtp = tickerData?.filter((data) => {
+      return (
+        data?.instrument_token ===
+        parseInt(openPositions?.callLong?.instrument_token)
+      );
+    });
+
     // Away Stikes Filter
     const oneStepAwayPutLtp = tickerData?.filter((data) => {
       return (
@@ -603,6 +619,13 @@ function Strangle() {
     }
     if (currentStrikeCELtp?.length > 0) {
       setCurrentStrikeCallLtp(currentStrikeCELtp?.[0]);
+    }
+
+    if (currentStrikeHedgePELtp?.length > 0) {
+      setCurrentStrikePutHedgeLtp(currentStrikeHedgePELtp?.[0]);
+    }
+    if (currentStrikeHedgeCELtp?.length > 0) {
+      setCurrentStrikeCallHedgeLtp(currentStrikeHedgeCELtp?.[0]);
     }
 
     // Away Strikes Setters
@@ -822,6 +845,8 @@ function Strangle() {
               return order.order_id === orderId && order.status === "COMPLETE";
             });
 
+            console.log(putInfo);
+
             let price;
             if (putLongId?.[0]?.average_price) {
               price = putLongId?.[0].average_price;
@@ -837,7 +862,54 @@ function Strangle() {
                   average_price: price,
                   instrument_token: parseInt(putInfo?.instrument_token),
                   tradingsymbol: putInfo?.tradingsymbol,
+                  strike: putInfo?.strike,
+                  quantity: qty,
                 },
+              },
+              { merge: true }
+            )
+              .then(() => {
+                toastHandler(`${currentIndex} PUT LONG order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`${currentIndex} error at firebase ${e}`);
+              });
+          });
+        });
+    }
+  };
+  const putLongExit = async (putInfo, qty) => {
+    if (openPositions?.putLong) {
+      await axios
+        .get(
+          // `/api/placeOrderStranglePut?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          `/api/placeOrderStranglePut?tradingsymbol=${putInfo?.tradingsymbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          console.log(response);
+          let orderId = response?.data?.order_id;
+          if (orderId) {
+            toastHandler(`PE BUY placed OID: ${orderId}`);
+          } else {
+            toastHandler(`PE BUY error ${response.data}`);
+          }
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            let putLongId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
+            });
+
+            let price;
+
+            if (putLongId?.[0]?.average_price) {
+              price = putLongId?.[0].average_price;
+            } else {
+              price = "";
+            }
+
+            await setDoc(
+              doc(db, "strangleExpiry", currentIndex),
+              {
+                putLong: deleteField(),
               },
               { merge: true }
             )
@@ -1010,7 +1082,7 @@ function Strangle() {
     if (!openPositions?.callLong) {
       await axios
         .get(
-          // `/api/placeOrderStranglePut?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          // `/api/placeOrderStrangleCall?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
           `/api/placeOrderStrangleCall?tradingsymbol=${callInfo?.tradingsymbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
@@ -1041,7 +1113,54 @@ function Strangle() {
                   average_price: price,
                   instrument_token: parseInt(callInfo?.instrument_token),
                   tradingsymbol: callInfo?.tradingsymbol,
+                  strike: callInfo?.strike,
+                  quantity: qty,
                 },
+              },
+              { merge: true }
+            )
+              .then(() => {
+                toastHandler(`${currentIndex} CALL LONG order updated`);
+              })
+              .catch((e) => {
+                toastHandler(`${currentIndex} error at firebase ${e}`);
+              });
+          });
+        });
+    }
+  };
+  const callLongExit = async (callInfo, qty) => {
+    if (openPositions?.callLong) {
+      await axios
+        .get(
+          // `/api/placeOrderStrangleCall?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+          `/api/placeOrderStrangleCall?tradingsymbol=${callInfo?.tradingsymbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          console.log(response);
+          let orderId = response?.data?.order_id;
+          if (orderId) {
+            toastHandler(`PE BUY placed OID: ${orderId}`);
+          } else {
+            toastHandler(`PE BUY error ${response.data}`);
+          }
+          await axios.get(`/api/orderInfo`).then(async (res) => {
+            let callLongId = res?.data?.filter((order) => {
+              return order.order_id === orderId && order.status === "COMPLETE";
+            });
+
+            let price;
+
+            if (callLongId?.[0]?.average_price) {
+              price = callLongId?.[0].average_price;
+            } else {
+              price = "";
+            }
+
+            await setDoc(
+              doc(db, "strangleExpiry", currentIndex),
+              {
+                callLong: deleteField(),
               },
               { merge: true }
             )
@@ -1421,9 +1540,6 @@ function Strangle() {
       }
 
       setClosedMTM(callMtmPoints + putMtmPoints);
-      console.log(
-        (callMtmPoints + putMtmPoints) * indexQuantity?.[currentIndex]
-      );
     };
     calculateMTM();
   }, [allExecPositions]);
@@ -1515,25 +1631,49 @@ function Strangle() {
     };
     const monitorMTMSL = async () => {
       if (
-        ((openPositions?.callShort &&
-          openPositions?.callShort?.average_price !== "") ||
-          (openPositions?.putShort &&
-            openPositions?.putShort?.average_price !== "")) &&
+        openPositions?.callShort &&
+        openPositions?.callShort?.average_price !== "" &&
+        openPositions?.putShort &&
+        openPositions?.putShort?.average_price !== "" &&
         closedMTM &&
         openPositions?.mtmSL
       ) {
         let liveMTM =
-          closedMTM +
+          closedMTM * indexQuantity?.[currentIndex] +
           (openPositions?.callShort?.average_price -
             currentStrikeCallLtp?.last_price +
             openPositions?.putShort?.average_price -
             currentStrikePutLtp?.last_price) *
             indexQuantity?.[currentIndex];
 
+        if (
+          openPositions?.callLong &&
+          openPositions?.callLong?.average_price !== ""
+        ) {
+          liveMTM =
+            liveMTM +
+            (currentStrikeCallHedgeLtp?.last_price -
+              openPositions?.callLong?.average_price) *
+              indexQuantity?.[currentIndex];
+        }
+
+        if (
+          openPositions?.putLong &&
+          openPositions?.putLong?.average_price !== ""
+        ) {
+          liveMTM =
+            liveMTM +
+            (currentStrikePutHedgeLtp?.last_price -
+              openPositions?.putLong?.average_price) *
+              indexQuantity?.[currentIndex];
+        }
+
         let mtmSL = openPositions?.mtmSL;
         if (liveMTM <= -mtmSL) {
           await putShortExit(openPositions?.putShort, adjustmentQty);
           await callShortExit(openPositions?.callShort, adjustmentQty);
+          await putLongExit(openPositions?.putShort, adjustmentQty);
+          await callLongExit(openPositions?.callShort, adjustmentQty);
           await setDoc(
             doc(db, "strangleExpiry", currentIndex),
             {
@@ -1783,10 +1923,9 @@ function Strangle() {
               }}
             >
               {" "}
-              BUY CALL
+              BUY PUT
             </button>
           </div>
-
           {/*  */}
           {/* CURRENT STRIKE */}
           {/*  */}
@@ -1808,11 +1947,9 @@ function Strangle() {
               Adjustment QTY: {adjustmentQty}
             </button>
           </div>
-
           {/*  */}
           {/* RISK OFF STRIKES */}
           {/*  */}
-
           <span className="p-3 py-0 mt-1 font-light rounded-t bg-neutral join-item">
             Risk Off Strikes
           </span>
@@ -1834,7 +1971,6 @@ function Strangle() {
               </span>
             </div>
           </div>
-
           {/*  */}
           {/* RISK ON STRIKES */}
           {/*  */}
@@ -1859,11 +1995,9 @@ function Strangle() {
               </span>
             </div>
           </div>
-
           {/*  */}
           {/* RISK OFF BUTTONS */}
           {/*  */}
-
           <div className="flex justify-between w-4/5 mt-3 enterPuts">
             <button
               className="w-1/3 text-white btn btn-secondary "
@@ -1890,11 +2024,9 @@ function Strangle() {
               RISK OFF TWO STEPS
             </button>
           </div>
-
           {/*  */}
           {/* RISK ON BUTTONS */}
           {/*  */}
-
           <div className="flex justify-between w-4/5 mt-3 enterPuts">
             <button
               className="w-1/3 text-black btn btn-accent"
@@ -1921,11 +2053,9 @@ function Strangle() {
               RISK ON TWO STEPS
             </button>
           </div>
-
           {/*  */}
           {/* SET SL TGT */}
           {/*  */}
-
           <div className="flex justify-between w-4/5 mt-3 SLTGT">
             <div className="w-1/3 sl join">
               <input
@@ -1962,11 +2092,9 @@ function Strangle() {
               </button>
             </div>
           </div>
-
           {/*  */}
           {/* EXIT ALL BUTTON */}
           {/*  */}
-
           <button
             className="w-4/5 mt-2 text-white btn btn-base"
             onClick={async () => {
@@ -1975,6 +2103,15 @@ function Strangle() {
           >
             {" "}
             EXIT PUTS
+          </button>
+          <button
+            className="w-4/5 mt-2 text-white btn btn-base"
+            onClick={async () => {
+              await putLongExit(openPositions?.putLong, adjustmentQty);
+            }}
+          >
+            {" "}
+            EXIT BUY PUTS
           </button>
         </div>
 
@@ -2302,10 +2439,15 @@ function Strangle() {
                 <td></td>
                 <td
                   className={
-                    openPositions?.callShort?.average_price -
+                    closedMTM +
+                      openPositions?.callShort?.average_price -
                       currentStrikeCallLtp?.last_price +
                       openPositions?.putShort?.average_price -
-                      currentStrikePutLtp?.last_price >=
+                      currentStrikePutLtp?.last_price +
+                      currentStrikeCallHedgeLtp?.last_price -
+                      openPositions?.callLong?.average_price +
+                      currentStrikePutHedgeLtp?.last_price -
+                      openPositions?.putLong?.average_price >=
                     0
                       ? "text-green-400"
                       : "text-red-400"
@@ -2317,14 +2459,22 @@ function Strangle() {
                         (openPositions?.callShort?.average_price -
                           currentStrikeCallLtp?.last_price +
                           openPositions?.putShort?.average_price -
-                          currentStrikePutLtp?.last_price) *
+                          currentStrikePutLtp?.last_price +
+                          currentStrikeCallHedgeLtp?.last_price -
+                          openPositions?.callLong?.average_price +
+                          currentStrikePutHedgeLtp?.last_price -
+                          openPositions?.putLong?.average_price) *
                           indexQuantity?.[currentIndex]
                       ).toFixed(2)
                     : (
                         (openPositions?.callShort?.average_price -
                           currentStrikeCallLtp?.last_price +
                           openPositions?.putShort?.average_price -
-                          currentStrikePutLtp?.last_price) *
+                          currentStrikePutLtp?.last_price +
+                          currentStrikeCallHedgeLtp?.last_price -
+                          openPositions?.callLong?.average_price +
+                          currentStrikePutHedgeLtp?.last_price -
+                          openPositions?.putLong?.average_price) *
                         indexQuantity?.[currentIndex]
                       ).toFixed(2)}
                 </td>
