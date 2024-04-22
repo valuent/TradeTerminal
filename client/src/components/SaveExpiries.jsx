@@ -341,8 +341,8 @@ function SaveExpiries() {
   }, [niftyLtp, filteredInstObject]);
 
   const filterBnfChain = () => {
-    let upperRange = bnfLtp + 1500;
-    let lowerRange = bnfLtp - 1500;
+    let upperRange = bnfLtp + 2500;
+    let lowerRange = bnfLtp - 2500;
     const bnfChainFilter = bnfFilteredInstObject?.filter((data) => {
       return data.strike >= lowerRange && data.strike <= upperRange;
     });
@@ -401,7 +401,11 @@ function SaveExpiries() {
   };
 
   useEffect(() => {
-    if (niftyChain && bnfChain && fnfChain) {
+    if (
+      niftyChain?.length > 0 &&
+      bnfChain?.length > 0 &&
+      fnfChain?.length > 0
+    ) {
       optChainToFirebase();
     }
   }, [niftyChain, bnfChain, fnfChain]);
