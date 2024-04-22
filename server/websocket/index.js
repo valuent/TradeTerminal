@@ -204,6 +204,10 @@ const startExitAll = () => {
 
 io.on("connection", (socket) => {
   console.log("Client connected");
+  schedule.gracefulShutdown();
+  if (ticker) {
+    ticker.disconnect();
+  }
 
   socket.on("sendToken", (data) => {
     const tokenAvailable = data;
@@ -249,10 +253,6 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");
-    schedule.gracefulShutdown();
-    if (ticker) {
-      ticker.disconnect();
-    }
   });
 
   socket.on("defaultTokens", (data) => {
