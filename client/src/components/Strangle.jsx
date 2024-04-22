@@ -2095,24 +2095,26 @@ function Strangle() {
           {/*  */}
           {/* EXIT ALL BUTTON */}
           {/*  */}
-          <button
-            className="w-4/5 mt-2 text-white btn btn-base"
-            onClick={async () => {
-              await putShortExit(openPositions?.putShort, adjustmentQty);
-            }}
-          >
-            {" "}
-            EXIT PUTS
-          </button>
-          <button
-            className="w-4/5 mt-2 text-white btn btn-base"
-            onClick={async () => {
-              await putLongExit(openPositions?.putLong, adjustmentQty);
-            }}
-          >
-            {" "}
-            EXIT BUY PUTS
-          </button>
+          <div className="flex justify-between w-4/5 exitButtons">
+            <button
+              className="w-1/3 mt-2 text-white btn btn-base"
+              onClick={async () => {
+                await putShortExit(openPositions?.putShort, adjustmentQty);
+              }}
+            >
+              {" "}
+              EXIT PUTS
+            </button>
+            <button
+              className="w-1/3 mt-2 text-white btn btn-base"
+              onClick={async () => {
+                await putLongExit(openPositions?.putLong, adjustmentQty);
+              }}
+            >
+              {" "}
+              EXIT BUY PUTS
+            </button>
+          </div>
         </div>
 
         {/*  */}
@@ -2353,16 +2355,26 @@ function Strangle() {
           {/*  */}
           {/* EXIT ALL BUTTON */}
           {/*  */}
-
-          <button
-            className="w-4/5 mt-2 text-white btn btn-base"
-            onClick={async () => {
-              await callShortExit(openPositions?.callShort, adjustmentQty);
-            }}
-          >
-            {" "}
-            EXIT CALLS
-          </button>
+          <div className="flex justify-between w-4/5 exitButtons">
+            <button
+              className="w-1/3 mt-2 text-white btn btn-base"
+              onClick={async () => {
+                await callShortExit(openPositions?.callShort, adjustmentQty);
+              }}
+            >
+              {" "}
+              EXIT CALLS
+            </button>
+            <button
+              className="w-1/3 mt-2 text-white btn btn-base"
+              onClick={async () => {
+                await callLongExit(openPositions?.callLong, adjustmentQty);
+              }}
+            >
+              {" "}
+              EXIT BUY CALLS
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2385,7 +2397,30 @@ function Strangle() {
             <tbody>
               {/* row 1 */}
               <tr>
-                <th>CALL</th>
+                <th>CALL BUY</th>
+                <td>
+                  {currentIndex} {openPositions?.callLong?.strike} CE
+                </td>
+                <td>{openPositions?.callLong?.average_price}</td>
+                <td>{currentStrikeCallHedgeLtp?.last_price}</td>
+                <td
+                  className={
+                    openPositions?.callLong?.average_price -
+                      currentStrikeCallHedgeLtp?.last_price >=
+                    0
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }
+                >
+                  {(
+                    (openPositions?.callLong?.average_price -
+                      currentStrikeCallHedgeLtp?.last_price) *
+                    indexQuantity?.[currentIndex]
+                  ).toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <th>CALL SELL</th>
                 <td>
                   {currentIndex} {openPositions?.callShort?.strike} CE
                 </td>
@@ -2409,7 +2444,30 @@ function Strangle() {
               </tr>
               {/* row 2 */}
               <tr>
-                <th>PUT</th>
+                <th>PUT BUY</th>
+                <td>
+                  {currentIndex} {openPositions?.putLong?.strike} PE
+                </td>
+                <td>{openPositions?.putLong?.average_price}</td>
+                <td>{currentStrikePutHedgeLtp?.last_price}</td>
+                <td
+                  className={
+                    openPositions?.putLong?.average_price -
+                      currentStrikePutHedgeLtp?.last_price >=
+                    0
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }
+                >
+                  {(
+                    (openPositions?.putLong?.average_price -
+                      currentStrikePutHedgeLtp?.last_price) *
+                    indexQuantity?.[currentIndex]
+                  ).toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <th>PUT SELL</th>
                 <td>
                   {currentIndex} {openPositions?.putShort?.strike} PE
                 </td>
