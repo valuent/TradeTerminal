@@ -33,7 +33,7 @@ function FutTradingOneMin() {
 
   // Cannot be dynamicall set
   const [niftyQty, setNiftyQty] = useState(100);
-  const [bnfQty, setBnfQty] = useState(30);
+  const [bnfQty, setBnfQty] = useState(45);
 
   // Saves LTP every second
   const [niftyLtp, setNiftyLtp] = useState();
@@ -456,8 +456,8 @@ function FutTradingOneMin() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              slPoint = 15;
-              tgtPoint = 31;
+              slPoint = 20;
+              tgtPoint = 43;
             } else {
               price = "";
               slPoint = "";
@@ -585,8 +585,8 @@ function FutTradingOneMin() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              slPoint = 15;
-              tgtPoint = 31;
+              slPoint = 20;
+              tgtPoint = 43;
             } else {
               price = "";
               slPoint = "";

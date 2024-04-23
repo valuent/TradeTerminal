@@ -33,7 +33,7 @@ function FutTradingThreeMins() {
 
   // Cannot be dynamicall set
   const [niftyQty, setNiftyQty] = useState(100);
-  const [bnfQty, setBnfQty] = useState(30);
+  const [bnfQty, setBnfQty] = useState(45);
 
   // Saves LTP every second
   const [niftyLtp, setNiftyLtp] = useState();
@@ -2049,10 +2049,10 @@ function FutTradingThreeMins() {
     }
   }, [exitAllCheck]);
 
-  socket?.on("checkSl", (data) => {
+  socket?.on("checkSl3m", (data) => {
     setNextCheck(data);
   });
-  socket?.on("checkEntry", (data) => {
+  socket?.on("checkEntry3m", (data) => {
     setNextEntryCheck(data);
   });
   socket?.on("exitAll", (data) => {
@@ -2067,52 +2067,59 @@ function FutTradingThreeMins() {
   useEffect(() => {
     const slTgtRefresh = () => {
       if (niftyLongOrderId?.slPoints || niftyLongOrderId?.tgtPoints) {
-        document.getElementById("niftySl").value = niftyLongOrderId?.slPoints;
-        document.getElementById("niftyTgt").value = niftyLongOrderId?.tgtPoints;
+        document.getElementById("niftySlThreeMin").value =
+          niftyLongOrderId?.slPoints;
+        document.getElementById("niftyTgtThreeMin").value =
+          niftyLongOrderId?.tgtPoints;
       } else if (niftyShortOrderId?.slPoints || niftyShortOrderId?.tgtPoints) {
-        document.getElementById("niftySl").value = niftyShortOrderId?.slPoints;
-        document.getElementById("niftyTgt").value =
+        document.getElementById("niftySlThreeMin").value =
+          niftyShortOrderId?.slPoints;
+        document.getElementById("niftyTgtThreeMin").value =
           niftyShortOrderId?.tgtPoints;
       } else {
-        document.getElementById("niftySl").value = "";
-        document.getElementById("niftyTgt").value = "";
+        document.getElementById("niftySlThreeMin").value = "";
+        document.getElementById("niftyTgtThreeMin").value = "";
       }
 
       if (bnfLongOrderId?.slPoints || bnfLongOrderId?.tgtPoints) {
-        document.getElementById("bnfSl").value = bnfLongOrderId?.slPoints;
-        document.getElementById("bnfTgt").value = bnfLongOrderId?.tgtPoints;
+        document.getElementById("bnfSlThreeMin").value =
+          bnfLongOrderId?.slPoints;
+        document.getElementById("bnfTgtThreeMin").value =
+          bnfLongOrderId?.tgtPoints;
       } else if (bnfShortOrderId?.slPoints || bnfShortOrderId?.tgtPoints) {
-        document.getElementById("bnfSl").value = bnfShortOrderId?.slPoints;
-        document.getElementById("bnfTgt").value = bnfShortOrderId?.tgtPoints;
+        document.getElementById("bnfSlThreeMin").value =
+          bnfShortOrderId?.slPoints;
+        document.getElementById("bnfTgtThreeMin").value =
+          bnfShortOrderId?.tgtPoints;
       } else {
-        document.getElementById("bnfSl").value = "";
-        document.getElementById("bnfTgt").value = "";
+        document.getElementById("bnfSlThreeMin").value = "";
+        document.getElementById("bnfTgtThreeMin").value = "";
       }
     };
     const levelRefresh = () => {
       if (niftyLongOrderId?.entryLevel) {
-        document.getElementById("niftyLongLevel").value =
+        document.getElementById("niftyLongLevelThreeMin").value =
           niftyLongOrderId?.entryLevel;
       } else {
-        document.getElementById("niftyLongLevel").value = "";
+        document.getElementById("niftyLongLevelThreeMin").value = "";
       }
       if (niftyShortOrderId?.entryLevel) {
-        document.getElementById("niftyShortLevel").value =
+        document.getElementById("niftyShortLevelThreeMin").value =
           niftyShortOrderId?.entryLevel;
       } else {
-        document.getElementById("niftyShortLevel").value = "";
+        document.getElementById("niftyShortLevelThreeMin").value = "";
       }
       if (bnfLongOrderId?.entryLevel) {
-        document.getElementById("bnfLongLevel").value =
+        document.getElementById("bnfLongLevelThreeMin").value =
           bnfLongOrderId?.entryLevel;
       } else {
-        document.getElementById("bnfLongLevel").value = "";
+        document.getElementById("bnfLongLevelThreeMin").value = "";
       }
       if (bnfShortOrderId?.entryLevel) {
-        document.getElementById("bnfShortLevel").value =
+        document.getElementById("bnfShortLevelThreeMin").value =
           bnfShortOrderId?.entryLevel;
       } else {
-        document.getElementById("bnfShortLevel").value = "";
+        document.getElementById("bnfShortLevelThreeMin").value = "";
       }
     };
     slTgtRefresh();
@@ -2286,7 +2293,7 @@ function FutTradingThreeMins() {
             <div className="setLong join">
               <input
                 type="number"
-                id="niftyLongLevel"
+                id="niftyLongLevelThreeMin"
                 className="w-32 input input-bordered join-item input-md"
               />
               <button
@@ -2303,7 +2310,7 @@ function FutTradingThreeMins() {
             <div className="setShort join">
               <input
                 type="number"
-                id="niftyShortLevel"
+                id="niftyShortLevelThreeMin"
                 className="w-32 input input-bordered join-item input-md"
               />
               <button
@@ -2375,7 +2382,7 @@ function FutTradingThreeMins() {
             <div className="setSl join">
               <input
                 type="number"
-                id="niftySl"
+                id="niftySlThreeMin"
                 className="w-32 input input-bordered input-md join-item"
               />
               <button
@@ -2391,7 +2398,7 @@ function FutTradingThreeMins() {
             <div className="setTgt join ">
               <input
                 type="number"
-                id="niftyTgt"
+                id="niftyTgtThreeMin"
                 className="w-32 input input-bordered input-md join-item"
               />
               <button
@@ -2660,7 +2667,7 @@ function FutTradingThreeMins() {
             <div className="setLong join">
               <input
                 type="number"
-                id="bnfLongLevel"
+                id="bnfLongLevelThreeMin"
                 className="w-32 input input-bordered join-item input-md"
               />
               <button
@@ -2676,7 +2683,7 @@ function FutTradingThreeMins() {
             <div className="setShort join">
               <input
                 type="number"
-                id="bnfShortLevel"
+                id="bnfShortLevelThreeMin"
                 className="w-32 input input-bordered join-item input-md"
               />
               <button
@@ -2747,7 +2754,7 @@ function FutTradingThreeMins() {
             <div className="setSl join">
               <input
                 type="number"
-                id="bnfSl"
+                id="bnfSlThreeMin"
                 className="w-32 input input-bordered input-md join-item"
               />
               <button
@@ -2763,7 +2770,7 @@ function FutTradingThreeMins() {
             <div className="setTgt join">
               <input
                 type="number"
-                id="bnfTgt"
+                id="bnfTgtThreeMin"
                 className="w-32 input input-bordered input-md join-item"
               />
               <button
