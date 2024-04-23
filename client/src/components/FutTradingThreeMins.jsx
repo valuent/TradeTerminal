@@ -331,11 +331,13 @@ function FutTradingThreeMins() {
       fnfSpotData?.instrument_token,
     ]);
   };
-  socket?.on(`3m${niftyFutData?.instrument_token}`, (data) => {
+  socket?.on(`3min${niftyFutData?.instrument_token}`, (data) => {
     setNiftyCandles(data);
+    console.log(data);
   });
-  socket?.on(`3m${bnfFutData?.instrument_token}`, (data) => {
+  socket?.on(`3min${bnfFutData?.instrument_token}`, (data) => {
     setBnfCandles(data);
+    console.log(data);
   });
 
   useEffect(() => {
@@ -416,7 +418,7 @@ function FutTradingThreeMins() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "niftyFutLong"),
+              doc(db, "futThreeMin", "niftyFutLong"),
               {
                 callLong: {
                   order_id: orderId,
@@ -462,8 +464,8 @@ function FutTradingThreeMins() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              slPoint = 25;
-              tgtPoint = 52;
+              slPoint = 20;
+              tgtPoint = 43;
             } else {
               price = "";
               slPoint = "";
@@ -481,7 +483,7 @@ function FutTradingThreeMins() {
             // }
 
             await setDoc(
-              doc(db, "futFiveMin", "niftyFutLong"),
+              doc(db, "futThreeMin", "niftyFutLong"),
               {
                 entryPrice: niftyFutLtp,
                 slPoints: slPoint,
@@ -506,7 +508,7 @@ function FutTradingThreeMins() {
               });
 
             // await setDoc(
-            //   doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
+            //   doc(db, "futThreeMin", "niftyFutLongALLEXEC"),
             //   {
             //     tradeCount: tradeCount,
             //     [tradeCountKey]: {
@@ -531,7 +533,7 @@ function FutTradingThreeMins() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutLong"), (doc) => {
+    const unsub = onSnapshot(doc(db, "futThreeMin", "niftyFutLong"), (doc) => {
       setNiftyLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -577,7 +579,7 @@ function FutTradingThreeMins() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "niftyFutShort"),
+              doc(db, "futThreeMin", "niftyFutShort"),
               {
                 putLong: {
                   order_id: orderId,
@@ -622,8 +624,8 @@ function FutTradingThreeMins() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              slPoint = 25;
-              tgtPoint = 52;
+              slPoint = 20;
+              tgtPoint = 43;
             } else {
               price = "";
               slPoint = "";
@@ -631,7 +633,7 @@ function FutTradingThreeMins() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "niftyFutShort"),
+              doc(db, "futThreeMin", "niftyFutShort"),
               {
                 entryPrice: niftyFutLtp,
                 slPoints: slPoint,
@@ -660,7 +662,7 @@ function FutTradingThreeMins() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutShort"), (doc) => {
+    const unsub = onSnapshot(doc(db, "futThreeMin", "niftyFutShort"), (doc) => {
       setNiftyShortOrderId(doc.data());
       socket?.emit("niftyFutToken", [
         doc?.data()?.putLong?.instrument_token,
@@ -698,7 +700,7 @@ function FutTradingThreeMins() {
         putShortId?.[0]?.average_price !== ""
       ) {
         await setDoc(
-          doc(db, "futFiveMin", "niftyFutLong"),
+          doc(db, "futThreeMin", "niftyFutLong"),
           {
             callLong: {
               order_id: niftyLongOrderId?.callLong?.order_id,
@@ -708,8 +710,8 @@ function FutTradingThreeMins() {
               order_id: niftyLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
             },
-            slPoints: 25,
-            tgtPoints: 52,
+            slPoints: 20,
+            tgtPoints: 53,
           },
           { merge: true }
         )
@@ -743,7 +745,7 @@ function FutTradingThreeMins() {
         callShortId?.[0]?.average_price !== ""
       ) {
         await setDoc(
-          doc(db, "futFiveMin", "niftyFutShort"),
+          doc(db, "futThreeMin", "niftyFutShort"),
           {
             putLong: {
               order_id: niftyShortOrderId?.putLong?.order_id,
@@ -753,8 +755,8 @@ function FutTradingThreeMins() {
               order_id: niftyShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
             },
-            slPoints: 25,
-            tgtPoints: 52,
+            slPoints: 20,
+            tgtPoints: 53,
           },
           { merge: true }
         )
@@ -774,7 +776,7 @@ function FutTradingThreeMins() {
       niftyLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "futFiveMin", "niftyFutLong"),
+        doc(db, "futThreeMin", "niftyFutLong"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -786,7 +788,7 @@ function FutTradingThreeMins() {
       niftyShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "futFiveMin", "niftyFutShort"),
+        doc(db, "futThreeMin", "niftyFutShort"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -804,7 +806,7 @@ function FutTradingThreeMins() {
       niftyLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "futFiveMin", "niftyFutLong"),
+        doc(db, "futThreeMin", "niftyFutLong"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -816,7 +818,7 @@ function FutTradingThreeMins() {
       niftyShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "futFiveMin", "niftyFutShort"),
+        doc(db, "futThreeMin", "niftyFutShort"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -841,7 +843,7 @@ function FutTradingThreeMins() {
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+            await updateDoc(doc(db, "futThreeMin", "niftyFutLong"), {
               callLong: deleteField(),
             });
           }
@@ -855,7 +857,7 @@ function FutTradingThreeMins() {
         .then(async (response) => {
           if (response?.data?.order_id) {
             toastHandler(`Three Mins Nifty long exit done`);
-            await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+            await updateDoc(doc(db, "futThreeMin", "niftyFutLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -884,7 +886,7 @@ function FutTradingThreeMins() {
         .then(async (response) => {
           // console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+            await updateDoc(doc(db, "futThreeMin", "niftyFutShort"), {
               putLong: deleteField(),
             });
           }
@@ -898,7 +900,7 @@ function FutTradingThreeMins() {
         .then(async (response) => {
           if (response?.data?.order_id) {
             toastHandler(`Three Mins Nifty short exit done`);
-            await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+            await updateDoc(doc(db, "futThreeMin", "niftyFutShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -945,7 +947,7 @@ function FutTradingThreeMins() {
           !niftyLongOrderId?.slAdjusted_1 &&
           niftyLongOrderId?.slAdjusted_1 !== true
         ) {
-          await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+          await updateDoc(doc(db, "futThreeMin", "niftyFutLong"), {
             slPoints: niftyLongOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
@@ -961,7 +963,7 @@ function FutTradingThreeMins() {
           !niftyLongOrderId?.slAdjusted_2 &&
           niftyLongOrderId?.slAdjusted_2 !== true
         ) {
-          await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+          await updateDoc(doc(db, "futThreeMin", "niftyFutLong"), {
             slPoints: 1,
             slAdjusted_2: true,
           });
@@ -1013,7 +1015,7 @@ function FutTradingThreeMins() {
           !niftyShortOrderId?.slAdjusted_1 &&
           niftyShortOrderId?.slAdjusted_1 !== true
         ) {
-          await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+          await updateDoc(doc(db, "futThreeMin", "niftyFutShort"), {
             slPoints: niftyShortOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
@@ -1029,7 +1031,7 @@ function FutTradingThreeMins() {
           !niftyShortOrderId?.slAdjusted_2 &&
           niftyShortOrderId?.slAdjusted_2 !== true
         ) {
-          await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+          await updateDoc(doc(db, "futThreeMin", "niftyFutShort"), {
             slPoints: 1,
             slAdjusted_2: true,
           });
@@ -1075,7 +1077,7 @@ function FutTradingThreeMins() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "bnfFutLong"),
+              doc(db, "futThreeMin", "bnfFutLong"),
               {
                 callLong: {
                   order_id: orderId,
@@ -1121,8 +1123,8 @@ function FutTradingThreeMins() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              slPoint = 85;
-              tgtPoint = 177;
+              slPoint = 50;
+              tgtPoint = 105;
             } else {
               price = "";
               slPoint = "";
@@ -1130,7 +1132,7 @@ function FutTradingThreeMins() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "bnfFutLong"),
+              doc(db, "futThreeMin", "bnfFutLong"),
               {
                 entryPrice: bnfFutLtp,
                 slPoints: slPoint,
@@ -1159,7 +1161,7 @@ function FutTradingThreeMins() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "futFiveMin", "bnfFutLong"), (doc) => {
+    const unsub = onSnapshot(doc(db, "futThreeMin", "bnfFutLong"), (doc) => {
       setBnfLongOrderId(doc.data());
 
       socket?.emit("niftyFutToken", [
@@ -1205,7 +1207,7 @@ function FutTradingThreeMins() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "bnfFutShort"),
+              doc(db, "futThreeMin", "bnfFutShort"),
               {
                 putLong: {
                   order_id: orderId,
@@ -1250,8 +1252,8 @@ function FutTradingThreeMins() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              slPoint = 85;
-              tgtPoint = 177;
+              slPoint = 50;
+              tgtPoint = 105;
             } else {
               price = "";
               slPoint = "";
@@ -1259,7 +1261,7 @@ function FutTradingThreeMins() {
             }
 
             await setDoc(
-              doc(db, "futFiveMin", "bnfFutShort"),
+              doc(db, "futThreeMin", "bnfFutShort"),
               {
                 entryPrice: bnfFutLtp,
                 slPoints: slPoint,
@@ -1290,7 +1292,7 @@ function FutTradingThreeMins() {
   };
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "futFiveMin", "bnfFutShort"), (doc) => {
+    const unsub = onSnapshot(doc(db, "futThreeMin", "bnfFutShort"), (doc) => {
       setBnfShortOrderId(doc.data());
       socket?.emit("bnfFutToken", [
         doc?.data()?.putLong?.instrument_token,
@@ -1329,7 +1331,7 @@ function FutTradingThreeMins() {
         putShortId?.[0]?.average_price !== ""
       ) {
         await setDoc(
-          doc(db, "futFiveMin", "bnfFutLong"),
+          doc(db, "futThreeMin", "bnfFutLong"),
           {
             callLong: {
               order_id: bnfLongOrderId?.callLong?.order_id,
@@ -1339,8 +1341,8 @@ function FutTradingThreeMins() {
               order_id: bnfLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
             },
-            slPoints: 85,
-            tgtPoints: 177,
+            slPoints: 50,
+            tgtPoints: 105,
           },
           { merge: true }
         )
@@ -1374,7 +1376,7 @@ function FutTradingThreeMins() {
         callShortId?.[0]?.average_price !== ""
       ) {
         await setDoc(
-          doc(db, "futFiveMin", "bnfFutShort"),
+          doc(db, "futThreeMin", "bnfFutShort"),
           {
             putLong: {
               order_id: bnfShortOrderId?.putLong?.order_id,
@@ -1384,8 +1386,8 @@ function FutTradingThreeMins() {
               order_id: bnfShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
             },
-            slPoints: 85,
-            tgtPoints: 177,
+            slPoints: 50,
+            tgtPoints: 105,
           },
           { merge: true }
         )
@@ -1424,7 +1426,7 @@ function FutTradingThreeMins() {
       bnfLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "futFiveMin", "bnfFutLong"),
+        doc(db, "futThreeMin", "bnfFutLong"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -1436,7 +1438,7 @@ function FutTradingThreeMins() {
       bnfShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "futFiveMin", "bnfFutShort"),
+        doc(db, "futThreeMin", "bnfFutShort"),
         {
           slPoints: parseInt(slPoints),
         },
@@ -1454,7 +1456,7 @@ function FutTradingThreeMins() {
       bnfLongOrderId?.putShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "futFiveMin", "bnfFutLong"),
+        doc(db, "futThreeMin", "bnfFutLong"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -1466,7 +1468,7 @@ function FutTradingThreeMins() {
       bnfShortOrderId?.callShort?.trading_symbol
     ) {
       await setDoc(
-        doc(db, "futFiveMin", "bnfFutShort"),
+        doc(db, "futThreeMin", "bnfFutShort"),
         {
           tgtPoints: parseInt(tgtPoints),
         },
@@ -1492,7 +1494,7 @@ function FutTradingThreeMins() {
         .then(async (response) => {
           // console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+            await updateDoc(doc(db, "futThreeMin", "bnfFutLong"), {
               callLong: deleteField(),
             });
           }
@@ -1506,7 +1508,7 @@ function FutTradingThreeMins() {
         .then(async (response) => {
           if (response?.data?.order_id) {
             toastHandler(`Three Mins Bank Nifty long exit done`);
-            await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+            await updateDoc(doc(db, "futThreeMin", "bnfFutLong"), {
               putShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -1535,7 +1537,7 @@ function FutTradingThreeMins() {
         .then(async (response) => {
           // console.log(response);
           if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+            await updateDoc(doc(db, "futThreeMin", "bnfFutShort"), {
               putLong: deleteField(),
             });
           }
@@ -1549,7 +1551,7 @@ function FutTradingThreeMins() {
         .then(async (response) => {
           if (response?.data?.order_id) {
             toastHandler(`Three Mins Bank Nifty short exit done`);
-            await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+            await updateDoc(doc(db, "futThreeMin", "bnfFutShort"), {
               callShort: deleteField(),
               entryPrice: deleteField(),
               slPoints: deleteField(),
@@ -1591,7 +1593,7 @@ function FutTradingThreeMins() {
           !bnfLongOrderId?.slAdjusted_1 &&
           bnfLongOrderId?.slAdjusted_1 !== true
         ) {
-          await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+          await updateDoc(doc(db, "futThreeMin", "bnfFutLong"), {
             slPoints: bnfLongOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
@@ -1607,7 +1609,7 @@ function FutTradingThreeMins() {
           !bnfLongOrderId?.slAdjusted_2 &&
           bnfLongOrderId?.slAdjusted_2 !== true
         ) {
-          await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+          await updateDoc(doc(db, "futThreeMin", "bnfFutLong"), {
             slPoints: 1,
             slAdjusted_2: true,
           });
@@ -1654,7 +1656,7 @@ function FutTradingThreeMins() {
           !bnfShortOrderId?.slAdjusted_1 &&
           bnfShortOrderId?.slAdjusted_1 !== true
         ) {
-          await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+          await updateDoc(doc(db, "futThreeMin", "bnfFutShort"), {
             slPoints: bnfShortOrderId?.slPoints / 2,
             slAdjusted_1: true,
           });
@@ -1670,7 +1672,7 @@ function FutTradingThreeMins() {
           !bnfShortOrderId?.slAdjusted_2 &&
           bnfShortOrderId?.slAdjusted_2 !== true
         ) {
-          await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+          await updateDoc(doc(db, "futThreeMin", "bnfFutShort"), {
             slPoints: 1,
             slAdjusted_2: true,
           });
@@ -1791,7 +1793,7 @@ function FutTradingThreeMins() {
     ) {
       if (level === 0 || !level || level === null) {
         await setDoc(
-          doc(db, "futFiveMin", "niftyFutLong"),
+          doc(db, "futThreeMin", "niftyFutLong"),
           {
             entryLevel: deleteField(),
           },
@@ -1800,7 +1802,7 @@ function FutTradingThreeMins() {
         toastHandler(`Three Mins Nifty Long Level ${level} deleted`);
       } else {
         await setDoc(
-          doc(db, "futFiveMin", "niftyFutLong"),
+          doc(db, "futThreeMin", "niftyFutLong"),
           {
             entryLevel: parseInt(level),
           },
@@ -1819,7 +1821,7 @@ function FutTradingThreeMins() {
     ) {
       if (level === 0 || !level || level === null) {
         await setDoc(
-          doc(db, "futFiveMin", "niftyFutShort"),
+          doc(db, "futThreeMin", "niftyFutShort"),
           {
             entryLevel: deleteField(),
           },
@@ -1828,7 +1830,7 @@ function FutTradingThreeMins() {
         toastHandler(`Three Mins Nifty Short Level ${level} deleted`);
       } else {
         await setDoc(
-          doc(db, "futFiveMin", "niftyFutShort"),
+          doc(db, "futThreeMin", "niftyFutShort"),
           {
             entryLevel: parseInt(level),
           },
@@ -1847,7 +1849,7 @@ function FutTradingThreeMins() {
     ) {
       if (level === 0 || !level || level === null) {
         await setDoc(
-          doc(db, "futFiveMin", "bnfFutLong"),
+          doc(db, "futThreeMin", "bnfFutLong"),
           {
             entryLevel: deleteField(),
           },
@@ -1856,7 +1858,7 @@ function FutTradingThreeMins() {
         toastHandler(`Three Mins Bank Nifty Long Level ${level} deleted`);
       } else {
         await setDoc(
-          doc(db, "futFiveMin", "bnfFutLong"),
+          doc(db, "futThreeMin", "bnfFutLong"),
           {
             entryLevel: parseInt(level),
           },
@@ -1875,7 +1877,7 @@ function FutTradingThreeMins() {
     ) {
       if (level === 0 || !level || level === null) {
         await setDoc(
-          doc(db, "futFiveMin", "bnfFutShort"),
+          doc(db, "futThreeMin", "bnfFutShort"),
           {
             entryLevel: deleteField(),
           },
@@ -1884,7 +1886,7 @@ function FutTradingThreeMins() {
         toastHandler(`Three Mins Bank Nifty Short Level ${level} deleted`);
       } else {
         await setDoc(
-          doc(db, "futFiveMin", "bnfFutShort"),
+          doc(db, "futThreeMin", "bnfFutShort"),
           {
             entryLevel: parseInt(level),
           },
@@ -1912,7 +1914,7 @@ function FutTradingThreeMins() {
           toastHandler(`Three Mins Nifty Long Auto Entry`);
         } else if (niftyFutLtp < nifty20SMA || niftyFutLtp - lastClose > 25) {
           await setDoc(
-            doc(db, "futFiveMin", "niftyFutLong"),
+            doc(db, "futThreeMin", "niftyFutLong"),
             {
               entryLevel: deleteField(),
             },
@@ -1944,7 +1946,7 @@ function FutTradingThreeMins() {
           toastHandler(`Three Mins Nifty Short Auto Entry`);
         } else if (niftyFutLtp > nifty20SMA || lastClose - niftyFutLtp > 25) {
           await setDoc(
-            doc(db, "futFiveMin", "niftyFutShort"),
+            doc(db, "futThreeMin", "niftyFutShort"),
             {
               entryLevel: deleteField(),
             },
@@ -1976,7 +1978,7 @@ function FutTradingThreeMins() {
           toastHandler(`Three Mins Bank Nifty Long Auto Entry`);
         } else if (bnfFutLtp < bnf20SMA || bnfFutLtp - lastClose > 85) {
           await setDoc(
-            doc(db, "futFiveMin", "bnfFutLong"),
+            doc(db, "futThreeMin", "bnfFutLong"),
             {
               entryLevel: deleteField(),
             },
@@ -2008,7 +2010,7 @@ function FutTradingThreeMins() {
           toastHandler(`Three Mins Bank Nifty Short Auto Entry`);
         } else if (bnfFutLtp > bnf20SMA || lastClose - bnfFutLtp > 85) {
           await setDoc(
-            doc(db, "futFiveMin", "bnfFutShort"),
+            doc(db, "futThreeMin", "bnfFutShort"),
             {
               entryLevel: deleteField(),
             },

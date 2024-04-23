@@ -11,13 +11,16 @@ function Terminal() {
   return (
     <div className="overflow-x-hidden">
       <SaveExpiries />
-      <div id="tabpanel">
-        <FutTrading />
-      </div>
+      <FutTrading />
+      <hr className="my-5" />
+
+      <div className="text-lg text-center title">FUT 3 MINUTES</div>
       <FutTradingThreeMins />
-      <div id="tabpanel">
-        <FutTradingOneMin />
-      </div>
+      <hr className="my-5" />
+
+      <div className="text-lg text-center title">FUT 1 MINUTE</div>
+      <FutTradingOneMin />
+
       {/* <div id="tabpanel">
         <Strangle />
       </div> */}
