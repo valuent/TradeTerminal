@@ -5,11 +5,13 @@ const cors = require("cors");
 const dbconnection = require("./controllers/dbconnection");
 const { fetchData } = require("./controllers/fetchCandle");
 const { fetchFiveCandle } = require("./controllers/fetchFiveCandle");
+const { fetchThreeCandle } = require("./controllers/fetchThreeCandle");
 const { fetchThirtyCandle } = require("./controllers/fetchThirtyCandle");
 require("dotenv").config();
 const schedule = require("node-schedule");
 const mongoose = require("mongoose");
 const fiveCandleData = require("./models/fiveMinCandleSchema");
+const threeCandleData = require("./models/threeMinCandleSchema");
 const thirtyCandleData = require("./models/thirtyMinCandleSchema");
 const { saveDataToMongo } = require("./controllers/saveDataToMongo");
 
@@ -69,6 +71,19 @@ const startFiveFetchJob = async (instTokenArray) => {
   });
 };
 
+const startThreeFetchJob = async (instTokenArray) => {
+  const job = schedule.scheduleJob("1 */3 * * * *", async () => {
+    if (now >= start && now <= end) {
+      instTokenArray?.forEach(async (token) => {
+        await fetchThreeCandle(token);
+        now = new Date();
+      });
+    } else {
+      console.log("No candles market closed");
+    }
+  });
+};
+
 const startThirtyFetchJob = async (instTokenArray) => {
   const job = schedule.scheduleJob("1 15,45 * * * *", async () => {
     if (now >= start && now <= end) {
@@ -104,6 +119,35 @@ const fetchFiveCandleFromDB = async (instTokenArray) => {
           .sort({ _id: -1 })
           .limit(100);
         io.emit(token, data);
+      });
+    } else {
+      console.log("No candles market closed");
+    }
+  });
+};
+
+const fetchThreeCandleFromDB = async (instTokenArray) => {
+  if (now >= start && now <= end) {
+    instTokenArray?.forEach(async (token) => {
+      let data = await threeCandleData
+        .where("instrument_token")
+        .equals(token)
+        .sort({ _id: -1 })
+        .limit(100);
+      io.emit(`3min${token}`, data);
+    });
+  } else {
+    console.log("No candles market closed");
+  }
+  const job = schedule.scheduleJob("2 */3 * * * *", async () => {
+    if (now >= start && now <= end) {
+      instTokenArray?.forEach(async (token) => {
+        let data = await threeCandleData
+          .where("instrument_token")
+          .equals(token)
+          .sort({ _id: -1 })
+          .limit(100);
+        io.emit(`3min${token}`, data);
       });
     } else {
       console.log("No candles market closed");
@@ -149,6 +193,15 @@ const startSLMonitor = () => {
     // io.emit("checkSl", now.getSeconds());
   });
 };
+const startSLMonitor3m = () => {
+  const job = schedule.scheduleJob("59 2-59/3 * * * *", () => {
+    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
+    now = new Date();
+
+    io.emit("checkSl3m", now.getMinutes());
+    // io.emit("checkSl", now.getSeconds());
+  });
+};
 const startSLMonitor30m = () => {
   const job = schedule.scheduleJob("59 14,44 * * * *", () => {
     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
@@ -174,6 +227,16 @@ const startEntryMonitor = () => {
 
     // io.emit("checkEntry", now.getMinutes());
     io.emit("checkEntry", now.getMinutes());
+  });
+};
+
+const startEntryMonitor3m = () => {
+  const job = schedule.scheduleJob("59 2-59/3 * * * *", () => {
+    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
+    now = new Date();
+
+    // io.emit("checkEntry", now.getMinutes());
+    io.emit("checkEntry3m", now.getMinutes());
   });
 };
 const startEntryMonitor30m = () => {
@@ -297,12 +360,16 @@ io.on("connection", (socket) => {
 
     startFetchJob(data);
     startFiveFetchJob(data);
-    fetchFiveCandleFromDB(data);
+    startThreeFetchJob(data);
     startThirtyFetchJob(data);
+    fetchFiveCandleFromDB(data);
+    fetchThreeCandleFromDB(data);
     fetchThirtyCandleFromDB(data);
     startSLMonitor();
+    startSLMonitor3m();
     startSLMonitor30m();
     startEntryMonitor();
+    startEntryMonitor3m();
     startEntryMonitor30m();
     startExitAll();
   });

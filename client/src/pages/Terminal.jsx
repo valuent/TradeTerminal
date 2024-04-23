@@ -5,24 +5,22 @@ import FutTrading from "../components/FutTrading";
 import FutTradingOneMin from "../components/FutTradingOneMin";
 import PositionalSpread from "../components/PositionalSpread";
 import Supertrend from "../components/Supertrend";
+import FutTradingThreeMins from "../components/FutTradingThreeMins";
 
 function Terminal() {
   return (
     <div className="overflow-x-hidden">
       <SaveExpiries />
-
       <div id="tabpanel">
         <FutTrading />
       </div>
-
+      <FutTradingThreeMins />
       <div id="tabpanel">
         <FutTradingOneMin />
       </div>
-
-      <div id="tabpanel">
+      {/* <div id="tabpanel">
         <Strangle />
-      </div>
-
+      </div> */}
       {/* <div className="m-5 mt-10 text-xl text-center">
         5 Mins Super Trend Trades
       </div>
