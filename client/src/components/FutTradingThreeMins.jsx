@@ -2299,8 +2299,9 @@ function FutTradingThreeMins() {
               <button
                 className="text-white btn btn-neutral join-item"
                 onClick={() => {
-                  let longLevel =
-                    document.getElementById("niftyLongLevel").value;
+                  let longLevel = document.getElementById(
+                    "niftyLongLevelThreeMin"
+                  ).value;
                   niftySetLongLevel(parseInt(longLevel));
                 }}
               >
@@ -2316,8 +2317,9 @@ function FutTradingThreeMins() {
               <button
                 className="text-white btn btn-neutral join-item "
                 onClick={() => {
-                  let shortLevel =
-                    document.getElementById("niftyShortLevel").value;
+                  let shortLevel = document.getElementById(
+                    "niftyShortLevelThreeMin"
+                  ).value;
                   niftySetShortLevel(parseInt(shortLevel));
                 }}
               >
@@ -2388,7 +2390,7 @@ function FutTradingThreeMins() {
               <button
                 className="text-white btn btn-secondary join-item"
                 onClick={() => {
-                  let sl = document.getElementById("niftySl").value;
+                  let sl = document.getElementById("niftySlThreeMin").value;
                   niftySetSL(sl);
                 }}
               >
@@ -2404,7 +2406,7 @@ function FutTradingThreeMins() {
               <button
                 className="text-white btn btn-secondary join-item"
                 onClick={() => {
-                  let tgt = document.getElementById("niftyTgt").value;
+                  let tgt = document.getElementById("niftyTgtThreeMin").value;
                   niftySetTG(tgt);
                 }}
               >
@@ -2673,7 +2675,9 @@ function FutTradingThreeMins() {
               <button
                 className="text-white btn btn-neutral join-item"
                 onClick={() => {
-                  let longLevel = document.getElementById("bnfLongLevel").value;
+                  let longLevel = document.getElementById(
+                    "bnfLongLevelThreeMin"
+                  ).value;
                   bnfSetLongLevel(parseInt(longLevel));
                 }}
               >
@@ -2689,8 +2693,9 @@ function FutTradingThreeMins() {
               <button
                 className="text-white btn btn-neutral join-item "
                 onClick={() => {
-                  let shortLevel =
-                    document.getElementById("bnfShortLevel").value;
+                  let shortLevel = document.getElementById(
+                    "bnfShortLevelThreeMin"
+                  ).value;
                   bnfSetShortLevel(parseInt(shortLevel));
                 }}
               >
@@ -2760,7 +2765,7 @@ function FutTradingThreeMins() {
               <button
                 className="text-white btn btn-secondary join-item"
                 onClick={() => {
-                  let sl = document.getElementById("bnfSl").value;
+                  let sl = document.getElementById("bnfSlThreeMin").value;
                   bnfSetSL(sl);
                 }}
               >
@@ -2776,7 +2781,7 @@ function FutTradingThreeMins() {
               <button
                 className="text-white btn btn-secondary join-item"
                 onClick={() => {
-                  let tgt = document.getElementById("bnfTgt").value;
+                  let tgt = document.getElementById("bnfTgtThreeMin").value;
                   bnfSetTG(tgt);
                 }}
               >
