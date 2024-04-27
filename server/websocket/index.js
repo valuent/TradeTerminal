@@ -38,11 +38,11 @@ var now = new Date();
 var start = new Date();
 start.setHours(9, 15, 0);
 var end = new Date();
-end.setHours(15, 30, 5);
-// end.setHours(23, 59, 5);
+// end.setHours(15, 30, 5);
+end.setHours(23, 59, 5);
 var tickEnd = new Date();
-tickEnd.setHours(15, 29, 59, 900);
-// tickEnd.setHours(23, 59, 59, 900);
+// tickEnd.setHours(15, 29, 59, 900);
+tickEnd.setHours(23, 59, 59, 900);
 
 const startFetchJob = async (instTokenArray) => {
   const job = schedule.scheduleJob("* * * * *", async () => {
@@ -104,7 +104,7 @@ const fetchFiveCandleFromDB = async (instTokenArray) => {
         .where("instrument_token")
         .equals(token)
         .sort({ _id: -1 })
-        .limit(100);
+        .limit(30);
       io.emit(token, data);
     });
   } else {
@@ -117,7 +117,7 @@ const fetchFiveCandleFromDB = async (instTokenArray) => {
           .where("instrument_token")
           .equals(token)
           .sort({ _id: -1 })
-          .limit(100);
+          .limit(30);
         io.emit(token, data);
       });
     } else {
@@ -133,7 +133,7 @@ const fetchThreeCandleFromDB = async (instTokenArray) => {
         .where("instrument_token")
         .equals(token)
         .sort({ _id: -1 })
-        .limit(100);
+        .limit(30);
       io.emit(`3min${token}`, data);
     });
   } else {
@@ -146,7 +146,7 @@ const fetchThreeCandleFromDB = async (instTokenArray) => {
           .where("instrument_token")
           .equals(token)
           .sort({ _id: -1 })
-          .limit(100);
+          .limit(30);
         io.emit(`3min${token}`, data);
       });
     } else {
@@ -155,34 +155,34 @@ const fetchThreeCandleFromDB = async (instTokenArray) => {
   });
 };
 
-const fetchThirtyCandleFromDB = async (instTokenArray) => {
-  if (now >= start && now <= end) {
-    instTokenArray?.forEach(async (token) => {
-      let data = await thirtyCandleData
-        .where("instrument_token")
-        .equals(token)
-        .sort({ _id: -1 })
-        .limit(100);
-      io.emit(`30min${token}`, data);
-    });
-  } else {
-    console.log("No candles market closed");
-  }
-  const job = schedule.scheduleJob("5 15,45 * * * *", async () => {
-    if (now >= start && now <= end) {
-      instTokenArray?.forEach(async (token) => {
-        let data = await thirtyCandleData
-          .where("instrument_token")
-          .equals(token)
-          .sort({ _id: -1 })
-          .limit(50);
-        io.emit(`30min${token}`, data);
-      });
-    } else {
-      console.log("No candles market closed");
-    }
-  });
-};
+// const fetchThirtyCandleFromDB = async (instTokenArray) => {
+//   if (now >= start && now <= end) {
+//     instTokenArray?.forEach(async (token) => {
+//       let data = await thirtyCandleData
+//         .where("instrument_token")
+//         .equals(token)
+//         .sort({ _id: -1 })
+//         .limit(30);
+//       io.emit(`30min${token}`, data);
+//     });
+//   } else {
+//     console.log("No candles market closed");
+//   }
+//   const job = schedule.scheduleJob("5 15,45 * * * *", async () => {
+//     if (now >= start && now <= end) {
+//       instTokenArray?.forEach(async (token) => {
+//         let data = await thirtyCandleData
+//           .where("instrument_token")
+//           .equals(token)
+//           .sort({ _id: -1 })
+//           .limit(30);
+//         io.emit(`30min${token}`, data);
+//       });
+//     } else {
+//       console.log("No candles market closed");
+//     }
+//   });
+// };
 
 const startSLMonitor = () => {
   const job = schedule.scheduleJob("59 4/5 * * * *", () => {
@@ -202,23 +202,23 @@ const startSLMonitor3m = () => {
     // io.emit("checkSl", now.getSeconds());
   });
 };
-const startSLMonitor30m = () => {
-  const job = schedule.scheduleJob("59 14,44 * * * *", () => {
-    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
-    now = new Date();
+// const startSLMonitor30m = () => {
+//   const job = schedule.scheduleJob("59 14,44 * * * *", () => {
+//     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
+//     now = new Date();
 
-    // io.emit("checkSl", now.getMinutes());
-    io.emit("checkSl30m", now.getMinutes());
-  });
+//     // io.emit("checkSl", now.getMinutes());
+//     io.emit("checkSl30m", now.getMinutes());
+//   });
 
-  const job2 = schedule.scheduleJob("25 15 * * *", () => {
-    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
-    now = new Date();
+//   const job2 = schedule.scheduleJob("25 15 * * *", () => {
+//     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
+//     now = new Date();
 
-    // io.emit("checkSl", now.getMinutes());
-    io.emit("checkSl30m", now.getMinutes());
-  });
-};
+//     // io.emit("checkSl", now.getMinutes());
+//     io.emit("checkSl30m", now.getMinutes());
+//   });
+// };
 
 const startEntryMonitor = () => {
   const job = schedule.scheduleJob("59 4/5 * * * *", () => {
@@ -239,23 +239,23 @@ const startEntryMonitor3m = () => {
     io.emit("checkEntry3m", now.getMinutes());
   });
 };
-const startEntryMonitor30m = () => {
-  const job = schedule.scheduleJob("58 14,44 * * * *", () => {
-    // const job = schedule.scheduleJob("*/5 * * * * *", () => {
-    now = new Date();
+// const startEntryMonitor30m = () => {
+//   const job = schedule.scheduleJob("58 14,44 * * * *", () => {
+//     // const job = schedule.scheduleJob("*/5 * * * * *", () => {
+//     now = new Date();
 
-    // io.emit("checkEntry", now.getMinutes());
-    io.emit("checkEntry30m", now.getMinutes());
-  });
+//     // io.emit("checkEntry", now.getMinutes());
+//     io.emit("checkEntry30m", now.getMinutes());
+//   });
 
-  const job2 = schedule.scheduleJob("25 15 * * *", () => {
-    // const job2 = schedule.scheduleJob("*/5 * * * * *", () => {
-    now = new Date();
+//   const job2 = schedule.scheduleJob("25 15 * * *", () => {
+//     // const job2 = schedule.scheduleJob("*/5 * * * * *", () => {
+//     now = new Date();
 
-    // io.emit("checkEntry", now.getMinutes());
-    io.emit("checkEntry30m", now.getMinutes());
-  });
-};
+//     // io.emit("checkEntry", now.getMinutes());
+//     io.emit("checkEntry30m", now.getMinutes());
+//   });
+// };
 
 const startExitAll = () => {
   const job = schedule.scheduleJob("10 15 * * *", () => {
@@ -358,19 +358,19 @@ io.on("connection", (socket) => {
       });
     });
 
-    startFetchJob(data);
-    startFiveFetchJob(data);
-    startThreeFetchJob(data);
-    startThirtyFetchJob(data);
+    // startFetchJob(data);
+    // startFiveFetchJob(data);
+    // startThreeFetchJob(data);
+    // startThirtyFetchJob(data);
     fetchFiveCandleFromDB(data);
     fetchThreeCandleFromDB(data);
-    fetchThirtyCandleFromDB(data);
+    // fetchThirtyCandleFromDB(data);
     startSLMonitor();
     startSLMonitor3m();
-    startSLMonitor30m();
+    // startSLMonitor30m();
     startEntryMonitor();
     startEntryMonitor3m();
-    startEntryMonitor30m();
+    // startEntryMonitor30m();
     startExitAll();
   });
 });

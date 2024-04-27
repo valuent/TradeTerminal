@@ -1,10 +1,10 @@
 import React from "react";
 import SaveExpiries from "../components/SaveExpiries";
-import Strangle from "../components/Strangle";
+// import Strangle from "../components/Strangle";
 import FutTrading from "../components/FutTrading";
-import FutTradingOneMin from "../components/FutTradingOneMin";
-import PositionalSpread from "../components/PositionalSpread";
-import Supertrend from "../components/Supertrend";
+// import FutTradingOneMin from "../components/FutTradingOneMin";
+// import PositionalSpread from "../components/PositionalSpread";
+// import Supertrend from "../components/Supertrend";
 import FutTradingThreeMins from "../components/FutTradingThreeMins";
 
 function Terminal() {
@@ -18,8 +18,8 @@ function Terminal() {
       <FutTradingThreeMins />
       <hr className="my-5" />
 
-      <div className="text-lg text-center title">FUT 1 MINUTE</div>
-      <FutTradingOneMin />
+      {/* <div className="text-lg text-center title">FUT 1 MINUTE</div>
+      <FutTradingOneMin /> */}
 
       {/* <div id="tabpanel">
         <Strangle />

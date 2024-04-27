@@ -32,8 +32,8 @@ function FutTrading() {
   } = useContext(DataContext);
 
   // Cannot be dynamicall set
-  const [niftyQty, setNiftyQty] = useState(100);
-  const [bnfQty, setBnfQty] = useState(30);
+  const [niftyQty, setNiftyQty] = useState(200);
+  const [bnfQty, setBnfQty] = useState(60);
 
   // Saves LTP every second
   const [niftyLtp, setNiftyLtp] = useState();

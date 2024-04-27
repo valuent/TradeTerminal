@@ -32,8 +32,8 @@ function FutTradingThreeMins() {
   } = useContext(DataContext);
 
   // Cannot be dynamicall set
-  const [niftyQty, setNiftyQty] = useState(100);
-  const [bnfQty, setBnfQty] = useState(45);
+  const [niftyQty, setNiftyQty] = useState(200);
+  const [bnfQty, setBnfQty] = useState(75);
 
   // Saves LTP every second
   const [niftyLtp, setNiftyLtp] = useState();
@@ -92,6 +92,15 @@ function FutTradingThreeMins() {
   const [enable20SMAnifty, setEnable20SMAnifty] = useState(true);
   const [enable10SMAbnf, setEnable10SMAbnf] = useState(true);
   const [enable20SMAbnf, setEnable20SMAbnf] = useState(true);
+
+  const [enable20SmaNiftyMonitorLong, setEnable20SmaNiftyMonitorLong] =
+    useState(false);
+  const [enable20SmaNiftyMonitorShort, setEnable20SmaNiftyMonitorShort] =
+    useState(false);
+  const [enable20SmaBnfMonitorLong, setEnable20SmaBnfMonitorLong] =
+    useState(false);
+  const [enable20SmaBnfMonitorShort, setEnable20SmaBnfMonitorShort] =
+    useState(false);
 
   const [refreshExistingOrder, setRefreshExistingOrder] = useState();
 
@@ -333,11 +342,11 @@ function FutTradingThreeMins() {
   };
   socket?.on(`3min${niftyFutData?.instrument_token}`, (data) => {
     setNiftyCandles(data);
-    console.log(data);
+    // console.log(data);
   });
   socket?.on(`3min${bnfFutData?.instrument_token}`, (data) => {
     setBnfCandles(data);
-    console.log(data);
+    // console.log(data);
   });
 
   useEffect(() => {
@@ -711,7 +720,7 @@ function FutTradingThreeMins() {
               average_price: putShortId?.[0]?.average_price,
             },
             slPoints: 20,
-            tgtPoints: 53,
+            tgtPoints: 43,
           },
           { merge: true }
         )
@@ -1901,129 +1910,58 @@ function FutTradingThreeMins() {
 
   useEffect(() => {
     const checkNiftyLongEntry = async () => {
-      if (niftyLongOrderId?.entryLevel && nextEntryCheck !== null) {
-        let entry = niftyLongOrderId?.entryLevel;
-        let lastClose = niftyCandles?.[0]?.close;
+      let lastClose = niftyCandles?.[0]?.close;
 
-        if (
-          niftyFutLtp > entry &&
-          niftyFutLtp - lastClose <= 25 &&
-          niftyFutLtp > nifty20SMA
-        ) {
-          await niftyLong();
-          toastHandler(`Three Mins Nifty Long Auto Entry`);
-        } else if (niftyFutLtp < nifty20SMA || niftyFutLtp - lastClose > 25) {
-          await setDoc(
-            doc(db, "futThreeMin", "niftyFutLong"),
-            {
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          );
-          toastHandler(
-            `Nifty Long Level ${niftyLongOrderId?.entryLevel} voided`
-          );
-        } else {
-          toastHandler(
-            `Nifty Long Level ${niftyLongOrderId?.entryLevel} not met`
-          );
-        }
+      if (
+        enable20SmaNiftyMonitorLong === true &&
+        niftyFutLtp - lastClose <= 25 &&
+        niftyFutLtp > nifty20SMA
+      ) {
+        await niftyLong();
+        setEnable20SmaNiftyMonitorLong(false);
+        toastHandler(`Three Mins Nifty Long Auto Entry`);
       } else {
         console.log("Three Mins Nifty Long No level set");
       }
     };
     const checkNiftyShortEntry = async () => {
-      if (niftyShortOrderId?.entryLevel && nextEntryCheck !== null) {
-        let entry = niftyShortOrderId?.entryLevel;
-        let lastClose = niftyCandles?.[0]?.close;
-
-        if (
-          niftyFutLtp < entry &&
-          lastClose - niftyFutLtp <= 25 &&
-          niftyFutLtp < nifty20SMA
-        ) {
-          await niftyShort();
-          toastHandler(`Three Mins Nifty Short Auto Entry`);
-        } else if (niftyFutLtp > nifty20SMA || lastClose - niftyFutLtp > 25) {
-          await setDoc(
-            doc(db, "futThreeMin", "niftyFutShort"),
-            {
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          );
-          toastHandler(
-            `Nifty Short Level ${niftyShortOrderId?.entryLevel} voided`
-          );
-        } else {
-          toastHandler(
-            `Nifty Short Level ${niftyShortOrderId?.entryLevel} not met`
-          );
-        }
+      let lastClose = niftyCandles?.[0]?.close;
+      if (
+        enable20SmaNiftyMonitorShort === true &&
+        lastClose - niftyFutLtp <= 25 &&
+        niftyFutLtp < nifty20SMA
+      ) {
+        await niftyShort();
+        setEnable20SmaNiftyMonitorShort(false);
+        toastHandler(`Three Mins Nifty Long Auto Entry`);
       } else {
         console.log("Three Mins Nifty Short No level set");
       }
     };
     const checkBnfLongEntry = async () => {
-      if (bnfLongOrderId?.entryLevel && nextEntryCheck !== null) {
-        let entry = bnfLongOrderId?.entryLevel;
-        let lastClose = bnfCandles?.[0]?.close;
-
-        if (
-          bnfFutLtp > entry &&
-          bnfFutLtp - lastClose <= 85 &&
-          bnfFutLtp > bnf20SMA
-        ) {
-          await bnfLong();
-          toastHandler(`Three Mins Bank Nifty Long Auto Entry`);
-        } else if (bnfFutLtp < bnf20SMA || bnfFutLtp - lastClose > 85) {
-          await setDoc(
-            doc(db, "futThreeMin", "bnfFutLong"),
-            {
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          );
-          toastHandler(
-            `Bank Nifty Long Level ${bnfLongOrderId?.entryLevel} voided`
-          );
-        } else {
-          toastHandler(
-            `Bank Nifty Long Level ${bnfLongOrderId?.entryLevel} not met`
-          );
-        }
+      let lastClose = bnfCandles?.[0]?.close;
+      if (
+        enable20SmaBnfMonitorLong === true &&
+        bnfFutLtp - lastClose <= 85 &&
+        bnfFutLtp > bnf20SMA
+      ) {
+        await bnfLong();
+        setEnable20SmaBnfMonitorLong(false);
+        toastHandler(`Three Mins Bank Nifty Long Auto Entry`);
       } else {
         console.log("Three Mins Bank Nifty Long No level set");
       }
     };
     const checkBnfShortEntry = async () => {
-      if (bnfShortOrderId?.entryLevel && nextEntryCheck !== null) {
-        let entry = bnfShortOrderId?.entryLevel;
-        let lastClose = bnfCandles?.[0]?.close;
-
-        if (
-          bnfFutLtp < entry &&
-          lastClose - bnfFutLtp <= 85 &&
-          bnfFutLtp < bnf20SMA
-        ) {
-          await bnfShort();
-          toastHandler(`Three Mins Bank Nifty Short Auto Entry`);
-        } else if (bnfFutLtp > bnf20SMA || lastClose - bnfFutLtp > 85) {
-          await setDoc(
-            doc(db, "futThreeMin", "bnfFutShort"),
-            {
-              entryLevel: deleteField(),
-            },
-            { merge: true }
-          );
-          toastHandler(
-            `Bank Nifty Short Level ${bnfShortOrderId?.entryLevel} voided`
-          );
-        } else {
-          toastHandler(
-            `Bank Nifty Short Level ${bnfShortOrderId?.entryLevel} not met`
-          );
-        }
+      let lastClose = bnfCandles?.[0]?.close;
+      if (
+        enable20SmaBnfMonitorShort === true &&
+        lastClose - bnfFutLtp <= 85 &&
+        bnfFutLtp < bnf20SMA
+      ) {
+        await bnfShort();
+        setEnable20SmaBnfMonitorShort(false);
+        toastHandler(`Three Mins Bank Nifty Long Auto Entry`);
       } else {
         console.log("Three Mins Bank Nifty Short No level set");
       }
@@ -2096,34 +2034,8 @@ function FutTradingThreeMins() {
         document.getElementById("bnfTgtThreeMin").value = "";
       }
     };
-    const levelRefresh = () => {
-      if (niftyLongOrderId?.entryLevel) {
-        document.getElementById("niftyLongLevelThreeMin").value =
-          niftyLongOrderId?.entryLevel;
-      } else {
-        document.getElementById("niftyLongLevelThreeMin").value = "";
-      }
-      if (niftyShortOrderId?.entryLevel) {
-        document.getElementById("niftyShortLevelThreeMin").value =
-          niftyShortOrderId?.entryLevel;
-      } else {
-        document.getElementById("niftyShortLevelThreeMin").value = "";
-      }
-      if (bnfLongOrderId?.entryLevel) {
-        document.getElementById("bnfLongLevelThreeMin").value =
-          bnfLongOrderId?.entryLevel;
-      } else {
-        document.getElementById("bnfLongLevelThreeMin").value = "";
-      }
-      if (bnfShortOrderId?.entryLevel) {
-        document.getElementById("bnfShortLevelThreeMin").value =
-          bnfShortOrderId?.entryLevel;
-      } else {
-        document.getElementById("bnfShortLevelThreeMin").value = "";
-      }
-    };
+
     slTgtRefresh();
-    levelRefresh();
   }, [niftyLongOrderId, niftyShortOrderId, bnfLongOrderId, bnfShortOrderId]);
 
   useEffect(() => {
@@ -2290,42 +2202,31 @@ function FutTradingThreeMins() {
           {/*  */}
 
           <div className="flex justify-between w-full p-3 pt-0 setEntryLevels">
-            <div className="setLong join">
-              <input
-                type="number"
-                id="niftyLongLevelThreeMin"
-                className="w-32 input input-bordered join-item input-md"
-              />
-              <button
-                className="text-white btn btn-neutral join-item"
-                onClick={() => {
-                  let longLevel = document.getElementById(
-                    "niftyLongLevelThreeMin"
-                  ).value;
-                  niftySetLongLevel(parseInt(longLevel));
-                }}
-              >
-                Nifty Long
-              </button>
-            </div>
-            <div className="setShort join">
-              <input
-                type="number"
-                id="niftyShortLevelThreeMin"
-                className="w-32 input input-bordered join-item input-md"
-              />
-              <button
-                className="text-white btn btn-neutral join-item "
-                onClick={() => {
-                  let shortLevel = document.getElementById(
-                    "niftyShortLevelThreeMin"
-                  ).value;
-                  niftySetShortLevel(parseInt(shortLevel));
-                }}
-              >
-                Nifty Short
-              </button>
-            </div>
+            <button
+              className="w-48 text-white btn btn-neutral"
+              onClick={() => {
+                setEnable20SmaNiftyMonitorLong(
+                  enable20SmaNiftyMonitorLong == true ? false : true
+                );
+                setEnable20SmaNiftyMonitorShort(false);
+              }}
+            >
+              Nifty Long:{" "}
+              {enable20SmaNiftyMonitorLong == true ? "Enabled" : "Disabled"}
+            </button>
+
+            <button
+              className="w-48 text-white btn btn-neutral"
+              onClick={() => {
+                setEnable20SmaNiftyMonitorShort(
+                  enable20SmaNiftyMonitorShort == true ? false : true
+                );
+                setEnable20SmaNiftyMonitorLong(false);
+              }}
+            >
+              Nifty Short:{" "}
+              {enable20SmaNiftyMonitorShort == true ? "Enabled" : "Disabled"}
+            </button>
           </div>
 
           {/*  */}
@@ -2666,42 +2567,31 @@ function FutTradingThreeMins() {
           {/*  */}
 
           <div className="flex justify-between w-full p-3 pt-0 setEntryLevels">
-            <div className="setLong join">
-              <input
-                type="number"
-                id="bnfLongLevelThreeMin"
-                className="w-32 input input-bordered join-item input-md"
-              />
-              <button
-                className="text-white btn btn-neutral join-item"
-                onClick={() => {
-                  let longLevel = document.getElementById(
-                    "bnfLongLevelThreeMin"
-                  ).value;
-                  bnfSetLongLevel(parseInt(longLevel));
-                }}
-              >
-                Bank Nifty Long
-              </button>
-            </div>
-            <div className="setShort join">
-              <input
-                type="number"
-                id="bnfShortLevelThreeMin"
-                className="w-32 input input-bordered join-item input-md"
-              />
-              <button
-                className="text-white btn btn-neutral join-item "
-                onClick={() => {
-                  let shortLevel = document.getElementById(
-                    "bnfShortLevelThreeMin"
-                  ).value;
-                  bnfSetShortLevel(parseInt(shortLevel));
-                }}
-              >
-                Bank Nifty Short
-              </button>
-            </div>
+            <button
+              className="w-48 text-white btn btn-neutral"
+              onClick={() => {
+                setEnable20SmaBnfMonitorLong(
+                  enable20SmaBnfMonitorLong == true ? false : true
+                );
+                setEnable20SmaBnfMonitorShort(false);
+              }}
+            >
+              BNF Long:{" "}
+              {enable20SmaBnfMonitorLong == true ? "Enabled" : "Disabled"}
+            </button>
+
+            <button
+              className="w-48 text-white btn btn-neutral"
+              onClick={() => {
+                setEnable20SmaBnfMonitorShort(
+                  enable20SmaBnfMonitorShort == true ? false : true
+                );
+                setEnable20SmaBnfMonitorLong(false);
+              }}
+            >
+              BNF Short:{" "}
+              {enable20SmaBnfMonitorShort == true ? "Enabled" : "Disabled"}
+            </button>
           </div>
           {/*  */}
           {/* ENTRY BUTTONS */}
