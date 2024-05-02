@@ -1027,6 +1027,8 @@ function FutTradingThreeMins() {
 
   const updateOrderBookNifty = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
+      let tradeCountKey = "trade_" + niftyFutLongALLEXEC?.tradeCount;
+      let tradeCount = niftyFutLongALLEXEC?.tradeCount;
       // console.log(response);
       let callLongId = response?.data?.filter((order) => {
         return (
@@ -1042,26 +1044,30 @@ function FutTradingThreeMins() {
       });
       let niftyLongCallEntry = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.callLong?.order_id &&
+          order.order_id ===
+            niftyFutLongALLEXEC?.[tradeCountKey]?.entry?.callLong?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let niftyLongPutEntry = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.putShort?.order_id &&
+          order.order_id ===
+            niftyFutLongALLEXEC?.[tradeCountKey]?.entry?.putShort?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let niftyLongCallExit = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.exit?.callLongExit?.order_id &&
-          order.status === "COMPLETE"
+          order.order_id ===
+            niftyFutLongALLEXEC?.[tradeCountKey]?.exit?.callLongExit
+              ?.order_id && order.status === "COMPLETE"
         );
       });
       let niftyLongPutExit = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.exit?.putShortExit?.order_id &&
-          order.status === "COMPLETE"
+          order.order_id ===
+            niftyFutLongALLEXEC?.[tradeCountKey]?.exit?.putShortExit
+              ?.order_id && order.status === "COMPLETE"
         );
       });
 
@@ -1133,6 +1139,8 @@ function FutTradingThreeMins() {
     });
 
     await axios.get(`/api/orderInfo`).then(async (response) => {
+      let tradeCountKey = "trade_" + niftyFutShortALLEXEC?.tradeCount;
+      let tradeCount = niftyFutShortALLEXEC?.tradeCount;
       // console.log(response);
       let putLongId = response?.data?.filter((order) => {
         return (
@@ -1148,28 +1156,40 @@ function FutTradingThreeMins() {
       });
       let niftyShortCallEntry = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.callShort?.order_id &&
+          order.order_id ===
+            niftyFutShortALLEXEC?.[tradeCountKey]?.entry?.callShort?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let niftyShortPutEntry = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.putLong?.order_id &&
+          order.order_id ===
+            niftyFutShortALLEXEC?.[tradeCountKey]?.entry?.putLong?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let niftyShortCallExit = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.callShortExit?.order_id &&
-          order.status === "COMPLETE"
+          order.order_id ===
+            niftyFutShortALLEXEC?.[tradeCountKey]?.exit?.callShortExit
+              ?.order_id && order.status === "COMPLETE"
         );
       });
       let niftyShortPutExit = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.putLongExit?.order_id &&
-          order.status === "COMPLETE"
+          order.order_id ===
+            niftyFutShortALLEXEC?.[tradeCountKey]?.exit?.putLongExit
+              ?.order_id && order.status === "COMPLETE"
         );
       });
+
+      console.log(
+        niftyShortCallEntry,
+        niftyShortPutEntry,
+        niftyShortCallExit,
+        niftyShortPutExit,
+        niftyFutShortALLEXEC?.[tradeCountKey]?.entry?.callShortExit
+      );
 
       if (
         niftyShortCallEntry.length > 0 &&
@@ -1190,7 +1210,7 @@ function FutTradingThreeMins() {
                 callShort: {
                   average_price: niftyShortCallEntry?.[0]?.average_price,
                 },
-                putShort: {
+                putLong: {
                   average_price: niftyShortPutEntry?.[0]?.average_price,
                 },
               },
@@ -1198,7 +1218,7 @@ function FutTradingThreeMins() {
                 callShortExit: {
                   average_price: niftyShortCallExit?.[0]?.average_price,
                 },
-                putShortExit: {
+                putLongExit: {
                   average_price: niftyShortPutExit?.[0]?.average_price,
                 },
               },
@@ -1226,7 +1246,7 @@ function FutTradingThreeMins() {
               average_price: callShortId?.[0]?.average_price,
             },
             slPoints: 20,
-            tgtPoints: 53,
+            tgtPoints: 43,
           },
           { merge: true }
         )
@@ -2033,6 +2053,8 @@ function FutTradingThreeMins() {
 
   const updateOrderBookBnf = async () => {
     await axios.get(`/api/orderInfo`).then(async (response) => {
+      let tradeCountKey = "trade_" + bnfFutLongALLEXEC?.tradeCount;
+      let tradeCount = bnfFutLongALLEXEC?.tradeCount;
       // console.log(response);
       let callLongId = response?.data?.filter((order) => {
         return (
@@ -2049,25 +2071,29 @@ function FutTradingThreeMins() {
 
       let bnfLongCallEntry = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.callLong?.order_id &&
+          order.order_id ===
+            bnfFutLongALLEXEC?.[tradeCountKey]?.entry?.callLong?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let bnfLongPutEntry = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.putShort?.order_id &&
+          order.order_id ===
+            bnfFutLongALLEXEC?.[tradeCountKey]?.entry?.putShort?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let bnfLongCallExit = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.exit?.callLongExit?.order_id &&
+          order.order_id ===
+            bnfFutLongALLEXEC?.[tradeCountKey]?.exit?.callLongExit?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let bnfLongPutExit = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.exit?.putShortExit?.order_id &&
+          order.order_id ===
+            bnfFutLongALLEXEC?.[tradeCountKey]?.exit?.putShortExit?.order_id &&
           order.status === "COMPLETE"
         );
       });
@@ -2141,6 +2167,8 @@ function FutTradingThreeMins() {
     });
 
     await axios.get(`/api/orderInfo`).then(async (response) => {
+      let tradeCountKey = "trade_" + bnfFutShortALLEXEC?.tradeCount;
+      let tradeCount = bnfFutShortALLEXEC?.tradeCount;
       // console.log(response);
       let putLongId = response?.data?.filter((order) => {
         return (
@@ -2156,25 +2184,29 @@ function FutTradingThreeMins() {
       });
       let bnfShortCallEntry = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.callShort?.order_id &&
+          order.order_id ===
+            bnfFutShortALLEXEC?.[tradeCountKey]?.entry?.callShort?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let bnfShortPutEntry = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.putLong?.order_id &&
+          order.order_id ===
+            bnfFutShortALLEXEC?.[tradeCountKey]?.entry?.putLong?.order_id &&
           order.status === "COMPLETE"
         );
       });
       let bnfShortCallExit = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.callShortExit?.order_id &&
-          order.status === "COMPLETE"
+          order.order_id ===
+            bnfFutShortALLEXEC?.[tradeCountKey]?.entry?.callShortExit
+              ?.order_id && order.status === "COMPLETE"
         );
       });
       let bnfShortPutExit = response?.data?.filter((order) => {
         return (
-          order.order_id === tradeCountKey?.entry?.putLongExit?.order_id &&
+          order.order_id ===
+            bnfFutShortALLEXEC?.[tradeCountKey]?.entry?.putLongExit?.order_id &&
           order.status === "COMPLETE"
         );
       });
@@ -2198,7 +2230,7 @@ function FutTradingThreeMins() {
                 callShort: {
                   average_price: bnfShortCallEntry?.[0]?.average_price,
                 },
-                putShort: {
+                putLong: {
                   average_price: bnfShortPutEntry?.[0]?.average_price,
                 },
               },
@@ -2206,7 +2238,7 @@ function FutTradingThreeMins() {
                 callShortExit: {
                   average_price: bnfShortCallExit?.[0]?.average_price,
                 },
-                putShortExit: {
+                putLongExit: {
                   average_price: bnfShortPutExit?.[0]?.average_price,
                 },
               },
