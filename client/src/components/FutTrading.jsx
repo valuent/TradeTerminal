@@ -88,10 +88,10 @@ function FutTrading() {
   const [bnfShortCallLtp, setBnfShortCallLtp] = useState();
   const [bnfShortPutLtp, setBnfShortPutLtp] = useState();
 
-  const [enable10SMAnifty, setEnable10SMAnifty] = useState(true);
-  const [enable20SMAnifty, setEnable20SMAnifty] = useState(true);
-  const [enable10SMAbnf, setEnable10SMAbnf] = useState(true);
-  const [enable20SMAbnf, setEnable20SMAbnf] = useState(true);
+  const [niftyFutLongALLEXEC, setNiftyFutLongALLEXEC] = useState();
+  const [niftyFutShortALLEXEC, setNiftyFutShortALLEXEC] = useState();
+  const [bnfFutLongALLEXEC, setBnfFutLongALLEXEC] = useState();
+  const [bnfFutShortALLEXEC, setBnfFutShortALLEXEC] = useState();
 
   const [refreshExistingOrder, setRefreshExistingOrder] = useState();
 
@@ -389,6 +389,15 @@ function FutTrading() {
   }, [niftyLtp, bnfLtp, niftyCandles, bnfCandles]);
 
   const niftyLong = async () => {
+    let tradeCount;
+    let tradeCountKey;
+    if (niftyFutLongALLEXEC?.tradeCount) {
+      tradeCount = niftyFutLongALLEXEC?.tradeCount + 1;
+      tradeCountKey = "trade_" + (niftyFutLongALLEXEC?.tradeCount + 1);
+    } else {
+      tradeCount = 1;
+      tradeCountKey = "trade_1";
+    }
     if (!niftyLongOrderId.callLong) {
       await axios
         .get(
@@ -435,6 +444,26 @@ function FutTrading() {
               .catch((e) => {
                 toastHandler(`Nifty long error at firebase ${e}`);
               });
+
+            await setDoc(
+              doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
+              {
+                tradeCount: tradeCount,
+                [tradeCountKey]: {
+                  entry: {
+                    callLong: {
+                      order_id: orderId,
+                      average_price: price,
+                      instrument_token: parseInt(
+                        niftyLongCallBuy?.instrument_token
+                      ),
+                      trading_symbol: niftyLongCallBuy.tradingsymbol,
+                    },
+                  },
+                },
+              },
+              { merge: true }
+            );
           });
         });
     }
@@ -470,16 +499,6 @@ function FutTrading() {
               tgtPoint = "";
             }
 
-            // let tradeCount;
-            // let tradeCountKey;
-            // if (allExecPositions?.callLegCount) {
-            //   tradeCount = allExecPositions?.tradeCount + 1;
-            //   tradeCountKey = "trade_" + (allExecPositions?.tradeCount + 1);
-            // } else {
-            //   tradeCount = 1;
-            //   tradeCountKey = "trade_1";
-            // }
-
             await setDoc(
               doc(db, "futFiveMin", "niftyFutLong"),
               {
@@ -505,30 +524,177 @@ function FutTrading() {
                 toastHandler(`Nifty long error at firebase ${e}`);
               });
 
-            // await setDoc(
-            //   doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
-            //   {
-            //     tradeCount: tradeCount,
-            //     [tradeCountKey]: {
-            //       entryPrice: niftyFutLtp,
-            //       slPoints: slPoint,
-            //       tgtPoints: tgtPoint,
-            //       putShort: {
-            //         order_id: orderId,
-            //         average_price: price,
-            //         instrument_token: parseInt(
-            //           niftyLongPutSell?.instrument_token
-            //         ),
-            //         trading_symbol: niftyLongPutSell.tradingsymbol,
-            //       },
-            //     },
-            //   },
-            //   { merge: true }
-            // );
+            await setDoc(
+              doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
+              {
+                tradeCount: tradeCount,
+                [tradeCountKey]: {
+                  entry: {
+                    entryPrice: niftyFutLtp,
+                    putShort: {
+                      order_id: orderId,
+                      average_price: price,
+                      instrument_token: parseInt(
+                        niftyLongPutSell?.instrument_token
+                      ),
+                      trading_symbol: niftyLongPutSell.tradingsymbol,
+                    },
+                  },
+                },
+              },
+              { merge: true }
+            );
           });
         });
     }
   };
+
+  const niftyLongExit = async () => {
+    let tradeCount;
+    let tradeCountKey;
+    if (niftyFutLongALLEXEC?.tradeCount) {
+      tradeCount = niftyFutLongALLEXEC?.tradeCount;
+      tradeCountKey = "trade_" + niftyFutLongALLEXEC?.tradeCount;
+    }
+    if (
+      niftyLongOrderId?.callLong?.trading_symbol &&
+      niftyLongOrderId?.putShort?.trading_symbol
+    ) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+
+          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          if (response?.data?.order_id) {
+            await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+              callLong: deleteField(),
+            });
+
+            let orderId = response?.data?.order_id;
+            await axios.get(`/api/orderInfo`).then(async (res) => {
+              let callLongId = res?.data?.filter((order) => {
+                return (
+                  order.order_id === orderId && order.status === "COMPLETE"
+                );
+              });
+
+              let price;
+              if (callLongId?.[0]?.average_price) {
+                price = callLongId?.[0].average_price;
+              } else {
+                price = "";
+              }
+
+              await setDoc(
+                doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
+                {
+                  tradeCount: tradeCount,
+                  [tradeCountKey]: {
+                    exit: {
+                      callLongExit: {
+                        order_id: orderId,
+                        average_price: price,
+                        instrument_token: parseInt(
+                          niftyLongCallBuy?.instrument_token
+                        ),
+                        trading_symbol: niftyLongCallBuy.tradingsymbol,
+                      },
+                    },
+                  },
+                },
+                { merge: true }
+              );
+            });
+          }
+        });
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+
+          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          if (response?.data?.order_id) {
+            toastHandler(`Nifty long exit done`);
+            await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
+              putShort: deleteField(),
+              entryPrice: deleteField(),
+              slPoints: deleteField(),
+              tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
+            });
+            let orderId = response?.data?.order_id;
+            await axios.get(`/api/orderInfo`).then(async (res) => {
+              let putShortId = res?.data?.filter((order) => {
+                return (
+                  order.order_id === orderId && order.status === "COMPLETE"
+                );
+              });
+
+              let price;
+              if (putShortId?.[0]?.average_price) {
+                price = putShortId?.[0].average_price;
+              } else {
+                price = "";
+              }
+
+              await setDoc(
+                doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
+                {
+                  tradeCount: tradeCount,
+                  [tradeCountKey]: {
+                    exit: {
+                      exitPrice: niftyFutLtp,
+                      putShortExit: {
+                        order_id: orderId,
+                        average_price: price,
+                        instrument_token: parseInt(
+                          niftyLongPutSell?.instrument_token
+                        ),
+                        trading_symbol: niftyLongPutSell.tradingsymbol,
+                      },
+                    },
+                  },
+                },
+                { merge: true }
+              );
+            });
+          }
+        });
+    } else {
+      toastHandler(`Nifty long no positions Found`);
+    }
+  };
+
+  useEffect(() => {
+    const unsub = onSnapshot(
+      doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
+      (doc) => {
+        setNiftyFutLongALLEXEC(doc.data());
+      }
+    );
+    const unsub2 = onSnapshot(
+      doc(db, "futFiveMin", "niftyFutShortALLEXEC"),
+      (doc) => {
+        setNiftyFutShortALLEXEC(doc.data());
+      }
+    );
+    const unsub3 = onSnapshot(
+      doc(db, "futFiveMin", "bnfFutLongALLEXEC"),
+      (doc) => {
+        setBnfFutLongALLEXEC(doc.data());
+      }
+    );
+    const unsub4 = onSnapshot(
+      doc(db, "futFiveMin", "bnfFutShortALLEXEC"),
+      (doc) => {
+        setBnfFutShortALLEXEC(doc.data());
+      }
+    );
+  }, []);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutLong"), (doc) => {
@@ -549,6 +715,15 @@ function FutTrading() {
   }, [niftyLongOrderId, refreshExistingOrder]);
 
   const niftyShort = async () => {
+    let tradeCount;
+    let tradeCountKey;
+    if (niftyFutShortALLEXEC?.tradeCount) {
+      tradeCount = niftyFutShortALLEXEC?.tradeCount + 1;
+      tradeCountKey = "trade_" + (niftyFutShortALLEXEC?.tradeCount + 1);
+    } else {
+      tradeCount = 1;
+      tradeCountKey = "trade_1";
+    }
     if (!niftyShortOrderId.putLong) {
       await axios
         .get(
@@ -596,6 +771,26 @@ function FutTrading() {
               .catch((e) => {
                 toastHandler(`Nifty short error at firebase ${e}`);
               });
+
+            await setDoc(
+              doc(db, "futFiveMin", "niftyFutShortALLEXEC"),
+              {
+                tradeCount: tradeCount,
+                [tradeCountKey]: {
+                  entry: {
+                    putLong: {
+                      order_id: orderId,
+                      average_price: price,
+                      instrument_token: parseInt(
+                        niftyShortPutBuy?.instrument_token
+                      ),
+                      trading_symbol: niftyShortPutBuy?.tradingsymbol,
+                    },
+                  },
+                },
+              },
+              { merge: true }
+            );
           });
         });
     }
@@ -654,8 +849,151 @@ function FutTrading() {
               .catch((e) => {
                 toastHandler(`Nifty short error at firebase ${e}`);
               });
+            await setDoc(
+              doc(db, "futFiveMin", "niftyFutShortALLEXEC"),
+              {
+                tradeCount: tradeCount,
+                [tradeCountKey]: {
+                  entry: {
+                    entryPrice: niftyFutLtp,
+
+                    callShort: {
+                      order_id: orderId,
+                      average_price: price,
+                      instrument_token: parseInt(
+                        niftyShortCallSell?.instrument_token
+                      ),
+                      trading_symbol: niftyShortCallSell?.tradingsymbol,
+                    },
+                  },
+                },
+              },
+              { merge: true }
+            );
           });
         });
+    }
+  };
+
+  const niftyShortExit = async () => {
+    let tradeCount;
+    let tradeCountKey;
+    if (niftyFutShortALLEXEC?.tradeCount) {
+      tradeCount = niftyFutShortALLEXEC?.tradeCount;
+      tradeCountKey = "trade_" + niftyFutShortALLEXEC?.tradeCount;
+    }
+    if (
+      niftyShortOrderId?.putLong?.trading_symbol &&
+      niftyShortOrderId?.callShort?.trading_symbol
+    ) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+
+          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          // console.log(response);
+          if (response?.data?.order_id) {
+            await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+              putLong: deleteField(),
+            });
+
+            let orderId = response?.data?.order_id;
+            await axios.get(`/api/orderInfo`).then(async (res) => {
+              let putLongId = res?.data?.filter((order) => {
+                return (
+                  order.order_id === orderId && order.status === "COMPLETE"
+                );
+              });
+
+              let price;
+              if (putLongId?.[0]?.average_price) {
+                price = putLongId?.[0].average_price;
+              } else {
+                price = "";
+              }
+
+              await setDoc(
+                doc(db, "futFiveMin", "niftyFutShortALLEXEC"),
+                {
+                  tradeCount: tradeCount,
+                  [tradeCountKey]: {
+                    exit: {
+                      putLongExit: {
+                        order_id: orderId,
+                        average_price: price,
+                        instrument_token: parseInt(
+                          niftyShortPutBuy?.instrument_token
+                        ),
+                        trading_symbol: niftyShortPutBuy?.tradingsymbol,
+                      },
+                    },
+                  },
+                },
+                { merge: true }
+              );
+            });
+          }
+        });
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+
+          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          if (response?.data?.order_id) {
+            toastHandler(`Nifty short exit done`);
+            await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
+              callShort: deleteField(),
+              entryPrice: deleteField(),
+              slPoints: deleteField(),
+              tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
+            });
+
+            let orderId = response?.data?.order_id;
+            await axios.get(`/api/orderInfo`).then(async (res) => {
+              let callShortId = res?.data?.filter((order) => {
+                return (
+                  order.order_id === orderId && order.status === "COMPLETE"
+                );
+              });
+
+              let price;
+              if (callShortId?.[0]?.average_price) {
+                price = callShortId?.[0].average_price;
+              } else {
+                price = "";
+              }
+
+              await setDoc(
+                doc(db, "futFiveMin", "niftyFutShortALLEXEC"),
+                {
+                  tradeCount: tradeCount,
+                  [tradeCountKey]: {
+                    exit: {
+                      exitPrice: niftyFutLtp,
+                      callShortExit: {
+                        order_id: orderId,
+                        average_price: price,
+                        instrument_token: parseInt(
+                          niftyShortCallSell?.instrument_token
+                        ),
+                        trading_symbol: niftyShortCallSell?.tradingsymbol,
+                      },
+                    },
+                  },
+                },
+                { merge: true }
+              );
+            });
+          }
+        });
+    } else {
+      toastHandler(`Nifty Short no positions Found`);
     }
   };
 
@@ -828,91 +1166,6 @@ function FutTrading() {
     }
   };
 
-  const niftyLongExit = async () => {
-    if (
-      niftyLongOrderId?.callLong?.trading_symbol &&
-      niftyLongOrderId?.putShort?.trading_symbol
-    ) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
-              callLong: deleteField(),
-            });
-          }
-        });
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          if (response?.data?.order_id) {
-            toastHandler(`Nifty long exit done`);
-            await updateDoc(doc(db, "futFiveMin", "niftyFutLong"), {
-              putShort: deleteField(),
-              entryPrice: deleteField(),
-              slPoints: deleteField(),
-              tgtPoints: deleteField(),
-              slAdjusted_1: deleteField(),
-              slAdjusted_2: deleteField(),
-            });
-          }
-        });
-    } else {
-      toastHandler(`Nifty long no positions Found`);
-    }
-  };
-
-  const niftyShortExit = async () => {
-    if (
-      niftyShortOrderId?.putLong?.trading_symbol &&
-      niftyShortOrderId?.callShort?.trading_symbol
-    ) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          // console.log(response);
-          if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
-              putLong: deleteField(),
-            });
-          }
-        });
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          if (response?.data?.order_id) {
-            toastHandler(`Nifty short exit done`);
-            await updateDoc(doc(db, "futFiveMin", "niftyFutShort"), {
-              callShort: deleteField(),
-              entryPrice: deleteField(),
-              slPoints: deleteField(),
-              tgtPoints: deleteField(),
-              slAdjusted_1: deleteField(),
-              slAdjusted_2: deleteField(),
-            });
-          }
-        });
-    } else {
-      toastHandler(`Nifty Short no positions Found`);
-    }
-  };
-
   useEffect(() => {
     const niftyLongSLManager = async () => {
       if (
@@ -1047,6 +1300,15 @@ function FutTrading() {
   //BNF
 
   const bnfLong = async () => {
+    let tradeCount;
+    let tradeCountKey;
+    if (bnfFutLongALLEXEC?.tradeCount) {
+      tradeCount = bnfFutLongALLEXEC?.tradeCount + 1;
+      tradeCountKey = "trade_" + (bnfFutLongALLEXEC?.tradeCount + 1);
+    } else {
+      tradeCount = 1;
+      tradeCountKey = "trade_1";
+    }
     if (!bnfLongOrderId.callLong) {
       await axios
         .get(
@@ -1092,6 +1354,25 @@ function FutTrading() {
               .catch((e) => {
                 toastHandler(`Bank Nifty long error at firebase ${e}`);
               });
+            await setDoc(
+              doc(db, "futFiveMin", "bnfFutLongALLEXEC"),
+              {
+                tradeCount: tradeCount,
+                [tradeCountKey]: {
+                  entry: {
+                    callLong: {
+                      order_id: orderId,
+                      average_price: price,
+                      instrument_token: parseInt(
+                        bnfLongCallBuy?.instrument_token
+                      ),
+                      trading_symbol: bnfLongCallBuy.tradingsymbol,
+                    },
+                  },
+                },
+              },
+              { merge: true }
+            );
           });
         });
     }
@@ -1149,8 +1430,148 @@ function FutTrading() {
               .catch((e) => {
                 toastHandler(`Bank Nifty long error at firebase ${e}`);
               });
+            await setDoc(
+              doc(db, "futFiveMin", "bnfFutLongALLEXEC"),
+              {
+                tradeCount: tradeCount,
+                [tradeCountKey]: {
+                  entry: {
+                    entryPrice: bnfFutLtp,
+                    putShort: {
+                      order_id: orderId,
+                      average_price: price,
+                      instrument_token: parseInt(
+                        bnfLongPutSell?.instrument_token
+                      ),
+                      trading_symbol: bnfLongPutSell.tradingsymbol,
+                    },
+                  },
+                },
+              },
+              { merge: true }
+            );
           });
         });
+    }
+  };
+
+  const bnfLongExit = async () => {
+    let tradeCount;
+    let tradeCountKey;
+    if (bnfFutLongALLEXEC?.tradeCount) {
+      tradeCount = bnfFutLongALLEXEC?.tradeCount;
+      tradeCountKey = "trade_" + bnfFutLongALLEXEC?.tradeCount;
+    }
+    if (
+      bnfLongOrderId?.callLong?.trading_symbol &&
+      bnfLongOrderId?.putShort?.trading_symbol
+    ) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          if (response?.data?.order_id) {
+            await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+              callLong: deleteField(),
+            });
+
+            let orderId = response?.data?.order_id;
+            await axios.get(`/api/orderInfo`).then(async (res) => {
+              let callLongId = res?.data?.filter((order) => {
+                return (
+                  order.order_id === orderId && order.status === "COMPLETE"
+                );
+              });
+
+              let price;
+              if (callLongId?.[0]?.average_price) {
+                price = callLongId?.[0].average_price;
+              } else {
+                price = "";
+              }
+
+              await setDoc(
+                doc(db, "futFiveMin", "bnfFutLongALLEXEC"),
+                {
+                  tradeCount: tradeCount,
+                  [tradeCountKey]: {
+                    exit: {
+                      callLongExit: {
+                        order_id: orderId,
+                        average_price: price,
+                        instrument_token: parseInt(
+                          bnfLongCallBuy?.instrument_token
+                        ),
+                        trading_symbol: bnfLongCallBuy.tradingsymbol,
+                      },
+                    },
+                  },
+                },
+                { merge: true }
+              );
+            });
+          }
+        });
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          if (response?.data?.order_id) {
+            toastHandler(`Bank Nifty long exit done`);
+            await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
+              putShort: deleteField(),
+              entryPrice: deleteField(),
+              slPoints: deleteField(),
+              tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
+            });
+            let orderId = response?.data?.order_id;
+            await axios.get(`/api/orderInfo`).then(async (res) => {
+              let putShortId = res?.data?.filter((order) => {
+                return (
+                  order.order_id === orderId && order.status === "COMPLETE"
+                );
+              });
+
+              let price;
+              if (putShortId?.[0]?.average_price) {
+                price = putShortId?.[0].average_price;
+              } else {
+                price = "";
+              }
+
+              await setDoc(
+                doc(db, "futFiveMin", "bnfFutLongALLEXEC"),
+                {
+                  tradeCount: tradeCount,
+                  [tradeCountKey]: {
+                    exit: {
+                      exitPrice: bnfFutLtp,
+                      putShortExit: {
+                        order_id: orderId,
+                        average_price: price,
+                        instrument_token: parseInt(
+                          bnfLongPutSell?.instrument_token
+                        ),
+                        trading_symbol: bnfLongPutSell.tradingsymbol,
+                      },
+                    },
+                  },
+                },
+                { merge: true }
+              );
+            });
+          }
+        });
+    } else {
+      toastHandler(`Bank Nifty long no positions Found`);
     }
   };
 
@@ -1173,6 +1594,15 @@ function FutTrading() {
   }, [bnfLongOrderId, refreshExistingOrder]);
 
   const bnfShort = async () => {
+    let tradeCount;
+    let tradeCountKey;
+    if (bnfFutShortALLEXEC?.tradeCount) {
+      tradeCount = bnfFutShortALLEXEC?.tradeCount + 1;
+      tradeCountKey = "trade_" + (bnfFutShortALLEXEC?.tradeCount + 1);
+    } else {
+      tradeCount = 1;
+      tradeCountKey = "trade_1";
+    }
     if (!bnfShortOrderId.putLong) {
       await axios
         .get(
@@ -1218,6 +1648,25 @@ function FutTrading() {
               .catch((e) => {
                 toastHandler(`Bank Nifty short error at firebase ${e}`);
               });
+            await setDoc(
+              doc(db, "futFiveMin", "bnfFutShortALLEXEC"),
+              {
+                tradeCount: tradeCount,
+                [tradeCountKey]: {
+                  entry: {
+                    putLong: {
+                      order_id: orderId,
+                      average_price: price,
+                      instrument_token: parseInt(
+                        bnfShortPutBuy?.instrument_token
+                      ),
+                      trading_symbol: bnfShortPutBuy?.tradingsymbol,
+                    },
+                  },
+                },
+              },
+              { merge: true }
+            );
           });
         });
     }
@@ -1276,8 +1725,151 @@ function FutTrading() {
               .catch((e) => {
                 toastHandler(`Bank Nifty short error at firebase ${e}`);
               });
+            await setDoc(
+              doc(db, "futFiveMin", "bnfFutShortALLEXEC"),
+              {
+                tradeCount: tradeCount,
+                [tradeCountKey]: {
+                  entry: {
+                    entryPrice: bnfFutLtp,
+
+                    callShort: {
+                      order_id: orderId,
+                      average_price: price,
+                      instrument_token: parseInt(
+                        bnfShortCallSell?.instrument_token
+                      ),
+                      trading_symbol: bnfShortCallSell?.tradingsymbol,
+                    },
+                  },
+                },
+              },
+              { merge: true }
+            );
           });
         });
+    }
+  };
+
+  const bnfShortExit = async () => {
+    let tradeCount;
+    let tradeCountKey;
+    if (bnfFutShortALLEXEC?.tradeCount) {
+      tradeCount = bnfFutShortALLEXEC?.tradeCount;
+      tradeCountKey = "trade_" + bnfFutShortALLEXEC?.tradeCount;
+    }
+    if (
+      bnfShortOrderId?.putLong?.trading_symbol &&
+      bnfShortOrderId?.callShort?.trading_symbol
+    ) {
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
+
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          // console.log(response);
+          if (response?.data?.order_id) {
+            await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+              putLong: deleteField(),
+            });
+
+            let orderId = response?.data?.order_id;
+            await axios.get(`/api/orderInfo`).then(async (res) => {
+              let putLongId = res?.data?.filter((order) => {
+                return (
+                  order.order_id === orderId && order.status === "COMPLETE"
+                );
+              });
+
+              let price;
+              if (putLongId?.[0]?.average_price) {
+                price = putLongId?.[0].average_price;
+              } else {
+                price = "";
+              }
+
+              await setDoc(
+                doc(db, "futFiveMin", "bnfFutShortALLEXEC"),
+                {
+                  tradeCount: tradeCount,
+                  [tradeCountKey]: {
+                    exit: {
+                      putLongExit: {
+                        order_id: orderId,
+                        average_price: price,
+                        instrument_token: parseInt(
+                          bnfShortPutBuy?.instrument_token
+                        ),
+                        trading_symbol: bnfShortPutBuy?.tradingsymbol,
+                      },
+                    },
+                  },
+                },
+                { merge: true }
+              );
+            });
+          }
+        });
+      await axios
+        .get(
+          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
+
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+        )
+        .then(async (response) => {
+          if (response?.data?.order_id) {
+            toastHandler(`Bank Nifty short exit done`);
+            await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
+              callShort: deleteField(),
+              entryPrice: deleteField(),
+              slPoints: deleteField(),
+              tgtPoints: deleteField(),
+              slAdjusted_1: deleteField(),
+              slAdjusted_2: deleteField(),
+            });
+
+            let orderId = response?.data?.order_id;
+            await axios.get(`/api/orderInfo`).then(async (res) => {
+              let callShortId = res?.data?.filter((order) => {
+                return (
+                  order.order_id === orderId && order.status === "COMPLETE"
+                );
+              });
+
+              let price;
+              if (callShortId?.[0]?.average_price) {
+                price = callShortId?.[0].average_price;
+              } else {
+                price = "";
+              }
+
+              await setDoc(
+                doc(db, "futFiveMin", "bnfFutShortALLEXEC"),
+                {
+                  tradeCount: tradeCount,
+                  [tradeCountKey]: {
+                    exit: {
+                      exitPrice: bnfFutLtp,
+                      callShortExit: {
+                        order_id: orderId,
+                        average_price: price,
+                        instrument_token: parseInt(
+                          bnfShortCallSell?.instrument_token
+                        ),
+                        trading_symbol: bnfShortCallSell?.tradingsymbol,
+                      },
+                    },
+                  },
+                },
+                { merge: true }
+              );
+            });
+          }
+        });
+    } else {
+      toastHandler(`Bank Nifty long no positions Found`);
     }
   };
 
@@ -1467,92 +2059,6 @@ function FutTrading() {
       toastHandler(`Bank Nifty Short TGT points ${tgtPoints}`);
     } else {
       toastHandler(`Bank Nifty no trades found`);
-    }
-  };
-
-  const bnfLongExit = async () => {
-    if (
-      bnfLongOrderId?.callLong?.trading_symbol &&
-      bnfLongOrderId?.putShort?.trading_symbol
-    ) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          // console.log(response);
-          if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
-              callLong: deleteField(),
-            });
-          }
-        });
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          if (response?.data?.order_id) {
-            toastHandler(`Bank Nifty long exit done`);
-            await updateDoc(doc(db, "futFiveMin", "bnfFutLong"), {
-              putShort: deleteField(),
-              entryPrice: deleteField(),
-              slPoints: deleteField(),
-              tgtPoints: deleteField(),
-              slAdjusted_1: deleteField(),
-              slAdjusted_2: deleteField(),
-            });
-          }
-        });
-    } else {
-      toastHandler(`Bank Nifty long no positions Found`);
-    }
-  };
-
-  const bnfShortExit = async () => {
-    if (
-      bnfShortOrderId?.putLong?.trading_symbol &&
-      bnfShortOrderId?.callShort?.trading_symbol
-    ) {
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          // console.log(response);
-          if (response?.data?.order_id) {
-            await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
-              putLong: deleteField(),
-            });
-          }
-        });
-      await axios
-        .get(
-          // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
-        )
-        .then(async (response) => {
-          if (response?.data?.order_id) {
-            toastHandler(`Bank Nifty short exit done`);
-            await updateDoc(doc(db, "futFiveMin", "bnfFutShort"), {
-              callShort: deleteField(),
-              entryPrice: deleteField(),
-              slPoints: deleteField(),
-              tgtPoints: deleteField(),
-              slAdjusted_1: deleteField(),
-              slAdjusted_2: deleteField(),
-            });
-          }
-        });
-    } else {
-      toastHandler(`Bank Nifty long no positions Found`);
     }
   };
 
