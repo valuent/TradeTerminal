@@ -1040,6 +1040,67 @@ function FutTradingThreeMins() {
           order.status === "COMPLETE"
         );
       });
+      let niftyLongCallEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.callLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let niftyLongPutEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.putShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let niftyLongCallExit = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.exit?.callLongExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let niftyLongPutExit = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.exit?.putShortExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      if (
+        niftyLongCallEntry.length > 0 &&
+        niftyLongPutEntry.length > 0 &&
+        niftyLongCallEntry?.[0]?.average_price !== "" &&
+        niftyLongPutEntry?.[0]?.average_price !== "" &&
+        niftyLongCallExit?.length > 0 &&
+        niftyLongPutExit?.length > 0 &&
+        niftyLongCallExit?.[0]?.average_price !== "" &&
+        niftyLongPutExit?.[0]?.average_price !== ""
+      ) {
+        await setDoc(
+          doc(db, "futThreeMin", "niftyFutLongALLEXEC"),
+          {
+            tradeCount: tradeCount,
+            [tradeCountKey]: {
+              entry: {
+                callLong: {
+                  average_price: niftyLongCallEntry?.[0]?.average_price,
+                },
+                putShort: {
+                  average_price: niftyLongPutEntry?.[0]?.average_price,
+                },
+              },
+              exit: {
+                callLongExit: {
+                  average_price: niftyLongCallExit?.[0]?.average_price,
+                },
+                putShortExit: {
+                  average_price: niftyLongPutExit?.[0]?.average_price,
+                },
+              },
+            },
+          },
+          { merge: true }
+        );
+      }
       if (
         callLongId.length > 0 &&
         putShortId.length > 0 &&
@@ -1085,6 +1146,68 @@ function FutTradingThreeMins() {
           order.status === "COMPLETE"
         );
       });
+      let niftyShortCallEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.callShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let niftyShortPutEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.putLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let niftyShortCallExit = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.callShortExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let niftyShortPutExit = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.putLongExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      if (
+        niftyShortCallEntry.length > 0 &&
+        niftyShortPutEntry.length > 0 &&
+        niftyShortCallEntry?.[0]?.average_price !== "" &&
+        niftyShortPutEntry?.[0]?.average_price !== "" &&
+        niftyShortCallExit?.length > 0 &&
+        niftyShortPutExit?.length > 0 &&
+        niftyShortCallExit?.[0]?.average_price !== "" &&
+        niftyShortPutExit?.[0]?.average_price !== ""
+      ) {
+        await setDoc(
+          doc(db, "futThreeMin", "niftyFutShortALLEXEC"),
+          {
+            tradeCount: tradeCount,
+            [tradeCountKey]: {
+              entry: {
+                callShort: {
+                  average_price: niftyShortCallEntry?.[0]?.average_price,
+                },
+                putShort: {
+                  average_price: niftyShortPutEntry?.[0]?.average_price,
+                },
+              },
+              exit: {
+                callShortExit: {
+                  average_price: niftyShortCallExit?.[0]?.average_price,
+                },
+                putShortExit: {
+                  average_price: niftyShortPutExit?.[0]?.average_price,
+                },
+              },
+            },
+          },
+          { merge: true }
+        );
+      }
+
       if (
         putLongId.length > 0 &&
         callShortId.length > 0 &&
@@ -1924,6 +2047,68 @@ function FutTradingThreeMins() {
         );
       });
 
+      let bnfLongCallEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.callLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let bnfLongPutEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.putShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let bnfLongCallExit = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.exit?.callLongExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let bnfLongPutExit = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.exit?.putShortExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      if (
+        bnfLongCallEntry.length > 0 &&
+        bnfLongPutEntry.length > 0 &&
+        bnfLongCallEntry?.[0]?.average_price !== "" &&
+        bnfLongPutEntry?.[0]?.average_price !== "" &&
+        bnfLongCallExit?.length > 0 &&
+        bnfLongPutExit?.length > 0 &&
+        bnfLongCallExit?.[0]?.average_price !== "" &&
+        bnfLongPutExit?.[0]?.average_price !== ""
+      ) {
+        await setDoc(
+          doc(db, "futThreeMin", "bnfFutLongALLEXEC"),
+          {
+            tradeCount: tradeCount,
+            [tradeCountKey]: {
+              entry: {
+                callLong: {
+                  average_price: bnfLongCallEntry?.[0]?.average_price,
+                },
+                putShort: {
+                  average_price: bnfLongPutEntry?.[0]?.average_price,
+                },
+              },
+              exit: {
+                callLongExit: {
+                  average_price: bnfLongCallExit?.[0]?.average_price,
+                },
+                putShortExit: {
+                  average_price: bnfLongPutExit?.[0]?.average_price,
+                },
+              },
+            },
+          },
+          { merge: true }
+        );
+      }
+
       if (
         callLongId.length > 0 &&
         putShortId.length > 0 &&
@@ -1969,6 +2154,67 @@ function FutTradingThreeMins() {
           order.status === "COMPLETE"
         );
       });
+      let bnfShortCallEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.callShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let bnfShortPutEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.putLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let bnfShortCallExit = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.callShortExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let bnfShortPutExit = response?.data?.filter((order) => {
+        return (
+          order.order_id === tradeCountKey?.entry?.putLongExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      if (
+        bnfShortCallEntry.length > 0 &&
+        bnfShortPutEntry.length > 0 &&
+        bnfShortCallEntry?.[0]?.average_price !== "" &&
+        bnfShortPutEntry?.[0]?.average_price !== "" &&
+        bnfShortCallExit?.length > 0 &&
+        bnfShortPutExit?.length > 0 &&
+        bnfShortCallExit?.[0]?.average_price !== "" &&
+        bnfShortPutExit?.[0]?.average_price !== ""
+      ) {
+        await setDoc(
+          doc(db, "futThreeMin", "bnfFutShortALLEXEC"),
+          {
+            tradeCount: tradeCount,
+            [tradeCountKey]: {
+              entry: {
+                callShort: {
+                  average_price: bnfShortCallEntry?.[0]?.average_price,
+                },
+                putShort: {
+                  average_price: bnfShortPutEntry?.[0]?.average_price,
+                },
+              },
+              exit: {
+                callShortExit: {
+                  average_price: bnfShortCallExit?.[0]?.average_price,
+                },
+                putShortExit: {
+                  average_price: bnfShortPutExit?.[0]?.average_price,
+                },
+              },
+            },
+          },
+          { merge: true }
+        );
+      }
       if (
         putLongId.length > 0 &&
         callShortId.length > 0 &&
