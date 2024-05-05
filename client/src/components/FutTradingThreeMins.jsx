@@ -540,7 +540,9 @@ function FutTradingThreeMins() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
+                    qty: putShortId?.[0]?.quantity,
                     entryPrice: niftyFutLtp,
+                    entryTime: new Date(),
                     putShort: {
                       order_id: orderId,
                       average_price: price,
@@ -658,7 +660,9 @@ function FutTradingThreeMins() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
+                      qty: putShortId?.[0]?.quantity,
                       exitPrice: niftyFutLtp,
+                      exitTime: new Date(),
                       putShortExit: {
                         order_id: orderId,
                         average_price: price,
@@ -866,8 +870,9 @@ function FutTradingThreeMins() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
+                    qty: callShortId?.[0]?.quantity,
                     entryPrice: niftyFutLtp,
-
+                    entryTime: new Date(),
                     callShort: {
                       order_id: orderId,
                       average_price: price,
@@ -986,7 +991,9 @@ function FutTradingThreeMins() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
+                      qty: callShortId?.[0]?.quantity,
                       exitPrice: niftyFutLtp,
+                      exitTime: new Date(),
                       callShortExit: {
                         order_id: orderId,
                         average_price: price,
@@ -1594,7 +1601,9 @@ function FutTradingThreeMins() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
+                    qty: putShortId?.[0]?.quantity,
                     entryPrice: bnfFutLtp,
+                    entryTime: new Date(),
                     putShort: {
                       order_id: orderId,
                       average_price: price,
@@ -1712,7 +1721,9 @@ function FutTradingThreeMins() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
+                      qty: putShortId?.[0]?.quantity,
                       exitPrice: bnfFutLtp,
+                      exitTime: new Date(),
                       putShortExit: {
                         order_id: orderId,
                         average_price: price,
@@ -1894,8 +1905,9 @@ function FutTradingThreeMins() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
+                    qty: callShortId?.[0]?.quantity,
                     entryPrice: bnfFutLtp,
-
+                    entryTime: new Date(),
                     callShort: {
                       order_id: orderId,
                       average_price: price,
@@ -2013,7 +2025,9 @@ function FutTradingThreeMins() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
+                      qty: callShortId?.[0]?.quantity,
                       exitPrice: bnfFutLtp,
+                      exitTime: new Date(),
                       callShortExit: {
                         order_id: orderId,
                         average_price: price,

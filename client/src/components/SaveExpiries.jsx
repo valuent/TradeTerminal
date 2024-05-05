@@ -421,6 +421,12 @@ function SaveExpiries() {
     rightNav.classList.toggle("ml-[-280px]");
   };
 
+  const openDashboard = () => {
+    let cont = document.getElementById("dashContainer");
+    cont.classList.add("top-0");
+    cont.classList.remove("top-full");
+  };
+
   return (
     <>
       <div
@@ -450,7 +456,7 @@ function SaveExpiries() {
           Data resources update
         </div>
 
-        <div className="w-full p-3 border-double taskTitle border-neutral border-[1px] rounded-lg text-center mt-5 ">
+        <div className="w-full p-3 border-double taskTitle border-neutral border-[1px] rounded-lg text-center mt-5">
           Fetch instrument data
           <div className="flex justify-start w-full mt-3 join join-vertical">
             <button
@@ -557,31 +563,19 @@ function SaveExpiries() {
           </svg>
         </button>
         <div className="w-full p-3 text-lg text-center rounded-lg title bg-neutral-800 backdrop-blur-md bg-opacity-10">
-          Select strategy
+          Other Panels
         </div>
 
         <div className="w-full p-3 border-double taskTitle border-neutral border-[1px] rounded-lg text-center mt-5 ">
-          Fetch instrument data
+          Dashboard
           <button
             className="w-full mt-3 text-black rounded-md join-item btn btn-accent "
             onClick={() => {
-              getInstForExp();
+              openDashboard();
             }}
           >
-            Fetch Data
+            Open
           </button>
-        </div>
-
-        <div className="w-full p-3 border-double taskTitle border-neutral border-[1px] rounded-lg text-center mt-5 ">
-          Fetch Option chain data
-          <div className="flex justify-start w-full mt-3 join join-vertical">
-            <button
-              className="text-black join-item btn btn-accent"
-              onClick={saveLtp}
-            >
-              Get Chain Range
-            </button>
-          </div>
         </div>
       </div>
       <div className="w-full px-2 pt-2 mt-1">

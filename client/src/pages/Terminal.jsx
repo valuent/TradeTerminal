@@ -6,10 +6,12 @@ import FutTrading from "../components/FutTrading";
 // import PositionalSpread from "../components/PositionalSpread";
 // import Supertrend from "../components/Supertrend";
 import FutTradingThreeMins from "../components/FutTradingThreeMins";
+import Dashboard from "../components/Dashboard";
 
 function Terminal() {
   return (
     <div className="overflow-x-hidden">
+      <Dashboard />
       <SaveExpiries />
       <FutTrading />
       <hr className="my-5" />
