@@ -212,16 +212,28 @@ function Dashboard() {
                   ...tradesToArray(bnfFiveMinShort),
                   ...tradesToArray(bnfFiveMinLong),
                 ]);
+              } else if (e.target.value === "all") {
+                selectedStratData = mergeArray([
+                  ...tradesToArray(niftyFiveMinShort),
+                  ...tradesToArray(niftyFiveMinLong),
+                  ...tradesToArray(bnfFiveMinShort),
+                  ...tradesToArray(bnfFiveMinLong),
+                  ...tradesToArray(niftyThreeMinShort),
+                  ...tradesToArray(niftyThreeMinLong),
+                  ...tradesToArray(bnfThreeMinShort),
+                  ...tradesToArray(bnfThreeMinLong),
+                ]);
               }
               setStrategy(e.target.value);
               setTableData(selectedStratData);
             }}
           >
-            <option disabled selected value={"temp"}>
+            <option disabled selected>
               SELECT STRATEGY
             </option>
             <option value={"fut5min"}>FUTURES 5 MINS</option>
             <option value={"fut3min"}>FUTURES 3 MINS</option>
+            <option value={"all"}>ALL TRADES</option>
           </select>
           <select
             id="index"
@@ -263,8 +275,29 @@ function Dashboard() {
                   ...tradesToArray(niftyFiveMinShort),
                   ...tradesToArray(niftyFiveMinLong),
                 ]);
-              }
+              } else if (
+                strategy === "fut3min" &&
+                e.target.value === "allIndex"
+              ) {
+                selectedStratData = mergeArray([
+                  ...tradesToArray(niftyThreeMinShort),
+                  ...tradesToArray(niftyThreeMinLong),
 
+                  ...tradesToArray(bnfThreeMinShort),
+                  ...tradesToArray(bnfThreeMinLong),
+                ]);
+              } else if (
+                strategy === "fut5min" &&
+                e.target.value === "allIndex"
+              ) {
+                selectedStratData = mergeArray([
+                  ...tradesToArray(niftyFiveMinShort),
+                  ...tradesToArray(niftyFiveMinLong),
+
+                  ...tradesToArray(bnfFiveMinShort),
+                  ...tradesToArray(bnfFiveMinLong),
+                ]);
+              }
               setTableData(selectedStratData);
               setIndex(e.target.value);
             }}
@@ -274,6 +307,7 @@ function Dashboard() {
             </option>
             <option value={"nifty"}>NIFTY</option>
             <option value={"bnf"}>BANK NIFTY</option>
+            <option value={"allIndex"}>ALL INDICES</option>
           </select>
           {/* <select
             className="w-full max-w-xs select select-bordered join-item"
@@ -290,7 +324,7 @@ function Dashboard() {
           </select> */}
         </div>
 
-        <div className="w-2/3 p-3 overflow-x-auto overflow-y-auto rounded-2xl bg-base-300 max-h-1/3">
+        <div className="w-2/3 p-3 overflow-x-auto overflow-y-auto rounded-t-2xl bg-base-300 max-h-3/4 ">
           <table className="table">
             {/* head */}
             <thead>
@@ -384,11 +418,11 @@ function Dashboard() {
               })}
             </tbody>
           </table>
-          <div className="flex w-full p-3 border-t-2 border-neutral-700 total justify-evenly">
-            <div className="left">Total</div>
-            <div className={totalPnl > 0 ? "text-green-400" : "text-red-400"}>
-              {totalPnl}
-            </div>
+        </div>
+        <div className="flex w-2/3 p-3 border-t-2 border-neutral-700 total justify-evenly rounded-b-2xl bg-base-300">
+          <div className="left">Total</div>
+          <div className={totalPnl > 0 ? "text-green-400" : "text-red-400"}>
+            {totalPnl}
           </div>
         </div>
 
