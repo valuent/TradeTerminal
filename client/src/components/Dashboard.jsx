@@ -1,18 +1,9 @@
 import React from "react";
 import { DataContext } from "../utils/DataContext";
 import { useState, useEffect, useContext } from "react";
-import axios from "axios";
+
 import { db } from "../utils/config";
-import {
-  doc,
-  updateDoc,
-  setDoc,
-  onSnapshot,
-  deleteDoc,
-  deleteField,
-  documentId,
-} from "firebase/firestore";
-import { toast } from "react-toastify";
+import { doc, onSnapshot } from "firebase/firestore";
 
 function Dashboard() {
   const {

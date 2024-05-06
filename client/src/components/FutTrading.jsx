@@ -530,7 +530,7 @@ function FutTrading() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
-                    qty: putShortId?.[0]?.quantity,
+                    qty: niftyQty,
                     entryPrice: niftyFutLtp,
                     index: "NIFTY",
                     entryTime: new Date(),
@@ -650,7 +650,7 @@ function FutTrading() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
-                      qty: putShortId?.[0]?.quantity,
+                      qty: niftyQty,
                       exitPrice: niftyFutLtp,
                       exitTime: new Date(),
                       putShortExit: {
@@ -860,7 +860,7 @@ function FutTrading() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
-                    qty: callShortId?.[0]?.quantity,
+                    qty: niftyQty,
                     entryPrice: niftyFutLtp,
                     index: "NIFTY",
                     entryTime: new Date(),
@@ -982,7 +982,7 @@ function FutTrading() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
-                      qty: callShortId?.[0]?.quantity,
+                      qty: niftyQty,
                       exitPrice: niftyFutLtp,
                       exitTime: new Date(),
                       callShortExit: {
@@ -1583,7 +1583,7 @@ function FutTrading() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
-                    qty: putShortId?.[0]?.quantity,
+                    qty: bnfQty,
                     entryPrice: bnfFutLtp,
                     index: "BANKNIFTY",
                     entryTime: new Date(),
@@ -1703,7 +1703,7 @@ function FutTrading() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
-                      qty: putShortId?.[0]?.quantity,
+                      qty: bnfQty,
                       exitPrice: bnfFutLtp,
                       exitTime: new Date(),
                       putShortExit: {
@@ -1883,7 +1883,7 @@ function FutTrading() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
-                    qty: callShortId?.[0]?.quantity,
+                    qty: bnfQty,
                     entryPrice: bnfFutLtp,
                     index: "BANKNIFTY",
                     entryTime: new Date(),
@@ -2005,7 +2005,7 @@ function FutTrading() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
-                      qty: callShortId?.[0]?.quantity,
+                      qty: bnfQty,
                       exitPrice: bnfFutLtp,
                       exitTime: new Date(),
                       callShortExit: {
