@@ -1,9 +1,17 @@
 import React from "react";
 import { DataContext } from "../utils/DataContext";
 import { useState, useEffect, useContext } from "react";
-
+import axios from "axios";
 import { db } from "../utils/config";
-import { doc, onSnapshot } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  setDoc,
+  onSnapshot,
+  deleteDoc,
+  deleteField,
+  documentId,
+} from "firebase/firestore";
 
 function Dashboard() {
   const {
@@ -31,7 +39,9 @@ function Dashboard() {
 
   const [strategy, setStrategy] = useState("");
   const [tableData, setTableData] = useState();
+  const [numOfTrades, setNumOfTrades] = useState(0);
   let totalPnl = 0;
+  // let numOfTrades = 0;
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -111,8 +121,305 @@ function Dashboard() {
         new Date(b.entry.entryTime.seconds * 1000) -
         new Date(a.entry.entryTime.seconds * 1000)
     );
-    console.log(sortedArrayTrades);
+    setNumOfTrades(sortedArrayTrades.length);
     return sortedArrayTrades;
+  };
+
+  const updateTradeBookLongFiveMin = async (tradeData) => {
+    await axios.get(`/api/orderInfo`).then(async (response) => {
+      let tradeCountKey = "trade_" + tradeData?.tradeCount;
+
+      let LongCallEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.entry?.callLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let LongPutEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.entry?.putShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      let LongCallExit = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.exit?.callLongExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let LongPutExit = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.exit?.putShortExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      let indexData;
+      if (tradeData?.[tradeCountKey]?.entry?.index === "NIFTY") {
+        indexData = "niftyFutLongALLEXEC";
+      } else if (tradeData?.[tradeCountKey]?.entry?.index === "BANKNIFTY") {
+        indexData = "bnfFutLongALLEXEC";
+      }
+      if (
+        LongCallEntry.length > 0 &&
+        LongPutEntry.length > 0 &&
+        LongCallExit?.length > 0 &&
+        LongPutExit?.length > 0
+      ) {
+        await setDoc(
+          doc(db, "futFiveMin", indexData),
+          {
+            [tradeCountKey]: {
+              entry: {
+                callLong: {
+                  average_price: LongCallEntry?.[0]?.average_price,
+                },
+                putShort: {
+                  average_price: LongPutEntry?.[0]?.average_price,
+                },
+              },
+              exit: {
+                callLongExit: {
+                  average_price: LongCallExit?.[0]?.average_price,
+                },
+                putShortExit: {
+                  average_price: LongPutExit?.[0]?.average_price,
+                },
+              },
+            },
+          },
+          { merge: true }
+        );
+      }
+    });
+  };
+
+  const updateTradeBookShortFiveMin = async (tradeData) => {
+    await axios.get(`/api/orderInfo`).then(async (response) => {
+      let tradeCountKey = "trade_" + tradeData?.tradeCount;
+      let ShortCallEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.entry?.callShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let ShortPutEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.entry?.putLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      let ShortCallExit = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.exit?.callShortExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let ShortPutExit = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.exit?.putLongExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      let indexData;
+      if (tradeData?.[tradeCountKey]?.entry?.index === "NIFTY") {
+        indexData = "niftyFutShortALLEXEC";
+      } else if (tradeData?.[tradeCountKey]?.entry?.index === "BANKNIFTY") {
+        indexData = "bnfFutShortALLEXEC";
+      }
+
+      if (
+        ShortCallEntry.length > 0 &&
+        ShortPutEntry.length > 0 &&
+        ShortCallExit?.length > 0 &&
+        ShortPutExit?.length > 0
+      ) {
+        await setDoc(
+          doc(db, "futFiveMin", indexData),
+          {
+            [tradeCountKey]: {
+              entry: {
+                callShort: {
+                  average_price: ShortCallEntry?.[0]?.average_price,
+                },
+                putLong: {
+                  average_price: ShortPutEntry?.[0]?.average_price,
+                },
+              },
+              exit: {
+                callShortExit: {
+                  average_price: ShortCallExit?.[0]?.average_price,
+                },
+                putLongExit: {
+                  average_price: ShortPutExit?.[0]?.average_price,
+                },
+              },
+            },
+          },
+          { merge: true }
+        );
+      }
+    });
+  };
+
+  const updateTradeBookLongThreeMin = async (tradeData) => {
+    await axios.get(`/api/orderInfo`).then(async (response) => {
+      let tradeCountKey = "trade_" + tradeData?.tradeCount;
+
+      let LongCallEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.entry?.callLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let LongPutEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.entry?.putShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      let LongCallExit = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.exit?.callLongExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let LongPutExit = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.exit?.putShortExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      let indexData;
+      if (tradeData?.[tradeCountKey]?.entry?.index === "NIFTY") {
+        indexData = "niftyFutLongALLEXEC";
+      } else if (tradeData?.[tradeCountKey]?.entry?.index === "BANKNIFTY") {
+        indexData = "bnfFutLongALLEXEC";
+      }
+
+      if (
+        LongCallEntry.length > 0 &&
+        LongPutEntry.length > 0 &&
+        LongCallExit?.length > 0 &&
+        LongPutExit?.length > 0
+      ) {
+        await setDoc(
+          doc(db, "futThreeMin", indexData),
+          {
+            [tradeCountKey]: {
+              entry: {
+                callLong: {
+                  average_price: LongCallEntry?.[0]?.average_price,
+                },
+                putShort: {
+                  average_price: LongPutEntry?.[0]?.average_price,
+                },
+              },
+              exit: {
+                callLongExit: {
+                  average_price: LongCallExit?.[0]?.average_price,
+                },
+                putShortExit: {
+                  average_price: LongPutExit?.[0]?.average_price,
+                },
+              },
+            },
+          },
+          { merge: true }
+        );
+      }
+    });
+  };
+
+  const updateTradeBookShortThreeMin = async (tradeData) => {
+    await axios.get(`/api/orderInfo`).then(async (response) => {
+      let tradeCountKey = "trade_" + tradeData?.tradeCount;
+      let ShortCallEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.entry?.callShort?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let ShortPutEntry = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.entry?.putLong?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      let ShortCallExit = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.exit?.callShortExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+      let ShortPutExit = response?.data?.filter((order) => {
+        return (
+          order.order_id ===
+            tradeData?.[tradeCountKey]?.exit?.putLongExit?.order_id &&
+          order.status === "COMPLETE"
+        );
+      });
+
+      let indexData;
+      if (tradeData?.[tradeCountKey]?.entry?.index === "NIFTY") {
+        indexData = "niftyFutShortALLEXEC";
+      } else if (tradeData?.[tradeCountKey]?.entry?.index === "BANKNIFTY") {
+        indexData = "bnfFutShortALLEXEC";
+      }
+
+      if (
+        ShortCallEntry.length > 0 &&
+        ShortPutEntry.length > 0 &&
+        ShortCallExit?.length > 0 &&
+        ShortPutExit?.length > 0
+      ) {
+        await setDoc(
+          doc(db, "futThreeMin", indexData),
+          {
+            [tradeCountKey]: {
+              entry: {
+                callShort: {
+                  average_price: ShortCallEntry?.[0]?.average_price,
+                },
+                putLong: {
+                  average_price: ShortPutEntry?.[0]?.average_price,
+                },
+              },
+              exit: {
+                callShortExit: {
+                  average_price: ShortCallExit?.[0]?.average_price,
+                },
+                putLongExit: {
+                  average_price: ShortPutExit?.[0]?.average_price,
+                },
+              },
+            },
+          },
+          { merge: true }
+        );
+      }
+    });
   };
 
   // niftyThreeMinLong;
@@ -123,6 +430,31 @@ function Dashboard() {
   // niftyFiveMinShort;
   // bnfFiveMinLong;
   //   bnfFiveMinShort;
+
+  useEffect(() => {
+    updateTradeBookLongFiveMin(niftyFiveMinLong);
+  }, [niftyFiveMinLong]);
+  useEffect(() => {
+    updateTradeBookShortFiveMin(niftyFiveMinShort);
+  }, [niftyFiveMinShort]);
+  useEffect(() => {
+    updateTradeBookLongThreeMin(niftyThreeMinLong);
+  }, [niftyThreeMinLong]);
+  useEffect(() => {
+    updateTradeBookShortThreeMin(niftyThreeMinShort);
+  }, [niftyThreeMinShort]);
+  useEffect(() => {
+    updateTradeBookLongFiveMin(bnfFiveMinLong);
+  }, [bnfFiveMinLong]);
+  useEffect(() => {
+    updateTradeBookShortFiveMin(bnfFiveMinShort);
+  }, [bnfFiveMinShort]);
+  useEffect(() => {
+    updateTradeBookLongThreeMin(bnfThreeMinLong);
+  }, [bnfThreeMinLong]);
+  useEffect(() => {
+    updateTradeBookShortThreeMin(bnfThreeMinShort);
+  }, [bnfThreeMinShort]);
 
   // useEffect(() => {
   //   console.log(
@@ -147,6 +479,8 @@ function Dashboard() {
   // ]);
 
   // console.log(tradesToArray(niftyThreeMinShort));
+
+  // updateTradeBookLongFiveMin(niftyFiveMinLong);
 
   const closeDashboard = () => {
     let cont = document.getElementById("dashContainer");
@@ -300,6 +634,23 @@ function Dashboard() {
             <option value={"bnf"}>BANK NIFTY</option>
             <option value={"allIndex"}>ALL INDICES</option>
           </select>
+          <button
+            className="text-white join-item btn btn-secondary"
+            onClick={async () => {
+              console.time("updateOrders");
+              await updateTradeBookLongFiveMin(niftyFiveMinLong);
+              await updateTradeBookShortFiveMin(niftyFiveMinShort);
+              await updateTradeBookLongThreeMin(niftyThreeMinLong);
+              await updateTradeBookShortThreeMin(niftyThreeMinShort);
+              await updateTradeBookLongFiveMin(bnfFiveMinLong);
+              await updateTradeBookShortFiveMin(bnfFiveMinShort);
+              await updateTradeBookLongThreeMin(bnfThreeMinLong);
+              await updateTradeBookShortThreeMin(bnfThreeMinShort);
+              console.timeEnd("updateOrders");
+            }}
+          >
+            Update Trade Book
+          </button>
           {/* <select
             className="w-full max-w-xs select select-bordered join-item"
             onChange={(e) => {
@@ -411,9 +762,9 @@ function Dashboard() {
           </table>
         </div>
         <div className="flex w-2/3 p-3 border-t-2 border-neutral-700 total justify-evenly rounded-b-2xl bg-base-300">
-          <div className="left">Total</div>
+          <div className="left">No. of trades: {numOfTrades}</div>
           <div className={totalPnl > 0 ? "text-green-400" : "text-red-400"}>
-            {totalPnl}
+            Total: {totalPnl}
           </div>
         </div>
 
