@@ -40,7 +40,9 @@ function Dashboard() {
   const [strategy, setStrategy] = useState("");
   const [tableData, setTableData] = useState();
   const [numOfTrades, setNumOfTrades] = useState(0);
-  let totalPnl = 0;
+
+  const [onDisplay, setOnDisplay] = useState("table");
+
   // let numOfTrades = 0;
 
   useEffect(() => {
@@ -422,15 +424,6 @@ function Dashboard() {
     });
   };
 
-  // niftyThreeMinLong;
-  // niftyThreeMinShort;
-  // bnfThreeMinLong;
-  // bnfThreeMinShort;
-  // niftyFiveMinLong;
-  // niftyFiveMinShort;
-  // bnfFiveMinLong;
-  //   bnfFiveMinShort;
-
   useEffect(() => {
     updateTradeBookLongFiveMin(niftyFiveMinLong);
   }, [niftyFiveMinLong]);
@@ -456,31 +449,291 @@ function Dashboard() {
     updateTradeBookShortThreeMin(bnfThreeMinShort);
   }, [bnfThreeMinShort]);
 
-  // useEffect(() => {
-  //   console.log(
-  //     niftyThreeMinLong,
-  //     niftyThreeMinShort,
-  //     bnfThreeMinLong,
-  //     bnfThreeMinShort,
-  //     niftyFiveMinLong,
-  //     niftyFiveMinShort,
-  //     bnfFiveMinLong,
-  //     bnfFiveMinShort
-  //   );
-  // }, [
-  //   niftyThreeMinLong,
-  //   niftyThreeMinShort,
-  //   bnfThreeMinLong,
-  //   bnfThreeMinShort,
-  //   niftyFiveMinLong,
-  //   niftyFiveMinShort,
-  //   bnfFiveMinLong,
-  //   bnfFiveMinShort,
-  // ]);
+  const calculateTotalPnl = () => {
+    let currentPnl;
+    let totalPnl = 0;
+    tableData?.forEach((trade) => {
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl = (
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty
+        ).toFixed(2);
+      }
+      totalPnl = totalPnl + parseFloat(currentPnl);
+    });
+    return totalPnl;
+  };
 
-  // console.log(tradesToArray(niftyThreeMinShort));
+  const calculateAverageProfit = () => {
+    console.time("average");
+    let arrayOfProfits = [];
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
 
-  // updateTradeBookLongFiveMin(niftyFiveMinLong);
+      if (currentPnl > 0) {
+        arrayOfProfits.push(currentPnl);
+      }
+    });
+
+    let totalProfits = arrayOfProfits.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    );
+    let averageProfit = totalProfits / arrayOfProfits.length;
+
+    console.timeEnd("average");
+    return averageProfit;
+  };
+  const calculateAverageLoss = () => {
+    let arrayOfLosses = [];
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
+
+      if (currentPnl < 0) {
+        arrayOfLosses.push(currentPnl);
+      }
+    });
+
+    let totalLosses = arrayOfLosses.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    );
+    let averageLoss = totalLosses / arrayOfLosses.length;
+
+    return averageLoss;
+  };
+
+  const calculateEquityHigh = () => {
+    let arrayOfPnl = [];
+    let cumulativePnl = 0; // Cumulative profit and loss
+    let equityHigh = -Infinity; // Start with a very low value to find the maximum
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
+      arrayOfPnl.push(currentPnl);
+    });
+    const pnlArray = arrayOfPnl.slice().reverse();
+    for (let pnl of pnlArray) {
+      cumulativePnl += pnl; // Update the cumulative PnL
+
+      // Update the equity high if the current cumulative PnL is greater than the previous equity high
+      if (cumulativePnl > equityHigh) {
+        equityHigh = cumulativePnl; // Set the new equity high
+      }
+    }
+    return equityHigh;
+  };
+
+  const calculateWinCount = () => {
+    let numOfWins = 0;
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
+
+      if (currentPnl > 0) {
+        numOfWins = numOfWins + 1;
+      }
+    });
+
+    return numOfWins;
+  };
+
+  const calculateLossCount = () => {
+    let numOfLoss = 0;
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
+
+      if (currentPnl < 0) {
+        numOfLoss = numOfLoss + 1;
+      }
+    });
+
+    return numOfLoss;
+  };
+
+  const calculateMaxProfit = () => {
+    let maxProfit = 0;
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
+
+      if (currentPnl > maxProfit) {
+        maxProfit = currentPnl;
+      }
+    });
+
+    return maxProfit;
+  };
+
+  const calculateMaxLoss = () => {
+    let maxLoss = 0;
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
+
+      if (currentPnl < maxLoss) {
+        maxLoss = currentPnl;
+      }
+    });
+
+    return maxLoss;
+  };
+
+  const calculateMaxDD = () => {
+    let arrayOfPnl = [];
+    let cumulativePnl = 0; // Cumulative profit and loss
+    let equityLow = +Infinity; // Start with a very low value to find the maximum
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
+      arrayOfPnl.push(currentPnl);
+    });
+    const pnlArray = arrayOfPnl.slice().reverse();
+    for (let pnl of pnlArray) {
+      cumulativePnl += pnl; // Update the cumulative PnL
+
+      // Update the equity high if the current cumulative PnL is greater than the previous equity high
+      if (cumulativePnl < equityLow) {
+        equityLow = cumulativePnl; // Set the new equity high
+      }
+    }
+
+    return equityLow;
+  };
+
+  const calculateExpectancy = () => {
+    let expectancy =
+      (calculateWinCount() / numOfTrades) *
+        (calculateAverageProfit() / -calculateAverageLoss()) -
+      (1 - calculateWinCount() / numOfTrades);
+
+    return expectancy;
+  };
 
   const closeDashboard = () => {
     let cont = document.getElementById("dashContainer");
@@ -516,353 +769,438 @@ function Dashboard() {
         </button>
 
         <span className="self-start mt-2 mb-1 ml-5">SELECTION MENU</span>
-        <div className="self-start w-1/3 m-3 mt-0 selects join">
-          <select
-            id="strategy"
-            className="w-full max-w-xs select select-bordered join-item"
-            onChange={(e) => {
-              document.getElementById("index").value = null;
-              let selectedStratData;
-              if (e.target.value === "fut3min") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(niftyThreeMinShort),
-                  ...tradesToArray(niftyThreeMinLong),
-                  ...tradesToArray(bnfThreeMinShort),
-                  ...tradesToArray(bnfThreeMinLong),
-                ]);
-              } else if (e.target.value === "fut5min") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(niftyFiveMinShort),
-                  ...tradesToArray(niftyFiveMinLong),
-                  ...tradesToArray(bnfFiveMinShort),
-                  ...tradesToArray(bnfFiveMinLong),
-                ]);
-              } else if (e.target.value === "all") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(niftyFiveMinShort),
-                  ...tradesToArray(niftyFiveMinLong),
-                  ...tradesToArray(bnfFiveMinShort),
-                  ...tradesToArray(bnfFiveMinLong),
-                  ...tradesToArray(niftyThreeMinShort),
-                  ...tradesToArray(niftyThreeMinLong),
-                  ...tradesToArray(bnfThreeMinShort),
-                  ...tradesToArray(bnfThreeMinLong),
-                ]);
-              }
-              setStrategy(e.target.value);
-              setTableData(selectedStratData);
-            }}
-          >
-            <option disabled selected>
-              SELECT STRATEGY
-            </option>
-            <option value={"fut5min"}>FUTURES 5 MINS</option>
-            <option value={"fut3min"}>FUTURES 3 MINS</option>
-            <option value={"all"}>ALL TRADES</option>
-          </select>
-          <select
-            id="index"
-            className="w-full max-w-xs select select-bordered join-item"
-            onChange={(e) => {
-              let selectedStratData;
-              if (e.target.value === "nifty" && strategy === "fut3min") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(niftyThreeMinShort),
-                  ...tradesToArray(niftyThreeMinLong),
-                ]);
-              } else if (e.target.value === "bnf" && strategy === "fut3min") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(bnfThreeMinShort),
-                  ...tradesToArray(bnfThreeMinLong),
-                ]);
-              }
-              if (e.target.value === "nifty" && strategy === "fut5min") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(niftyFiveMinShort),
-                  ...tradesToArray(niftyFiveMinLong),
-                ]);
-              } else if (e.target.value === "bnf" && strategy === "fut5min") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(bnfFiveMinShort),
-                  ...tradesToArray(bnfFiveMinLong),
-                ]);
-              } else if (strategy === "" && e.target.value === "bnf") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(bnfThreeMinShort),
-                  ...tradesToArray(bnfThreeMinLong),
-                  ...tradesToArray(bnfFiveMinShort),
-                  ...tradesToArray(bnfFiveMinLong),
-                ]);
-              } else if (strategy === "" && e.target.value === "nifty") {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(niftyThreeMinShort),
-                  ...tradesToArray(niftyThreeMinLong),
-                  ...tradesToArray(niftyFiveMinShort),
-                  ...tradesToArray(niftyFiveMinLong),
-                ]);
-              } else if (
-                strategy === "fut3min" &&
-                e.target.value === "allIndex"
-              ) {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(niftyThreeMinShort),
-                  ...tradesToArray(niftyThreeMinLong),
+        <div className="flex justify-between w-full">
+          <div className="w-1/3 m-3 mt-0 selects join">
+            <select
+              id="strategy"
+              className="w-full max-w-xs select select-bordered join-item"
+              onChange={(e) => {
+                document.getElementById("index").value = null;
+                let selectedStratData;
+                if (e.target.value === "fut3min") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(niftyThreeMinShort),
+                    ...tradesToArray(niftyThreeMinLong),
+                    ...tradesToArray(bnfThreeMinShort),
+                    ...tradesToArray(bnfThreeMinLong),
+                  ]);
+                } else if (e.target.value === "fut5min") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(niftyFiveMinShort),
+                    ...tradesToArray(niftyFiveMinLong),
+                    ...tradesToArray(bnfFiveMinShort),
+                    ...tradesToArray(bnfFiveMinLong),
+                  ]);
+                } else if (e.target.value === "all") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(niftyFiveMinShort),
+                    ...tradesToArray(niftyFiveMinLong),
+                    ...tradesToArray(bnfFiveMinShort),
+                    ...tradesToArray(bnfFiveMinLong),
+                    ...tradesToArray(niftyThreeMinShort),
+                    ...tradesToArray(niftyThreeMinLong),
+                    ...tradesToArray(bnfThreeMinShort),
+                    ...tradesToArray(bnfThreeMinLong),
+                  ]);
+                }
+                setStrategy(e.target.value);
+                setTableData(selectedStratData);
+              }}
+            >
+              <option disabled selected>
+                SELECT STRATEGY
+              </option>
+              <option value={"fut5min"}>FUTURES 5 MINS</option>
+              <option value={"fut3min"}>FUTURES 3 MINS</option>
+              <option value={"all"}>ALL TRADES</option>
+            </select>
+            <select
+              id="index"
+              className="w-full max-w-xs select select-bordered join-item"
+              onChange={(e) => {
+                let selectedStratData;
+                if (e.target.value === "nifty" && strategy === "fut3min") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(niftyThreeMinShort),
+                    ...tradesToArray(niftyThreeMinLong),
+                  ]);
+                } else if (e.target.value === "bnf" && strategy === "fut3min") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(bnfThreeMinShort),
+                    ...tradesToArray(bnfThreeMinLong),
+                  ]);
+                }
+                if (e.target.value === "nifty" && strategy === "fut5min") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(niftyFiveMinShort),
+                    ...tradesToArray(niftyFiveMinLong),
+                  ]);
+                } else if (e.target.value === "bnf" && strategy === "fut5min") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(bnfFiveMinShort),
+                    ...tradesToArray(bnfFiveMinLong),
+                  ]);
+                } else if (strategy === "" && e.target.value === "bnf") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(bnfThreeMinShort),
+                    ...tradesToArray(bnfThreeMinLong),
+                    ...tradesToArray(bnfFiveMinShort),
+                    ...tradesToArray(bnfFiveMinLong),
+                  ]);
+                } else if (strategy === "" && e.target.value === "nifty") {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(niftyThreeMinShort),
+                    ...tradesToArray(niftyThreeMinLong),
+                    ...tradesToArray(niftyFiveMinShort),
+                    ...tradesToArray(niftyFiveMinLong),
+                  ]);
+                } else if (
+                  strategy === "fut3min" &&
+                  e.target.value === "allIndex"
+                ) {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(niftyThreeMinShort),
+                    ...tradesToArray(niftyThreeMinLong),
 
-                  ...tradesToArray(bnfThreeMinShort),
-                  ...tradesToArray(bnfThreeMinLong),
-                ]);
-              } else if (
-                strategy === "fut5min" &&
-                e.target.value === "allIndex"
-              ) {
-                selectedStratData = mergeArray([
-                  ...tradesToArray(niftyFiveMinShort),
-                  ...tradesToArray(niftyFiveMinLong),
+                    ...tradesToArray(bnfThreeMinShort),
+                    ...tradesToArray(bnfThreeMinLong),
+                  ]);
+                } else if (
+                  strategy === "fut5min" &&
+                  e.target.value === "allIndex"
+                ) {
+                  selectedStratData = mergeArray([
+                    ...tradesToArray(niftyFiveMinShort),
+                    ...tradesToArray(niftyFiveMinLong),
 
-                  ...tradesToArray(bnfFiveMinShort),
-                  ...tradesToArray(bnfFiveMinLong),
-                ]);
+                    ...tradesToArray(bnfFiveMinShort),
+                    ...tradesToArray(bnfFiveMinLong),
+                  ]);
+                }
+                setTableData(selectedStratData);
+                setIndex(e.target.value);
+              }}
+            >
+              <option disabled selected>
+                SELECT INDEX
+              </option>
+              <option value={"nifty"}>NIFTY</option>
+              <option value={"bnf"}>BANK NIFTY</option>
+              <option value={"allIndex"}>ALL INDICES</option>
+            </select>
+
+            <button
+              className="text-white join-item btn btn-secondary"
+              onClick={async () => {
+                console.time("updateOrders");
+                await updateTradeBookLongFiveMin(niftyFiveMinLong);
+                await updateTradeBookShortFiveMin(niftyFiveMinShort);
+                await updateTradeBookLongThreeMin(niftyThreeMinLong);
+                await updateTradeBookShortThreeMin(niftyThreeMinShort);
+                await updateTradeBookLongFiveMin(bnfFiveMinLong);
+                await updateTradeBookShortFiveMin(bnfFiveMinShort);
+                await updateTradeBookLongThreeMin(bnfThreeMinLong);
+                await updateTradeBookShortThreeMin(bnfThreeMinShort);
+                console.timeEnd("updateOrders");
+              }}
+            >
+              Update Trade Book
+            </button>
+          </div>
+          <div className="mr-16 join">
+            <button
+              id="fut5min"
+              className={
+                onDisplay === "table"
+                  ? "join-item btn btn-secondary btn-md text-white"
+                  : "join-item btn btn-accent btn-md"
               }
-              setTableData(selectedStratData);
-              setIndex(e.target.value);
-            }}
-          >
-            <option disabled selected>
-              SELECT INDEX
-            </option>
-            <option value={"nifty"}>NIFTY</option>
-            <option value={"bnf"}>BANK NIFTY</option>
-            <option value={"allIndex"}>ALL INDICES</option>
-          </select>
-          <button
-            className="text-white join-item btn btn-secondary"
-            onClick={async () => {
-              console.time("updateOrders");
-              await updateTradeBookLongFiveMin(niftyFiveMinLong);
-              await updateTradeBookShortFiveMin(niftyFiveMinShort);
-              await updateTradeBookLongThreeMin(niftyThreeMinLong);
-              await updateTradeBookShortThreeMin(niftyThreeMinShort);
-              await updateTradeBookLongFiveMin(bnfFiveMinLong);
-              await updateTradeBookShortFiveMin(bnfFiveMinShort);
-              await updateTradeBookLongThreeMin(bnfThreeMinLong);
-              await updateTradeBookShortThreeMin(bnfThreeMinShort);
-              console.timeEnd("updateOrders");
-            }}
-          >
-            Update Trade Book
-          </button>
-          {/* <select
-            className="w-full max-w-xs select select-bordered join-item"
-            onChange={(e) => {
-              setDirection(e.target.value);
-            }}
-          >
-            <option disabled selected>
-              SELECT DIRECTION
-            </option>
-            <option value={"all"}>ALL</option>
-            <option value={"long"}>LONG</option>
-            <option value={"short"}>SHORT</option>
-          </select> */}
+              onClick={() => {
+                setOnDisplay("table");
+              }}
+            >
+              Table
+            </button>
+            <button
+              id="fut1min"
+              className={
+                onDisplay === "stats"
+                  ? "join-item btn btn-secondary btn-md text-white"
+                  : "join-item btn btn-accent btn-md"
+              }
+              onClick={() => {
+                setOnDisplay("stats");
+              }}
+            >
+              Stats
+            </button>
+            <button
+              id="strangle"
+              className={
+                onDisplay === "charts"
+                  ? "join-item btn btn-secondary btn-md text-white"
+                  : "join-item btn btn-accent btn-md"
+              }
+              onClick={() => {
+                setOnDisplay("charts");
+              }}
+            >
+              Charts
+            </button>
+          </div>
         </div>
 
-        <div className="w-2/3 p-3 overflow-x-auto overflow-y-auto rounded-t-2xl bg-base-300 max-h-3/4 ">
-          <table className="table">
-            {/* head */}
-            <thead>
-              <tr>
-                <th>Date Time</th>
-                <th>Index</th>
-                <th>Direction</th>
-                <th>Entry price</th>
-                <th>Exit Price</th>
-                <th>Index Points</th>
-                <th>Collected Points</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* row 1 */}
-              {tableData?.map((trade) => {
-                let date =
-                  new Date(trade.entry.entryTime.seconds * 1000).getDate() +
-                  "/" +
-                  new Date(trade.entry.entryTime.seconds * 1000).getMonth() +
-                  "/" +
-                  new Date(trade.entry.entryTime.seconds * 1000).getFullYear() +
-                  " " +
-                  new Date(trade.entry.entryTime.seconds * 1000).getHours() +
-                  ":" +
-                  new Date(trade.entry.entryTime.seconds * 1000).getMinutes() +
-                  ":" +
-                  new Date(trade.entry.entryTime.seconds * 1000).getSeconds();
-                let indexPoints;
-                if (trade?.entry?.putLong) {
-                  indexPoints = (
-                    trade?.entry?.entryPrice - trade?.exit?.exitPrice
-                  ).toFixed(2);
-                } else {
-                  indexPoints = (
-                    trade?.exit?.exitPrice - trade?.entry?.entryPrice
-                  ).toFixed(2);
-                }
-                let currentPnl;
-                if (trade?.entry?.putLong) {
-                  currentPnl = (
-                    (trade?.exit?.putLongExit?.average_price -
-                      trade?.entry?.putLong?.average_price +
-                      trade?.entry?.callShort?.average_price -
-                      trade?.exit?.callShortExit?.average_price) *
-                    trade?.entry?.qty
-                  ).toFixed(2);
-                } else {
-                  currentPnl = (
-                    (trade?.exit?.callLongExit?.average_price -
-                      trade?.entry?.callLong?.average_price +
-                      trade?.entry?.putShort?.average_price -
-                      trade?.exit?.putShortExit?.average_price) *
-                    trade?.entry?.qty
-                  ).toFixed(2);
-                }
-                totalPnl = totalPnl + parseFloat(currentPnl);
-                return (
+        {onDisplay === "table" ? (
+          <>
+            <div className="w-2/3 p-3 overflow-x-auto overflow-y-auto rounded-t-2xl bg-base-300 max-h-3/4 ">
+              <table className="table">
+                {/* head */}
+                <thead>
                   <tr>
-                    <th>{date}</th>
-                    <td>{trade?.entry?.index}</td>
-                    <td>{trade?.entry?.putLong ? "Short" : "Long"}</td>
-                    <td>{trade?.entry?.entryPrice}</td>
-                    <td>{trade?.exit?.exitPrice}</td>
-                    <td
-                      className={
-                        indexPoints > 0 ? "text-green-400" : "text-red-400"
-                      }
-                    >
-                      {indexPoints}
-                    </td>
-                    <td
-                      className={
-                        currentPnl / trade?.entry?.qty > 0
-                          ? "text-green-400"
-                          : "text-red-400"
-                      }
-                    >
-                      {(currentPnl / trade?.entry?.qty).toFixed(2)}
-                    </td>
-                    <td
-                      className={
-                        currentPnl > 0 ? "text-green-400" : "text-red-400"
-                      }
-                    >
-                      {currentPnl}
-                    </td>
+                    <th>Date Time</th>
+                    <th>Index</th>
+                    <th>Direction</th>
+                    <th>Entry price</th>
+                    <th>Exit Price</th>
+                    <th>Index Points</th>
+                    <th>Collected Points</th>
+                    <th>Total</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex w-2/3 p-3 border-t-2 border-neutral-700 total justify-evenly rounded-b-2xl bg-base-300">
-          <div className="left">No. of trades: {numOfTrades}</div>
-          <div className={totalPnl > 0 ? "text-green-400" : "text-red-400"}>
-            Total: {totalPnl}
-          </div>
-        </div>
+                </thead>
+                <tbody>
+                  {/* row 1 */}
+                  {tableData?.map((trade) => {
+                    let date =
+                      new Date(trade.entry.entryTime.seconds * 1000).getDate() +
+                      "/" +
+                      new Date(
+                        trade.entry.entryTime.seconds * 1000
+                      ).getMonth() +
+                      "/" +
+                      new Date(
+                        trade.entry.entryTime.seconds * 1000
+                      ).getFullYear() +
+                      " " +
+                      new Date(
+                        trade.entry.entryTime.seconds * 1000
+                      ).getHours() +
+                      ":" +
+                      new Date(
+                        trade.entry.entryTime.seconds * 1000
+                      ).getMinutes() +
+                      ":" +
+                      new Date(
+                        trade.entry.entryTime.seconds * 1000
+                      ).getSeconds();
+                    let indexPoints;
+                    if (trade?.entry?.putLong) {
+                      indexPoints = (
+                        trade?.entry?.entryPrice - trade?.exit?.exitPrice
+                      ).toFixed(2);
+                    } else {
+                      indexPoints = (
+                        trade?.exit?.exitPrice - trade?.entry?.entryPrice
+                      ).toFixed(2);
+                    }
 
-        {/* <div className="w-4/5 mt-3 shadow stats">
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
+                    let currentPnl;
+                    if (trade?.entry?.putLong) {
+                      currentPnl = (
+                        (trade?.exit?.putLongExit?.average_price -
+                          trade?.entry?.putLong?.average_price +
+                          trade?.entry?.callShort?.average_price -
+                          trade?.exit?.callShortExit?.average_price) *
+                        trade?.entry?.qty
+                      ).toFixed(2);
+                    } else {
+                      currentPnl = (
+                        (trade?.exit?.callLongExit?.average_price -
+                          trade?.entry?.callLong?.average_price +
+                          trade?.entry?.putShort?.average_price -
+                          trade?.exit?.putShortExit?.average_price) *
+                        trade?.entry?.qty
+                      ).toFixed(2);
+                    }
 
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-        </div>
+                    return (
+                      <tr>
+                        <th>{date}</th>
+                        <td>{trade?.entry?.index}</td>
+                        <td>{trade?.entry?.putLong ? "Short" : "Long"}</td>
+                        <td>{trade?.entry?.entryPrice}</td>
+                        <td>{trade?.exit?.exitPrice}</td>
+                        <td
+                          className={
+                            indexPoints > 0 ? "text-green-400" : "text-red-400"
+                          }
+                        >
+                          {indexPoints}
+                        </td>
+                        <td
+                          className={
+                            currentPnl / trade?.entry?.qty > 0
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }
+                        >
+                          {(currentPnl / trade?.entry?.qty).toFixed(2)}
+                        </td>
+                        <td
+                          className={
+                            currentPnl > 0 ? "text-green-400" : "text-red-400"
+                          }
+                        >
+                          {currentPnl}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-        <div className="w-4/5 mt-3 shadow stats">
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
+            <div className="flex w-2/3 p-3 border-t-2 border-neutral-700 total justify-evenly rounded-b-2xl bg-base-300">
+              <div className="left">No. of trades: {numOfTrades}</div>
+              <div
+                className={
+                  calculateTotalPnl() > 0 ? "text-green-400" : "text-red-400"
+                }
+              >
+                Total: {calculateTotalPnl().toFixed(2)}
+              </div>
+            </div>
+          </>
+        ) : null}
 
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-        </div>
+        {onDisplay === "stats" ? (
+          <>
+            <div className="w-4/5 mt-3 shadow stats">
+              <div className="stat place-items-center">
+                <div className="stat-title">Total Capital</div>
+                <div className="stat-value">74,00,000</div>
+              </div>
 
-        <div className="w-4/5 mt-3 shadow stats">
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Total PnL</div>
+                <div className="stat-value">
+                  {calculateTotalPnl().toFixed(2)}
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">ROI</div>
+                <div className="stat-value">
+                  {((calculateTotalPnl() / 7400000) * 100).toFixed(2)}%
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Avg. Profit</div>
+                <div className="stat-value">
+                  {calculateAverageProfit().toFixed(2)}
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Avg. Loss</div>
+                <div className="stat-value">
+                  {calculateAverageLoss().toFixed(2)}
+                </div>
+              </div>
+            </div>
 
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-        </div>
+            <div className="w-4/5 mt-3 shadow stats">
+              <div className="stat place-items-center">
+                <div className="stat-title">Equity High</div>
+                <div className="stat-value">
+                  {calculateEquityHigh().toFixed(2)}
+                </div>
+              </div>
 
-        <div className="w-4/5 mt-3 shadow stats">
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Winning Trades</div>
+                <div className="stat-value">{calculateWinCount()}</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Losing Trades</div>
+                <div className="stat-value">{calculateLossCount()}</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Accuracy</div>
+                <div className="stat-value">
+                  {((calculateWinCount() / numOfTrades) * 100).toFixed(2)}%
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Risk Reward ratio</div>
+                <div className="stat-value">
+                  {(calculateAverageProfit() / -calculateAverageLoss()).toFixed(
+                    2
+                  )}
+                </div>
+              </div>
+            </div>
 
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-          <div className="stat place-items-center">
-            <div className="stat-title">Downloads</div>
-            <div className="stat-value">31K</div>
-          </div>
-        </div> */}
+            <div className="w-4/5 mt-3 shadow stats">
+              <div className="stat place-items-center">
+                <div className="stat-title">Max Profit/trade</div>
+                <div className="stat-value">
+                  {calculateMaxProfit().toFixed(2)}
+                </div>
+              </div>
+
+              <div className="stat place-items-center">
+                <div className="stat-title">Max Loss/trade</div>
+                <div className="stat-value">
+                  {calculateMaxLoss().toFixed(2)}
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Current DD</div>
+                <div className="stat-value">
+                  {(calculateEquityHigh() - calculateTotalPnl()).toFixed(2)}
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Max DD</div>
+                <div className="stat-value">{calculateMaxDD().toFixed(2)}</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Return to MDD </div>
+                <div className="stat-value">
+                  {(calculateTotalPnl() / -calculateMaxDD()).toFixed(2)}
+                </div>
+              </div>
+            </div>
+
+            <div className="w-4/5 mt-3 shadow stats">
+              <div className="stat place-items-center">
+                <div className="stat-title">Expectancy </div>
+                <div className="stat-value">
+                  {calculateExpectancy().toFixed(2)}
+                </div>
+              </div>
+
+              <div className="stat place-items-center">
+                <div className="stat-title">Avg Pnl</div>
+                <div className="stat-value">31K</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Profit Per day</div>
+                <div className="stat-value">31K</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Loss Per day</div>
+                <div className="stat-value">31K</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">R:R per day</div>
+                <div className="stat-value">31K</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Accuracy per day</div>
+                <div className="stat-value">31K</div>
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </>
   );

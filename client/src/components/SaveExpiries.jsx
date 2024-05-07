@@ -599,28 +599,7 @@ function SaveExpiries() {
                 </svg>
               </div>
             </div>
-            <div className="flex items-center w-1/3 h-full text-xl text-center ">
-              <div className="justify-center w-full tabButtons join">
-                <button
-                  id="fut5min"
-                  className="join-item btn btn-accent btn-sm"
-                >
-                  FUTURE 5 MINS
-                </button>
-                <button
-                  id="fut1min"
-                  className="join-item btn btn-accent btn-sm"
-                >
-                  FUTURE 1 MIN
-                </button>
-                <button
-                  id="strangle"
-                  className="join-item btn btn-accent btn-sm"
-                >
-                  STRANGLE
-                </button>
-              </div>
-            </div>
+
             <div
               className="self-end w-1/3 p-1 text-xl text-right"
               onClick={toggleRightNav}
