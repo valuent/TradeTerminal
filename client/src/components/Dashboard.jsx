@@ -4,6 +4,14 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { db } from "../utils/config";
 import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+import {
   doc,
   updateDoc,
   setDoc,
@@ -14,19 +22,6 @@ import {
 } from "firebase/firestore";
 
 function Dashboard() {
-  const {
-    expiries,
-    niftyOptChainData,
-    bnfOptChainData,
-    socket,
-    tickerData,
-    niftyFutData,
-    bnfFutData,
-    niftySpotData,
-    bnfSpotData,
-    isSuccess,
-  } = useContext(DataContext);
-
   const [niftyThreeMinLong, setNiftyThreeMinLong] = useState();
   const [niftyThreeMinShort, setNiftyThreeMinShort] = useState();
   const [bnfThreeMinLong, setBnfThreeMinLong] = useState();
@@ -42,8 +37,6 @@ function Dashboard() {
   const [numOfTrades, setNumOfTrades] = useState(0);
 
   const [onDisplay, setOnDisplay] = useState("table");
-
-  // let numOfTrades = 0;
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -474,8 +467,53 @@ function Dashboard() {
     return totalPnl;
   };
 
+  const calculateTotalPnlArray = () => {
+    console.time("pnlArray");
+    let currentPnl;
+    let totalPnlArray = [];
+    tableData
+      ?.slice()
+      ?.reverse()
+      ?.forEach((trade) => {
+        if (trade?.entry?.putLong) {
+          currentPnl =
+            (trade?.exit?.putLongExit?.average_price -
+              trade?.entry?.putLong?.average_price +
+              trade?.entry?.callShort?.average_price -
+              trade?.exit?.callShortExit?.average_price) *
+            trade?.entry?.qty;
+        } else {
+          currentPnl = (
+            (trade?.exit?.callLongExit?.average_price -
+              trade?.entry?.callLong?.average_price +
+              trade?.entry?.putShort?.average_price -
+              trade?.exit?.putShortExit?.average_price) *
+            trade?.entry?.qty
+          ).toFixed(2);
+        }
+        if (totalPnlArray.length > 0) {
+          totalPnlArray.push(
+            parseFloat(currentPnl) +
+              parseFloat(totalPnlArray[totalPnlArray?.length - 1])
+          );
+        } else {
+          totalPnlArray.push(parseFloat(currentPnl));
+        }
+      });
+
+    let chartDataArray = [];
+    totalPnlArray?.forEach((cumulative, i) => {
+      chartDataArray.push({
+        tradeNumber: i,
+        pnl: parseFloat(cumulative.toFixed(2)),
+      });
+    });
+
+    console.timeEnd("pnlArray");
+    return chartDataArray;
+  };
+
   const calculateAverageProfit = () => {
-    console.time("average");
     let arrayOfProfits = [];
     tableData?.forEach((trade) => {
       let currentPnl = 0;
@@ -506,9 +544,9 @@ function Dashboard() {
     );
     let averageProfit = totalProfits / arrayOfProfits.length;
 
-    console.timeEnd("average");
     return averageProfit;
   };
+
   const calculateAverageLoss = () => {
     let arrayOfLosses = [];
     tableData?.forEach((trade) => {
@@ -692,8 +730,9 @@ function Dashboard() {
 
   const calculateMaxDD = () => {
     let arrayOfPnl = [];
-    let cumulativePnl = 0; // Cumulative profit and loss
-    let equityLow = +Infinity; // Start with a very low value to find the maximum
+    let cumulativePnl = 0;
+    let equityHigh = 0;
+    let equityLow = 0;
     tableData?.forEach((trade) => {
       let currentPnl = 0;
       if (trade?.entry?.putLong) {
@@ -713,17 +752,19 @@ function Dashboard() {
       }
       arrayOfPnl.push(currentPnl);
     });
-    const pnlArray = arrayOfPnl.slice().reverse();
+    const pnlArray = arrayOfPnl.reverse();
     for (let pnl of pnlArray) {
-      cumulativePnl += pnl; // Update the cumulative PnL
+      cumulativePnl += pnl;
 
-      // Update the equity high if the current cumulative PnL is greater than the previous equity high
-      if (cumulativePnl < equityLow) {
-        equityLow = cumulativePnl; // Set the new equity high
+      if (cumulativePnl > equityHigh) {
+        equityHigh = cumulativePnl;
+      }
+
+      if (equityHigh > cumulativePnl && equityLow > cumulativePnl) {
+        equityLow = equityHigh - cumulativePnl;
       }
     }
-
-    return equityLow;
+    return -equityLow;
   };
 
   const calculateExpectancy = () => {
@@ -731,6 +772,209 @@ function Dashboard() {
       (calculateWinCount() / numOfTrades) *
         (calculateAverageProfit() / -calculateAverageLoss()) -
       (1 - calculateWinCount() / numOfTrades);
+
+    return expectancy;
+  };
+
+  const calculateAvgPnlDaily = () => {
+    let dates = [];
+    tableData?.forEach((trade) => {
+      let tempDate = new Date(trade?.entry?.entryTime?.seconds * 1000);
+      dates.push(
+        tempDate.getDate() +
+          "/" +
+          tempDate.getMonth() +
+          "/" +
+          tempDate.getFullYear()
+      );
+    });
+    let setOfDates = new Set(dates);
+    setOfDates = Array.from(setOfDates);
+
+    let dailyPnlArray = [];
+    setOfDates?.forEach((date) => {
+      let cumulativePnl = 0;
+      tableData?.forEach((trade) => {
+        let tradeDate = new Date(trade?.entry?.entryTime?.seconds * 1000);
+        let UniqueTradeDate =
+          tradeDate.getDate() +
+          "/" +
+          tradeDate.getMonth() +
+          "/" +
+          tradeDate.getFullYear();
+
+        if (UniqueTradeDate === date) {
+          if (trade?.entry?.putLong) {
+            cumulativePnl =
+              cumulativePnl +
+              (trade?.exit?.putLongExit?.average_price -
+                trade?.entry?.putLong?.average_price +
+                trade?.entry?.callShort?.average_price -
+                trade?.exit?.callShortExit?.average_price) *
+                trade?.entry?.qty;
+          } else {
+            cumulativePnl =
+              cumulativePnl +
+              (trade?.exit?.callLongExit?.average_price -
+                trade?.entry?.callLong?.average_price +
+                trade?.entry?.putShort?.average_price -
+                trade?.exit?.putShortExit?.average_price) *
+                trade?.entry?.qty;
+          }
+        }
+      });
+      dailyPnlArray.push(cumulativePnl);
+    });
+
+    let averageDailyPnlData = dailyPnlArray.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    );
+    averageDailyPnlData = averageDailyPnlData / dailyPnlArray.length;
+
+    return {
+      averageDailyPnlData: averageDailyPnlData,
+      dayCount: dailyPnlArray.length,
+    };
+  };
+
+  const calculateAvgProfitDaily = () => {
+    let dates = [];
+    tableData?.forEach((trade) => {
+      let tempDate = new Date(trade?.entry?.entryTime?.seconds * 1000);
+      dates.push(
+        tempDate.getDate() +
+          "/" +
+          tempDate.getMonth() +
+          "/" +
+          tempDate.getFullYear()
+      );
+    });
+    let setOfDates = new Set(dates);
+    setOfDates = Array.from(setOfDates);
+
+    let dailyProfitArray = [];
+    setOfDates?.forEach((date) => {
+      let cumulativePnl = 0;
+      tableData?.forEach((trade) => {
+        let tradeDate = new Date(trade?.entry?.entryTime?.seconds * 1000);
+        let UniqueTradeDate =
+          tradeDate.getDate() +
+          "/" +
+          tradeDate.getMonth() +
+          "/" +
+          tradeDate.getFullYear();
+
+        if (UniqueTradeDate === date) {
+          if (trade?.entry?.putLong) {
+            cumulativePnl =
+              cumulativePnl +
+              (trade?.exit?.putLongExit?.average_price -
+                trade?.entry?.putLong?.average_price +
+                trade?.entry?.callShort?.average_price -
+                trade?.exit?.callShortExit?.average_price) *
+                trade?.entry?.qty;
+          } else {
+            cumulativePnl =
+              cumulativePnl +
+              (trade?.exit?.callLongExit?.average_price -
+                trade?.entry?.callLong?.average_price +
+                trade?.entry?.putShort?.average_price -
+                trade?.exit?.putShortExit?.average_price) *
+                trade?.entry?.qty;
+          }
+        }
+      });
+      if (cumulativePnl > 0) {
+        dailyProfitArray.push(cumulativePnl);
+      }
+    });
+
+    let averageDailyProfitData = dailyProfitArray.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    );
+    averageDailyProfitData = averageDailyProfitData / dailyProfitArray.length;
+
+    return {
+      averageDailyProfitData: averageDailyProfitData,
+      winDayCount: dailyProfitArray.length,
+    };
+  };
+
+  const calculateAvgLossDaily = () => {
+    let dates = [];
+    tableData?.forEach((trade) => {
+      let tempDate = new Date(trade?.entry?.entryTime?.seconds * 1000);
+      dates.push(
+        tempDate.getDate() +
+          "/" +
+          tempDate.getMonth() +
+          "/" +
+          tempDate.getFullYear()
+      );
+    });
+    let setOfDates = new Set(dates);
+    setOfDates = Array.from(setOfDates);
+
+    let dailyLossArray = [];
+    setOfDates?.forEach((date) => {
+      let cumulativePnl = 0;
+      tableData?.forEach((trade) => {
+        let tradeDate = new Date(trade?.entry?.entryTime?.seconds * 1000);
+        let UniqueTradeDate =
+          tradeDate.getDate() +
+          "/" +
+          tradeDate.getMonth() +
+          "/" +
+          tradeDate.getFullYear();
+
+        if (UniqueTradeDate === date) {
+          if (trade?.entry?.putLong) {
+            cumulativePnl =
+              cumulativePnl +
+              (trade?.exit?.putLongExit?.average_price -
+                trade?.entry?.putLong?.average_price +
+                trade?.entry?.callShort?.average_price -
+                trade?.exit?.callShortExit?.average_price) *
+                trade?.entry?.qty;
+          } else {
+            cumulativePnl =
+              cumulativePnl +
+              (trade?.exit?.callLongExit?.average_price -
+                trade?.entry?.callLong?.average_price +
+                trade?.entry?.putShort?.average_price -
+                trade?.exit?.putShortExit?.average_price) *
+                trade?.entry?.qty;
+          }
+        }
+      });
+      if (cumulativePnl < 0) {
+        dailyLossArray.push(cumulativePnl);
+      }
+    });
+
+    let averageDailyLossData = dailyLossArray.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    );
+    averageDailyLossData = averageDailyLossData / dailyLossArray.length;
+
+    return {
+      averageDailyLossData: averageDailyLossData,
+      lossDayCount: dailyLossArray.length,
+    };
+  };
+
+  const calculateDailyExpectancy = () => {
+    let expectancy =
+      (calculateAvgProfitDaily()?.winDayCount /
+        calculateAvgPnlDaily()?.dayCount) *
+        (calculateAvgProfitDaily()?.averageDailyProfitData /
+          -calculateAvgLossDaily()?.averageDailyLossData) -
+      (1 -
+        calculateAvgProfitDaily()?.winDayCount /
+          calculateAvgPnlDaily()?.dayCount);
 
     return expectancy;
   };
@@ -1082,14 +1326,32 @@ function Dashboard() {
 
               <div className="stat place-items-center">
                 <div className="stat-title">Total PnL</div>
-                <div className="stat-value">
+                <div
+                  className={
+                    calculateTotalPnl() > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
                   {calculateTotalPnl().toFixed(2)}
                 </div>
               </div>
               <div className="stat place-items-center">
                 <div className="stat-title">ROI</div>
-                <div className="stat-value">
+                <div
+                  className={
+                    calculateTotalPnl() / 7400000 > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
                   {((calculateTotalPnl() / 7400000) * 100).toFixed(2)}%
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Avg. PnL</div>
+                <div className="stat-value">
+                  {(calculateTotalPnl() / tableData.length).toFixed(2)}
                 </div>
               </div>
               <div className="stat place-items-center">
@@ -1100,8 +1362,61 @@ function Dashboard() {
               </div>
               <div className="stat place-items-center">
                 <div className="stat-title">Avg. Loss</div>
-                <div className="stat-value">
+                <div className="stat-value ">
                   {calculateAverageLoss().toFixed(2)}
+                </div>
+              </div>
+            </div>
+
+            <div className="w-4/5 mt-3 shadow stats">
+              <div className="stat place-items-center">
+                <div className="stat-title">No. of trades</div>
+                <div className="stat-value">{tableData?.length}</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Winning Trades</div>
+                <div className="stat-value">{calculateWinCount()}</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Losing Trades</div>
+                <div className="stat-value">{calculateLossCount()}</div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Accuracy</div>
+                <div
+                  className={
+                    calculateExpectancy() > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {((calculateWinCount() / numOfTrades) * 100).toFixed(2)}%
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Risk Reward ratio</div>
+                <div
+                  className={
+                    calculateExpectancy() > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {(calculateAverageProfit() / -calculateAverageLoss()).toFixed(
+                    2
+                  )}
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Expectancy </div>
+                <div
+                  className={
+                    calculateExpectancy() > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {calculateExpectancy().toFixed(2)}
                 </div>
               </div>
             </div>
@@ -1113,32 +1428,6 @@ function Dashboard() {
                   {calculateEquityHigh().toFixed(2)}
                 </div>
               </div>
-
-              <div className="stat place-items-center">
-                <div className="stat-title">Winning Trades</div>
-                <div className="stat-value">{calculateWinCount()}</div>
-              </div>
-              <div className="stat place-items-center">
-                <div className="stat-title">Losing Trades</div>
-                <div className="stat-value">{calculateLossCount()}</div>
-              </div>
-              <div className="stat place-items-center">
-                <div className="stat-title">Accuracy</div>
-                <div className="stat-value">
-                  {((calculateWinCount() / numOfTrades) * 100).toFixed(2)}%
-                </div>
-              </div>
-              <div className="stat place-items-center">
-                <div className="stat-title">Risk Reward ratio</div>
-                <div className="stat-value">
-                  {(calculateAverageProfit() / -calculateAverageLoss()).toFixed(
-                    2
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="w-4/5 mt-3 shadow stats">
               <div className="stat place-items-center">
                 <div className="stat-title">Max Profit/trade</div>
                 <div className="stat-value">
@@ -1154,17 +1443,37 @@ function Dashboard() {
               </div>
               <div className="stat place-items-center">
                 <div className="stat-title">Current DD</div>
-                <div className="stat-value">
-                  {(calculateEquityHigh() - calculateTotalPnl()).toFixed(2)}
+                <div
+                  className={
+                    -(calculateEquityHigh() - calculateTotalPnl()) == 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {-(calculateEquityHigh() - calculateTotalPnl()).toFixed(2)}
                 </div>
               </div>
               <div className="stat place-items-center">
                 <div className="stat-title">Max DD</div>
-                <div className="stat-value">{calculateMaxDD().toFixed(2)}</div>
+                <div
+                  className={
+                    calculateMaxDD() == 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {calculateMaxDD().toFixed(2)}
+                </div>
               </div>
               <div className="stat place-items-center">
                 <div className="stat-title">Return to MDD </div>
-                <div className="stat-value">
+                <div
+                  className={
+                    calculateTotalPnl() / -calculateMaxDD() == 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
                   {(calculateTotalPnl() / -calculateMaxDD()).toFixed(2)}
                 </div>
               </div>
@@ -1172,32 +1481,109 @@ function Dashboard() {
 
             <div className="w-4/5 mt-3 shadow stats">
               <div className="stat place-items-center">
-                <div className="stat-title">Expectancy </div>
-                <div className="stat-value">
-                  {calculateExpectancy().toFixed(2)}
+                <div className="stat-title">Avg Pnl</div>
+                <div
+                  className={
+                    calculateAvgPnlDaily().averageDailyPnlData > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {calculateAvgPnlDaily().averageDailyPnlData?.toFixed(2)}
                 </div>
               </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Avg. Profit/Day</div>
+                <div className="stat-value">
+                  {calculateAvgProfitDaily().averageDailyProfitData?.toFixed(2)}
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Avg. Loss/Day</div>
+                <div className="stat-value">
+                  {calculateAvgLossDaily().averageDailyLossData?.toFixed(2)}
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Accuracy/Day</div>
+                <div
+                  className={
+                    calculateDailyExpectancy() > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {(
+                    (calculateAvgProfitDaily()?.winDayCount /
+                      calculateAvgPnlDaily()?.dayCount) *
+                    100
+                  ).toFixed(2)}
+                  %
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">R:R/Day</div>
+                <div
+                  className={
+                    calculateDailyExpectancy() > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {(
+                    calculateAvgProfitDaily()?.averageDailyProfitData /
+                    -calculateAvgLossDaily()?.averageDailyLossData
+                  ).toFixed(2)}
+                </div>
+              </div>
+              <div className="stat place-items-center">
+                <div className="stat-title">Daily Expectancy </div>
+                <div
+                  className={
+                    calculateDailyExpectancy() > 0
+                      ? "stat-value text-green-400 "
+                      : "stat-value text-red-400 "
+                  }
+                >
+                  {calculateDailyExpectancy().toFixed(2)}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : null}
 
-              <div className="stat place-items-center">
-                <div className="stat-title">Avg Pnl</div>
-                <div className="stat-value">31K</div>
-              </div>
-              <div className="stat place-items-center">
-                <div className="stat-title">Profit Per day</div>
-                <div className="stat-value">31K</div>
-              </div>
-              <div className="stat place-items-center">
-                <div className="stat-title">Loss Per day</div>
-                <div className="stat-value">31K</div>
-              </div>
-              <div className="stat place-items-center">
-                <div className="stat-title">R:R per day</div>
-                <div className="stat-value">31K</div>
-              </div>
-              <div className="stat place-items-center">
-                <div className="stat-title">Accuracy per day</div>
-                <div className="stat-value">31K</div>
-              </div>
+        {onDisplay === "charts" ? (
+          <>
+            <div className="headButton join">
+              <button className="btn btn-accent btn-sm join-item">
+                Cumulative P&L
+              </button>
+              <button className="btn btn-accent btn-sm join-item">
+                Draw Down
+              </button>
+              <button className="btn btn-accent btn-sm join-item">
+                Strategy-wise
+              </button>
+            </div>
+
+            <div className="p-3 pt-0 mt-5 bg-base-300 rounded-2xl pnlChart ">
+              <div className="pt-5 pb-3 text-xl text-center">P&L Chart</div>
+              <LineChart
+                width={1200}
+                height={600}
+                data={calculateTotalPnlArray()}
+              >
+                <Line
+                  type="monotone"
+                  dataKey="pnl"
+                  stroke="#8884d8"
+                  strokeWidth={3}
+                />
+                <CartesianGrid stroke="#ccc" strokeDasharray="1 1" />
+                <XAxis dataKey="tradeNumber" />
+                <YAxis dataKey="pnl" />
+                <Tooltip />
+              </LineChart>
             </div>
           </>
         ) : null}
