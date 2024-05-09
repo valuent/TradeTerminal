@@ -504,7 +504,7 @@ function Dashboard() {
     let chartDataArray = [];
     totalPnlArray?.forEach((cumulative, i) => {
       chartDataArray.push({
-        tradeNumber: i,
+        tradeNumber: i + 1,
         pnl: parseFloat(cumulative.toFixed(2)),
       });
     });
@@ -1318,7 +1318,7 @@ function Dashboard() {
 
         {onDisplay === "stats" ? (
           <>
-            <div className="w-4/5 mt-3 shadow stats">
+            <div className="w-5/6 mt-3 overflow-hidden shadow stats">
               <div className="stat place-items-center">
                 <div className="stat-title">Total Capital</div>
                 <div className="stat-value">74,00,000</div>
@@ -1368,7 +1368,7 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="w-4/5 mt-3 shadow stats">
+            <div className="w-5/6 mt-3 overflow-hidden shadow stats">
               <div className="stat place-items-center">
                 <div className="stat-title">No. of trades</div>
                 <div className="stat-value">{tableData?.length}</div>
@@ -1421,7 +1421,7 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="w-4/5 mt-3 shadow stats">
+            <div className="w-5/6 mt-3 overflow-hidden shadow stats">
               <div className="stat place-items-center">
                 <div className="stat-title">Equity High</div>
                 <div className="stat-value">
@@ -1479,7 +1479,7 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="w-4/5 mt-3 shadow stats">
+            <div className="w-5/6 mt-3 overflow-hidden shadow stats">
               <div className="stat place-items-center">
                 <div className="stat-title">Avg Pnl</div>
                 <div
