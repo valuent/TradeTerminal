@@ -1,16 +1,18 @@
 import React from "react";
-import { DataContext } from "../utils/DataContext";
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { db } from "../utils/config";
 import {
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
+  Chart as ChartJS,
   Tooltip,
-} from "recharts";
+  Legend,
+  CategoryScale,
+  LinearScale,
+  Title,
+  LineElement,
+  PointElement,
+} from "chart.js";
+import { Doughnut, Line } from "react-chartjs-2";
 import {
   doc,
   updateDoc,
@@ -20,6 +22,16 @@ import {
   deleteField,
   documentId,
 } from "firebase/firestore";
+
+ChartJS.register(
+  Tooltip,
+  Legend,
+  Title,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement
+);
 
 function Dashboard() {
   const [niftyThreeMinLong, setNiftyThreeMinLong] = useState();
@@ -468,7 +480,7 @@ function Dashboard() {
   };
 
   const calculateTotalPnlArray = () => {
-    console.time("pnlArray");
+    // console.time("pnlArray");
     let currentPnl;
     let totalPnlArray = [];
     tableData
@@ -501,15 +513,25 @@ function Dashboard() {
         }
       });
 
-    let chartDataArray = [];
+    let chartDataArray = {
+      labels: [],
+      datasets: [
+        {
+          label: "Equity PnL",
+          data: [],
+          borderColor: "#BD93F9",
+        },
+      ],
+    };
     totalPnlArray?.forEach((cumulative, i) => {
-      chartDataArray.push({
-        tradeNumber: i + 1,
-        pnl: parseFloat(cumulative.toFixed(2)),
-      });
+      chartDataArray?.labels.push("Trade: " + (i + 1));
+      chartDataArray?.datasets?.[0]?.data?.push(
+        parseFloat(cumulative.toFixed(2))
+      );
     });
 
-    console.timeEnd("pnlArray");
+    // console.timeEnd("pnlArray");
+
     return chartDataArray;
   };
 
@@ -767,6 +789,73 @@ function Dashboard() {
     return -equityLow;
   };
 
+  const calculateDDCurve = () => {
+    let arrayOfPnl = [];
+    let cumulativePnl = 0;
+    let equityHigh = 0;
+    let equityLow = 0;
+    tableData?.forEach((trade) => {
+      let currentPnl = 0;
+      if (trade?.entry?.putLong) {
+        currentPnl =
+          (trade?.exit?.putLongExit?.average_price -
+            trade?.entry?.putLong?.average_price +
+            trade?.entry?.callShort?.average_price -
+            trade?.exit?.callShortExit?.average_price) *
+          trade?.entry?.qty;
+      } else {
+        currentPnl =
+          (trade?.exit?.callLongExit?.average_price -
+            trade?.entry?.callLong?.average_price +
+            trade?.entry?.putShort?.average_price -
+            trade?.exit?.putShortExit?.average_price) *
+          trade?.entry?.qty;
+      }
+      arrayOfPnl.push(currentPnl);
+    });
+    const pnlArray = arrayOfPnl.reverse();
+    let ddArray = [];
+    for (let pnl of pnlArray) {
+      cumulativePnl += pnl;
+      if (cumulativePnl > equityHigh) {
+        equityHigh = cumulativePnl;
+      }
+
+      if (equityHigh > cumulativePnl && equityLow > cumulativePnl) {
+        equityLow = equityHigh - cumulativePnl;
+      }
+
+      if (
+        equityHigh > cumulativePnl &&
+        equityLow > cumulativePnl &&
+        -(equityHigh - cumulativePnl) < 0
+      ) {
+        ddArray.push(-(equityHigh - cumulativePnl));
+      } else {
+        ddArray.push(0);
+      }
+    }
+
+    let chartDataArrayDD = {
+      labels: [],
+      datasets: [
+        {
+          label: "Draw Down Curve",
+          data: [],
+          borderColor: "#BD93F9",
+        },
+      ],
+    };
+    ddArray?.forEach((cumulative, i) => {
+      chartDataArrayDD?.labels.push("Trade: " + (i + 1));
+      chartDataArrayDD?.datasets?.[0]?.data?.push(
+        parseFloat(cumulative.toFixed(2))
+      );
+    });
+
+    return chartDataArrayDD;
+  };
+
   const calculateExpectancy = () => {
     let expectancy =
       (calculateWinCount() / numOfTrades) *
@@ -1011,7 +1100,6 @@ function Dashboard() {
             />
           </svg>
         </button>
-
         <span className="self-start mt-2 mb-1 ml-5">SELECTION MENU</span>
         <div className="flex justify-between w-full">
           <div className="w-1/3 m-3 mt-0 selects join">
@@ -1181,19 +1269,31 @@ function Dashboard() {
             <button
               id="strangle"
               className={
-                onDisplay === "charts"
+                onDisplay === "pnlchart"
                   ? "join-item btn btn-secondary btn-md text-white"
                   : "join-item btn btn-accent btn-md"
               }
               onClick={() => {
-                setOnDisplay("charts");
+                setOnDisplay("pnlchart");
               }}
             >
-              Charts
+              Equity Curve
+            </button>
+            <button
+              id="strangle"
+              className={
+                onDisplay === "ddchart"
+                  ? "join-item btn btn-secondary btn-md text-white"
+                  : "join-item btn btn-accent btn-md"
+              }
+              onClick={() => {
+                setOnDisplay("ddchart");
+              }}
+            >
+              Draw down curve
             </button>
           </div>
         </div>
-
         {onDisplay === "table" ? (
           <>
             <div className="w-2/3 p-3 overflow-x-auto overflow-y-auto rounded-t-2xl bg-base-300 max-h-3/4 ">
@@ -1315,7 +1415,6 @@ function Dashboard() {
             </div>
           </>
         ) : null}
-
         {onDisplay === "stats" ? (
           <>
             <div className="w-5/6 mt-3 overflow-hidden shadow stats">
@@ -1551,39 +1650,47 @@ function Dashboard() {
             </div>
           </>
         ) : null}
-
-        {onDisplay === "charts" ? (
+        {/* ddCharts */}
+        {onDisplay === "pnlchart" ? (
           <>
-            <div className="headButton join">
-              <button className="btn btn-accent btn-sm join-item">
-                Cumulative P&L
-              </button>
-              <button className="btn btn-accent btn-sm join-item">
-                Draw Down
-              </button>
-              <button className="btn btn-accent btn-sm join-item">
-                Strategy-wise
-              </button>
-            </div>
-
-            <div className="p-3 pt-0 mt-5 bg-base-300 rounded-2xl pnlChart ">
-              <div className="pt-5 pb-3 text-xl text-center">P&L Chart</div>
-              <LineChart
-                width={1200}
-                height={600}
+            <div className="w-3/4 p-3 pt-2 h-4/5 bg-base-300 rounded-2xl pnlChart">
+              <Line
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: "top",
+                    },
+                    title: {
+                      display: true,
+                      text: "Equity Curve",
+                    },
+                  },
+                }}
                 data={calculateTotalPnlArray()}
-              >
-                <Line
-                  type="monotone"
-                  dataKey="pnl"
-                  stroke="#8884d8"
-                  strokeWidth={3}
-                />
-                <CartesianGrid stroke="#ccc" strokeDasharray="1 1" />
-                <XAxis dataKey="tradeNumber" />
-                <YAxis dataKey="pnl" />
-                <Tooltip />
-              </LineChart>
+              />
+            </div>
+          </>
+        ) : null}
+
+        {onDisplay === "ddchart" ? (
+          <>
+            <div className="w-3/4 p-3 pt-2 h-4/5 bg-base-300 rounded-2xl pnlChart">
+              <Line
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: "top",
+                    },
+                    title: {
+                      display: true,
+                      text: "Draw Down Curve",
+                    },
+                  },
+                }}
+                data={calculateDDCurve()}
+              />
             </div>
           </>
         ) : null}

@@ -388,7 +388,7 @@ function FutTrading() {
     bnf20SMA();
   }, [niftyLtp, bnfLtp, niftyCandles, bnfCandles]);
 
-  const niftyLong = async () => {
+  const niftyLong = async (qty) => {
     let tradeCount;
     let tradeCountKey;
     if (niftyFutLongALLEXEC?.tradeCount) {
@@ -402,7 +402,7 @@ function FutTrading() {
       await axios
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-          `/api/placeOrderFno?tradingsymbol=${niftyLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response?.data?.order_id;
@@ -471,7 +471,7 @@ function FutTrading() {
       await axios
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-          `/api/placeOrderFno?tradingsymbol=${niftyLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response?.data?.order_id;
@@ -491,8 +491,13 @@ function FutTrading() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              slPoint = 25;
-              tgtPoint = 52;
+              if (niftyLongOrderId?.qty === niftyQty) {
+                slPoint = 25;
+                tgtPoint = 52;
+              } else if (niftyLongOrderId?.qty === niftyQty / 2) {
+                slPoint = 35;
+                tgtPoint = 74;
+              }
             } else {
               price = "";
               slPoint = "";
@@ -505,6 +510,7 @@ function FutTrading() {
                 entryPrice: niftyFutLtp,
                 slPoints: slPoint,
                 tgtPoints: tgtPoint,
+                qty: qty,
                 putShort: {
                   order_id: orderId,
                   average_price: price,
@@ -530,7 +536,7 @@ function FutTrading() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
-                    qty: niftyQty,
+                    qty: qty,
                     entryPrice: niftyFutLtp,
                     index: "NIFTY",
                     entryTime: new Date(),
@@ -552,7 +558,7 @@ function FutTrading() {
     }
   };
 
-  const niftyLongExit = async () => {
+  const niftyLongExit = async (qty) => {
     let tradeCount;
     let tradeCountKey;
     if (niftyFutLongALLEXEC?.tradeCount) {
@@ -567,7 +573,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
@@ -616,7 +622,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
@@ -650,7 +656,7 @@ function FutTrading() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
-                      qty: niftyQty,
+                      qty: qty,
                       exitPrice: niftyFutLtp,
                       exitTime: new Date(),
                       putShortExit: {
@@ -719,7 +725,7 @@ function FutTrading() {
     ]);
   }, [niftyLongOrderId, refreshExistingOrder]);
 
-  const niftyShort = async () => {
+  const niftyShort = async (qty) => {
     let tradeCount;
     let tradeCountKey;
     if (niftyFutShortALLEXEC?.tradeCount) {
@@ -734,7 +740,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFno?tradingsymbol=${niftyShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response?.data?.order_id;
@@ -802,7 +808,7 @@ function FutTrading() {
     if (!niftyShortOrderId.callShort) {
       await axios
         .get(
-          `/api/placeOrderFno?tradingsymbol=${niftyShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${qty}&product=MIS&order_type=MARKET`
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
@@ -822,8 +828,13 @@ function FutTrading() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              slPoint = 25;
-              tgtPoint = 52;
+              if (niftyShortOrderId?.qty === niftyQty) {
+                slPoint = 25;
+                tgtPoint = 52;
+              } else if (niftyShortOrderId?.qty === niftyQty / 2) {
+                slPoint = 35;
+                tgtPoint = 74;
+              }
             } else {
               price = "";
               slPoint = "";
@@ -836,6 +847,7 @@ function FutTrading() {
                 entryPrice: niftyFutLtp,
                 slPoints: slPoint,
                 tgtPoints: tgtPoint,
+                qty: qty,
                 callShort: {
                   order_id: orderId,
                   average_price: price,
@@ -860,7 +872,7 @@ function FutTrading() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
-                    qty: niftyQty,
+                    qty: qty,
                     entryPrice: niftyFutLtp,
                     index: "NIFTY",
                     entryTime: new Date(),
@@ -882,7 +894,7 @@ function FutTrading() {
     }
   };
 
-  const niftyShortExit = async () => {
+  const niftyShortExit = async (qty) => {
     let tradeCount;
     let tradeCountKey;
     if (niftyFutShortALLEXEC?.tradeCount) {
@@ -897,7 +909,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           // console.log(response);
@@ -947,7 +959,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${niftyQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFno?tradingsymbol=${niftyShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
@@ -982,7 +994,7 @@ function FutTrading() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
-                      qty: niftyQty,
+                      qty: qty,
                       exitPrice: niftyFutLtp,
                       exitTime: new Date(),
                       callShortExit: {
@@ -1041,6 +1053,16 @@ function FutTrading() {
         );
       });
 
+      let slPoint;
+      let tgtPoint;
+      if (niftyLongOrderId?.qty === niftyQty) {
+        slPoint = 25;
+        tgtPoint = 52;
+      } else if (niftyLongOrderId?.qty === niftyQty / 2) {
+        slPoint = 35;
+        tgtPoint = 74;
+      }
+
       if (
         callLongId.length > 0 &&
         putShortId.length > 0 &&
@@ -1058,8 +1080,8 @@ function FutTrading() {
               order_id: niftyLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
             },
-            slPoints: 25,
-            tgtPoints: 52,
+            slPoints: slPoint,
+            tgtPoints: tgtPoint,
           },
           { merge: true }
         )
@@ -1089,6 +1111,16 @@ function FutTrading() {
         );
       });
 
+      let slPoint;
+      let tgtPoint;
+      if (niftyShortOrderId?.qty === niftyQty) {
+        slPoint = 25;
+        tgtPoint = 52;
+      } else if (niftyShortOrderId?.qty === niftyQty / 2) {
+        slPoint = 35;
+        tgtPoint = 74;
+      }
+
       if (
         putLongId.length > 0 &&
         callShortId.length > 0 &&
@@ -1106,8 +1138,8 @@ function FutTrading() {
               order_id: niftyShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
             },
-            slPoints: 25,
-            tgtPoints: 52,
+            slPoints: slPoint,
+            tgtPoints: tgtPoint,
           },
           { merge: true }
         )
@@ -1204,7 +1236,8 @@ function FutTrading() {
         // console.log(niftyShortPutLtp);
 
         if (niftyFutLtp >= tgt_level || mtm >= niftyLongOrderId?.tgtPoints) {
-          await niftyLongExit();
+          await niftyLongExit(parseInt(niftyLongOrderId?.qty));
+
           toastHandler(`Nifty long TGT reached`);
         }
 
@@ -1236,7 +1269,7 @@ function FutTrading() {
           toastHandler(`Super Trend Nifty long SL Trailed to 1`);
         }
         if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
-          await niftyLongExit();
+          await niftyLongExit(parseInt(niftyLongOrderId?.qty));
           toastHandler(`Nifty long SL reached`);
         }
       }
@@ -1272,7 +1305,7 @@ function FutTrading() {
         // console.log(niftyShortCallLtp);
 
         if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
-          await niftyShortExit();
+          await niftyShortExit(parseInt(niftyShortOrderId?.qty));
           toastHandler(`Nifty short TGT reached`);
         }
 
@@ -1304,7 +1337,7 @@ function FutTrading() {
           toastHandler(`Super Trend Nifty short SL Trailed to 1`);
         }
         if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
-          await niftyShortExit();
+          await niftyShortExit(parseInt(niftyShortOrderId?.qty));
           toastHandler(`Nifty short SL reached`);
         }
       }
@@ -1314,7 +1347,7 @@ function FutTrading() {
 
   //BNF
 
-  const bnfLong = async () => {
+  const bnfLong = async (qty) => {
     let tradeCount;
     let tradeCountKey;
     if (bnfFutLongALLEXEC?.tradeCount) {
@@ -1328,7 +1361,7 @@ function FutTrading() {
       await axios
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongCallBuy.tradingsymbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response?.data?.order_id;
@@ -1395,7 +1428,7 @@ function FutTrading() {
       await axios
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongPutSell.tradingsymbol}&transaction_type=SELL&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response.data.order_id;
@@ -1415,8 +1448,13 @@ function FutTrading() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              slPoint = 85;
-              tgtPoint = 177;
+              if (bnfLongOrderId?.qty === bnfQty) {
+                slPoint = 85;
+                tgtPoint = 177;
+              } else if (bnfLongOrderId?.qty === bnfQty / 2) {
+                slPoint = 135;
+                tgtPoint = 280;
+              }
             } else {
               price = "";
               slPoint = "";
@@ -1429,6 +1467,7 @@ function FutTrading() {
                 entryPrice: bnfFutLtp,
                 slPoints: slPoint,
                 tgtPoints: tgtPoint,
+                qty: qty,
                 putShort: {
                   order_id: orderId,
                   average_price: price,
@@ -1451,7 +1490,7 @@ function FutTrading() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
-                    qty: bnfQty,
+                    qty: qty,
                     entryPrice: bnfFutLtp,
                     index: "BANKNIFTY",
                     entryTime: new Date(),
@@ -1473,7 +1512,7 @@ function FutTrading() {
     }
   };
 
-  const bnfLongExit = async () => {
+  const bnfLongExit = async (qty) => {
     let tradeCount;
     let tradeCountKey;
     if (bnfFutLongALLEXEC?.tradeCount) {
@@ -1488,7 +1527,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.callLong?.trading_symbol}&transaction_type=SELL&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
@@ -1537,7 +1576,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfLongOrderId?.putShort?.trading_symbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
@@ -1571,7 +1610,7 @@ function FutTrading() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
-                      qty: bnfQty,
+                      qty: qty,
                       exitPrice: bnfFutLtp,
                       exitTime: new Date(),
                       putShortExit: {
@@ -1613,7 +1652,7 @@ function FutTrading() {
     ]);
   }, [bnfLongOrderId, refreshExistingOrder]);
 
-  const bnfShort = async () => {
+  const bnfShort = async (qty) => {
     let tradeCount;
     let tradeCountKey;
     if (bnfFutShortALLEXEC?.tradeCount) {
@@ -1628,7 +1667,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortPutBuy.tradingsymbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           let orderId = response.data.order_id;
@@ -1693,7 +1732,7 @@ function FutTrading() {
     if (!bnfShortOrderId.callShort) {
       await axios
         .get(
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortCallSell.tradingsymbol}&transaction_type=SELL&quantity=${qty}&product=MIS&order_type=MARKET`
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
@@ -1713,8 +1752,13 @@ function FutTrading() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              slPoint = 85;
-              tgtPoint = 177;
+              if (bnfShortOrderId?.qty === bnfQty) {
+                slPoint = 85;
+                tgtPoint = 177;
+              } else if (bnfShortOrderId?.qty === bnfQty / 2) {
+                slPoint = 135;
+                tgtPoint = 280;
+              }
             } else {
               price = "";
               slPoint = "";
@@ -1727,6 +1771,7 @@ function FutTrading() {
                 entryPrice: bnfFutLtp,
                 slPoints: slPoint,
                 tgtPoints: tgtPoint,
+                qty: qty,
                 callShort: {
                   order_id: orderId,
                   average_price: price,
@@ -1751,7 +1796,7 @@ function FutTrading() {
                 tradeCount: tradeCount,
                 [tradeCountKey]: {
                   entry: {
-                    qty: bnfQty,
+                    qty: qty,
                     entryPrice: bnfFutLtp,
                     index: "BANKNIFTY",
                     entryTime: new Date(),
@@ -1773,7 +1818,7 @@ function FutTrading() {
     }
   };
 
-  const bnfShortExit = async () => {
+  const bnfShortExit = async (qty) => {
     let tradeCount;
     let tradeCountKey;
     if (bnfFutShortALLEXEC?.tradeCount) {
@@ -1788,7 +1833,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=SELL&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.putLong?.trading_symbol}&transaction_type=SELL&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           // console.log(response);
@@ -1838,7 +1883,7 @@ function FutTrading() {
         .get(
           // `/api/placeOrderFno?tradingsymbol=ICICIBANK&transaction_type=BUY&quantity=1&product=MIS&order_type=MARKET`
 
-          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${bnfQty}&product=MIS&order_type=MARKET`
+          `/api/placeOrderFnoBnf?tradingsymbol=${bnfShortOrderId?.callShort?.trading_symbol}&transaction_type=BUY&quantity=${qty}&product=MIS&order_type=MARKET`
         )
         .then(async (response) => {
           if (response?.data?.order_id) {
@@ -1873,7 +1918,7 @@ function FutTrading() {
                   tradeCount: tradeCount,
                   [tradeCountKey]: {
                     exit: {
-                      qty: bnfQty,
+                      qty: qty,
                       exitPrice: bnfFutLtp,
                       exitTime: new Date(),
                       callShortExit: {
@@ -1932,6 +1977,16 @@ function FutTrading() {
         );
       });
 
+      let slPoint;
+      let tgtPoint;
+      if (bnfLongOrderId?.qty === bnfQty) {
+        slPoint = 85;
+        tgtPoint = 177;
+      } else if (bnfLongOrderId?.qty === bnfQty / 2) {
+        slPoint = 135;
+        tgtPoint = 280;
+      }
+
       if (
         callLongId.length > 0 &&
         putShortId.length > 0 &&
@@ -1949,8 +2004,8 @@ function FutTrading() {
               order_id: bnfLongOrderId?.putShort?.order_id,
               average_price: putShortId?.[0]?.average_price,
             },
-            slPoints: 85,
-            tgtPoints: 177,
+            slPoints: slPoint,
+            tgtPoints: tgtPoint,
           },
           { merge: true }
         )
@@ -1980,6 +2035,16 @@ function FutTrading() {
         );
       });
 
+      let slPoint;
+      let tgtPoint;
+      if (bnfShortOrderId?.qty === bnfQty) {
+        slPoint = 85;
+        tgtPoint = 177;
+      } else if (bnfShortOrderId?.qty === bnfQty / 2) {
+        slPoint = 135;
+        tgtPoint = 280;
+      }
+
       if (
         putLongId.length > 0 &&
         callShortId.length > 0 &&
@@ -1997,8 +2062,8 @@ function FutTrading() {
               order_id: bnfShortOrderId?.callShort?.order_id,
               average_price: callShortId?.[0]?.average_price,
             },
-            slPoints: 85,
-            tgtPoints: 177,
+            slPoints: slPoint,
+            tgtPoints: tgtPoint,
           },
           { merge: true }
         )
@@ -2110,7 +2175,7 @@ function FutTrading() {
         // console.log(mtm);
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
-          await bnfLongExit();
+          await bnfLongExit(parseInt(bnfLongOrderId?.qty));
           toastHandler(`Bank Nifty long TGT reached`);
         }
         if (
@@ -2141,7 +2206,7 @@ function FutTrading() {
           toastHandler(`Super Trend Bank Nifty long SL Trailed to 1`);
         }
         if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
-          await bnfLongExit();
+          await bnfLongExit(parseInt(bnfLongOrderId?.qty));
           toastHandler(`Bank Nifty long SL reached`);
         }
       }
@@ -2171,7 +2236,7 @@ function FutTrading() {
         // console.log("short", mtm);
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
-          await bnfShortExit();
+          await bnfShortExit(parseInt(bnfLongOrderId?.qty));
           toastHandler(`Bank Nifty short TGT reached`);
         }
         if (
@@ -2202,7 +2267,7 @@ function FutTrading() {
           toastHandler(`Super Trend Bank Nifty short SL Trailed to 1`);
         }
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
-          await bnfShortExit();
+          await bnfShortExit(parseInt(bnfLongOrderId?.qty));
           toastHandler(`Bank Nifty short SL reached`);
         }
       }
@@ -2227,7 +2292,7 @@ function FutTrading() {
             niftyFutLtp >= niftyShortOrderId?.entryPrice) ||
           niftyFutLtp > nifty20SMA
         ) {
-          await niftyShortExit();
+          await niftyShortExit(parseInt(niftyShortOrderId?.qty));
           toastHandler(`Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Nifty short TSL Not reached`);
@@ -2248,7 +2313,7 @@ function FutTrading() {
             niftyFutLtp <= niftyLongOrderId?.entryPrice) ||
           niftyFutLtp < nifty20SMA
         ) {
-          await niftyLongExit();
+          await niftyLongExit(parseInt(niftyLongOrderId?.qty));
           toastHandler(`Nifty long Trailing SL reached`);
         } else {
           toastHandler(`Nifty long TSL Not reached`);
@@ -2269,7 +2334,7 @@ function FutTrading() {
           (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
           bnfFutLtp > bnf20SMA
         ) {
-          bnfShortExit();
+          bnfShortExit(parseInt(bnfLongOrderId?.qty));
           toastHandler(`Bank Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Bank Nifty short TSL Not reached`);
@@ -2289,7 +2354,7 @@ function FutTrading() {
           (bnfFutLtp < bnf10SMA && bnfFutLtp <= bnfLongOrderId?.entryPrice) ||
           bnfFutLtp < bnf20SMA
         ) {
-          await bnfLongExit();
+          await bnfLongExit(parseInt(bnfLongOrderId?.qty));
           toastHandler(`Bank Nifty long Trailing SL reached`);
         } else {
           toastHandler(`Bank Nifty long TSL Not reached`);
@@ -2431,9 +2496,17 @@ function FutTrading() {
           niftyFutLtp - lastClose <= 25 &&
           niftyFutLtp > nifty20SMA
         ) {
-          await niftyLong();
+          await niftyLong(niftyQty);
           toastHandler(`Nifty Long Auto Entry`);
-        } else if (niftyFutLtp < nifty20SMA || niftyFutLtp - lastClose > 25) {
+        } else if (
+          niftyFutLtp > entry &&
+          niftyFutLtp - lastClose > 25 &&
+          niftyFutLtp - lastClose <= 35 &&
+          niftyFutLtp > nifty20SMA
+        ) {
+          await niftyLong(niftyQty / 2);
+          toastHandler(`Nifty Long Auto Entry Half Qty`);
+        } else if (niftyFutLtp < nifty20SMA || niftyFutLtp - lastClose > 35) {
           await setDoc(
             doc(db, "futFiveMin", "niftyFutLong"),
             {
@@ -2463,9 +2536,17 @@ function FutTrading() {
           lastClose - niftyFutLtp <= 25 &&
           niftyFutLtp < nifty20SMA
         ) {
-          await niftyShort();
+          await niftyShort(niftyQty);
           toastHandler(`Nifty Short Auto Entry`);
-        } else if (niftyFutLtp > nifty20SMA || lastClose - niftyFutLtp > 25) {
+        } else if (
+          niftyFutLtp < entry &&
+          lastClose - niftyFutLtp > 25 &&
+          lastClose - niftyFutLtp <= 35 &&
+          niftyFutLtp < nifty20SMA
+        ) {
+          await niftyShort(niftyQty / 2);
+          toastHandler(`Nifty Short Auto Entry Half Qty`);
+        } else if (niftyFutLtp > nifty20SMA || lastClose - niftyFutLtp > 35) {
           await setDoc(
             doc(db, "futFiveMin", "niftyFutShort"),
             {
@@ -2495,9 +2576,17 @@ function FutTrading() {
           bnfFutLtp - lastClose <= 85 &&
           bnfFutLtp > bnf20SMA
         ) {
-          await bnfLong();
+          await bnfLong(bnfQty);
           toastHandler(`Bank Nifty Long Auto Entry`);
-        } else if (bnfFutLtp < bnf20SMA || bnfFutLtp - lastClose > 85) {
+        } else if (
+          bnfFutLtp > entry &&
+          bnfFutLtp - lastClose > 85 &&
+          bnfFutLtp - lastClose <= 130 &&
+          bnfFutLtp > bnf20SMA
+        ) {
+          await bnfLong(bnfQty / 2);
+          toastHandler(`Bank Nifty Short Auto Entry Half Qty`);
+        } else if (bnfFutLtp < bnf20SMA || bnfFutLtp - lastClose > 130) {
           await setDoc(
             doc(db, "futFiveMin", "bnfFutLong"),
             {
@@ -2527,9 +2616,17 @@ function FutTrading() {
           lastClose - bnfFutLtp <= 85 &&
           bnfFutLtp < bnf20SMA
         ) {
-          await bnfShort();
+          await bnfShort(bnfQty);
           toastHandler(`Bank Nifty Short Auto Entry`);
-        } else if (bnfFutLtp > bnf20SMA || lastClose - bnfFutLtp > 85) {
+        } else if (
+          bnfFutLtp < entry &&
+          lastClose - bnfFutLtp > 85 &&
+          lastClose - bnfFutLtp <= 130 &&
+          bnfFutLtp < bnf20SMA
+        ) {
+          await bnfShort(bnfQty / 2);
+          toastHandler(`Bank Nifty Short Auto Entry Half Qty`);
+        } else if (bnfFutLtp > bnf20SMA || lastClose - bnfFutLtp > 130) {
           await setDoc(
             doc(db, "futFiveMin", "bnfFutShort"),
             {
@@ -2557,12 +2654,12 @@ function FutTrading() {
     }
   }, [nextEntryCheck]);
   useEffect(() => {
-    const exitAllPositions = () => {
+    const exitAllPositions = async () => {
       if (exitAllCheck === "exitTimeNow") {
-        niftyLongExit();
-        niftyShortExit();
-        bnfLongExit();
-        bnfShortExit();
+        await niftyLongExit(parseInt(niftyLongOrderId?.qty));
+        await niftyShortExit(parseInt(niftyShortOrderId?.qty));
+        await bnfLongExit(parseInt(bnfLongOrderId?.qty));
+        await bnfShortExit(parseInt(bnfShortOrderId?.qty));
       }
     };
     if (exitAllCheck === "exitTimeNow") {
@@ -2847,15 +2944,37 @@ function FutTrading() {
           <div className="flex justify-between w-full entryButtons">
             <button
               className="w-48 m-3 text-white btn btn-secondary "
-              onClick={niftyLong}
+              onClick={() => {
+                niftyLong(niftyQty);
+              }}
             >
               Long Nifty
             </button>
             <button
               className="w-48 m-3 text-white short btn btn-secondary"
-              onClick={niftyShort}
+              onClick={() => {
+                niftyShort(niftyQty);
+              }}
             >
               Short Nifty
+            </button>
+          </div>
+          <div className="flex justify-between w-full entryButtons">
+            <button
+              className="w-48 m-3 text-white btn btn-accent "
+              onClick={() => {
+                niftyLong(niftyQty / 2);
+              }}
+            >
+              Long Nifty 50%
+            </button>
+            <button
+              className="w-48 m-3 text-white short btn btn-accent"
+              onClick={() => {
+                niftyShort(niftyQty / 2);
+              }}
+            >
+              Short Nifty 50%
             </button>
           </div>
 
@@ -2864,12 +2983,19 @@ function FutTrading() {
           {/*  */}
 
           <div className="flex justify-between w-full exitButtons">
-            <button className="w-48 m-3 text-white btn" onClick={niftyLongExit}>
+            <button
+              className="w-48 m-3 text-white btn"
+              onClick={() => {
+                niftyLongExit(niftyLongOrderId?.qty);
+              }}
+            >
               Exit Long Nifty
             </button>
             <button
               className="w-48 m-3 text-white short btn"
-              onClick={niftyShortExit}
+              onClick={() => {
+                niftyShortExit(niftyShortOrderId?.qty);
+              }}
             >
               Exit Short Nifty
             </button>
@@ -3219,15 +3345,37 @@ function FutTrading() {
           <div className="flex justify-between w-full entryButtons">
             <button
               className="w-48 m-3 text-white btn btn-secondary"
-              onClick={bnfLong}
+              onClick={() => {
+                bnfLong(bnfQty);
+              }}
             >
               Long Bank Nifty
             </button>
             <button
               className="w-48 m-3 text-white short btn btn-secondary"
-              onClick={bnfShort}
+              onClick={() => {
+                bnfShort(bnfQty);
+              }}
             >
               Short Bank Nifty
+            </button>
+          </div>
+          <div className="flex justify-between w-full entryButtons">
+            <button
+              className="w-48 m-3 text-white btn btn-accent"
+              onClick={() => {
+                bnfLong(bnfQty / 2);
+              }}
+            >
+              Long Bank Nifty 50%
+            </button>
+            <button
+              className="w-48 m-3 text-white short btn btn-accent"
+              onClick={() => {
+                bnfShort(bnfQty / 2);
+              }}
+            >
+              Short Bank Nifty 50%
             </button>
           </div>
 
@@ -3236,12 +3384,19 @@ function FutTrading() {
           {/*  */}
 
           <div className="flex justify-between w-full exitButtons">
-            <button className="w-48 m-3 text-white btn" onClick={bnfLongExit}>
+            <button
+              className="w-48 m-3 text-white btn"
+              onClick={() => {
+                bnfLongExit(bnfLongOrderId?.qty);
+              }}
+            >
               Exit Long Bank Nifty
             </button>
             <button
               className="w-48 m-3 text-white short btn"
-              onClick={bnfShortExit}
+              onClick={() => {
+                bnfShortExit(bnfShortOrderId?.qty);
+              }}
             >
               Exit Short Bank Nifty
             </button>

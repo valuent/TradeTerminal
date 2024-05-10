@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "axios": "^1.6.7",
+    "chart.js": "^4.4.2",
     "firebase": "^10.8.1",
     "kiteconnect": "^4.1.0",
     "node-schedule": "^2.1.1",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-js-cron": "^5.0.1",
     "react-router-dom": "^6.22.2",
