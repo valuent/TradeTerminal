@@ -501,10 +501,10 @@ function FutTradingThreeMins() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              if (niftyLongOrderId?.qty === niftyQty) {
+              if (qty === niftyQty) {
                 slPoint = 25;
                 tgtPoint = 52;
-              } else if (niftyLongOrderId?.qty === niftyQty / 2) {
+              } else if (qty === niftyQty / 2) {
                 slPoint = 35;
                 tgtPoint = 74;
               }
@@ -644,6 +644,7 @@ function FutTradingThreeMins() {
               tgtPoints: deleteField(),
               slAdjusted_1: deleteField(),
               slAdjusted_2: deleteField(),
+              qty: deleteField(),
             });
 
             let orderId = response?.data?.order_id;
@@ -839,10 +840,10 @@ function FutTradingThreeMins() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              if (niftyShortOrderId?.qty === niftyQty) {
+              if (qty === niftyQty) {
                 slPoint = 25;
                 tgtPoint = 52;
-              } else if (niftyShortOrderId?.qty === niftyQty / 2) {
+              } else if (qty === niftyQty / 2) {
                 slPoint = 35;
                 tgtPoint = 74;
               }
@@ -982,6 +983,7 @@ function FutTradingThreeMins() {
               tgtPoints: deleteField(),
               slAdjusted_1: deleteField(),
               slAdjusted_2: deleteField(),
+              qty: deleteField(),
             });
 
             let orderId = response?.data?.order_id;
@@ -1460,10 +1462,10 @@ function FutTradingThreeMins() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              if (bnfLongOrderId?.qty === bnfQty) {
+              if (qty === bnfQty) {
                 slPoint = 85;
                 tgtPoint = 177;
-              } else if (bnfLongOrderId?.qty === bnfQty / 2) {
+              } else if (qty === bnfQty / 2) {
                 slPoint = 135;
                 tgtPoint = 280;
               }
@@ -1602,6 +1604,7 @@ function FutTradingThreeMins() {
               tgtPoints: deleteField(),
               slAdjusted_1: deleteField(),
               slAdjusted_2: deleteField(),
+              qty: deleteField(),
             });
 
             let orderId = response?.data?.order_id;
@@ -1769,10 +1772,10 @@ function FutTradingThreeMins() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              if (bnfShortOrderId?.qty === bnfQty) {
+              if (qty === bnfQty) {
                 slPoint = 85;
                 tgtPoint = 177;
-              } else if (bnfShortOrderId?.qty === bnfQty / 2) {
+              } else if (qty === bnfQty / 2) {
                 slPoint = 135;
                 tgtPoint = 280;
               }
@@ -1913,6 +1916,7 @@ function FutTradingThreeMins() {
               tgtPoints: deleteField(),
               slAdjusted_1: deleteField(),
               slAdjusted_2: deleteField(),
+              qty: deleteField(),
             });
 
             let orderId = response?.data?.order_id;
@@ -2255,7 +2259,7 @@ function FutTradingThreeMins() {
         // console.log("Three Mins short", mtm);
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
-          await bnfShortExit(parseInt(bnfLongOrderId?.qty));
+          await bnfShortExit(parseInt(bnfShortOrderId?.qty));
           toastHandler(`Three Mins Bank Nifty short TGT reached`);
         }
         if (
@@ -2288,7 +2292,7 @@ function FutTradingThreeMins() {
           );
         }
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
-          await bnfShortExit(parseInt(bnfLongOrderId?.qty));
+          await bnfShortExit(parseInt(bnfShortOrderId?.qty));
           toastHandler(`Three Mins Bank Nifty short SL reached`);
         }
       }
@@ -2975,13 +2979,17 @@ function FutTradingThreeMins() {
           <div className="flex justify-between w-full entryButtons">
             <button
               className="w-48 m-3 text-white btn btn-secondary "
-              onClick={niftyLong}
+              onClick={() => {
+                niftyLong(niftyQty);
+              }}
             >
               Long Nifty
             </button>
             <button
               className="w-48 m-3 text-white short btn btn-secondary"
-              onClick={niftyShort}
+              onClick={() => {
+                niftyShort(niftyQty);
+              }}
             >
               Short Nifty
             </button>
@@ -3010,12 +3018,15 @@ function FutTradingThreeMins() {
           {/*  */}
 
           <div className="flex justify-between w-full exitButtons">
-            <button className="w-48 m-3 text-white btn" onClick={niftyLongExit}>
+            <button
+              className="w-48 m-3 text-white btn"
+              onClick={() => niftyLongExit(niftyLongOrderId?.qty)}
+            >
               Exit Long Nifty
             </button>
             <button
               className="w-48 m-3 text-white short btn"
-              onClick={niftyShortExit}
+              onClick={() => niftyShortExit(niftyShortOrderId?.qty)}
             >
               Exit Short Nifty
             </button>
@@ -3368,13 +3379,17 @@ function FutTradingThreeMins() {
           <div className="flex justify-between w-full entryButtons">
             <button
               className="w-48 m-3 text-white btn btn-secondary"
-              onClick={bnfLong}
+              onClick={() => {
+                bnfLong(bnfQty);
+              }}
             >
               Long Bank Nifty
             </button>
             <button
               className="w-48 m-3 text-white short btn btn-secondary"
-              onClick={bnfShort}
+              onClick={() => {
+                bnfShort(bnfQty);
+              }}
             >
               Short Bank Nifty
             </button>
@@ -3404,12 +3419,17 @@ function FutTradingThreeMins() {
           {/*  */}
 
           <div className="flex justify-between w-full exitButtons">
-            <button className="w-48 m-3 text-white btn" onClick={bnfLongExit}>
+            <button
+              className="w-48 m-3 text-white btn"
+              onClick={() => {
+                bnfLongExit(bnfLongOrderId?.qty);
+              }}
+            >
               Exit Long Bank Nifty
             </button>
             <button
               className="w-48 m-3 text-white short btn"
-              onClick={bnfShortExit}
+              onClick={() => bnfShortExit(bnfShortOrderId?.qty)}
             >
               Exit Short Bank Nifty
             </button>

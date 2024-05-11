@@ -491,10 +491,10 @@ function FutTrading() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              if (niftyLongOrderId?.qty === niftyQty) {
+              if (qty === niftyQty) {
                 slPoint = 25;
                 tgtPoint = 52;
-              } else if (niftyLongOrderId?.qty === niftyQty / 2) {
+              } else if (qty === niftyQty / 2) {
                 slPoint = 35;
                 tgtPoint = 74;
               }
@@ -634,6 +634,7 @@ function FutTrading() {
               tgtPoints: deleteField(),
               slAdjusted_1: deleteField(),
               slAdjusted_2: deleteField(),
+              qty: deleteField(),
             });
             let orderId = response?.data?.order_id;
             await axios.get(`/api/orderInfo`).then(async (res) => {
@@ -828,10 +829,10 @@ function FutTrading() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              if (niftyShortOrderId?.qty === niftyQty) {
+              if (qty === niftyQty) {
                 slPoint = 25;
                 tgtPoint = 52;
-              } else if (niftyShortOrderId?.qty === niftyQty / 2) {
+              } else if (qty === niftyQty / 2) {
                 slPoint = 35;
                 tgtPoint = 74;
               }
@@ -971,6 +972,7 @@ function FutTrading() {
               tgtPoints: deleteField(),
               slAdjusted_1: deleteField(),
               slAdjusted_2: deleteField(),
+              qty: deleteField(),
             });
 
             let orderId = response?.data?.order_id;
@@ -1448,10 +1450,10 @@ function FutTrading() {
             let tgtPoint;
             if (putShortId?.[0]?.average_price) {
               price = putShortId?.[0].average_price;
-              if (bnfLongOrderId?.qty === bnfQty) {
+              if (qty === bnfQty) {
                 slPoint = 85;
                 tgtPoint = 177;
-              } else if (bnfLongOrderId?.qty === bnfQty / 2) {
+              } else if (qty === bnfQty / 2) {
                 slPoint = 135;
                 tgtPoint = 280;
               }
@@ -1588,6 +1590,7 @@ function FutTrading() {
               tgtPoints: deleteField(),
               slAdjusted_1: deleteField(),
               slAdjusted_2: deleteField(),
+              qty: deleteField(),
             });
             let orderId = response?.data?.order_id;
             await axios.get(`/api/orderInfo`).then(async (res) => {
@@ -1752,10 +1755,10 @@ function FutTrading() {
             let tgtPoint;
             if (callShortId?.[0]?.average_price) {
               price = callShortId?.[0].average_price;
-              if (bnfShortOrderId?.qty === bnfQty) {
+              if (qty === bnfQty) {
                 slPoint = 85;
                 tgtPoint = 177;
-              } else if (bnfShortOrderId?.qty === bnfQty / 2) {
+              } else if (qty === bnfQty / 2) {
                 slPoint = 135;
                 tgtPoint = 280;
               }
@@ -1895,6 +1898,7 @@ function FutTrading() {
               tgtPoints: deleteField(),
               slAdjusted_1: deleteField(),
               slAdjusted_2: deleteField(),
+              qty: deleteField(),
             });
 
             let orderId = response?.data?.order_id;
@@ -2236,7 +2240,7 @@ function FutTrading() {
         // console.log("short", mtm);
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
-          await bnfShortExit(parseInt(bnfLongOrderId?.qty));
+          await bnfShortExit(parseInt(bnfShortOrderId?.qty));
           toastHandler(`Bank Nifty short TGT reached`);
         }
         if (
@@ -2267,7 +2271,7 @@ function FutTrading() {
           toastHandler(`Super Trend Bank Nifty short SL Trailed to 1`);
         }
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
-          await bnfShortExit(parseInt(bnfLongOrderId?.qty));
+          await bnfShortExit(parseInt(bnfShortOrderId?.qty));
           toastHandler(`Bank Nifty short SL reached`);
         }
       }
