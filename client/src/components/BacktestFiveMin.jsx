@@ -31,7 +31,7 @@ function BacktestFiveMin() {
   } = useContext(DataContext);
 
   // const [tokens, setTokens] = useState([256265, 260105]);
-  const [tokens, setTokens] = useState([256265]);
+  const [tokens, setTokens] = useState([260105]);
 
   const btResults = [];
 
@@ -43,7 +43,7 @@ function BacktestFiveMin() {
       let toDate = new Date();
       let fromDate = new Date(new Date().getTime() - 100 * 24 * 60 * 60 * 1000);
 
-      let loopCount = 2;
+      let loopCount = 20;
       let dataArray = [];
       console.time("save data");
       for (let i = 0; i < loopCount; i++) {
@@ -111,26 +111,113 @@ function BacktestFiveMin() {
         let candleHour = new Date(candle.date).getHours();
         let candleMinute = new Date(candle.date).getMinutes();
 
-        let slPoints = -25;
-        let tgtPoitns = 52;
+        let slPoints = -85;
+        let tgtPoitns = 177;
 
         let tradeKey = "trade_" + tradeCounter;
 
         if (candleHour >= 9 && candleHour <= 15) {
+          if (
+            longPosition === true &&
+            candle.high - longEntryPrice > -slPoints
+          ) {
+            slPoints = slPoints / 2;
+          }
+
+          if (
+            longPosition === true &&
+            candle.high - longEntryPrice > -(slPoints * 1.5)
+          ) {
+            slPoints = 1;
+          }
+
+          if (candle.close < sma20) {
+            above20SmaHigh = 0;
+            retracementCandleCountLong = 0;
+          }
+
+          if (longPosition && candle.close < sma20) {
+            above20SmaHigh = 0;
+            retracementCandleCountLong = 0;
+            longPosition = false;
+            longEntryPrice = 0;
+            longExitPrice = candle.close;
+            trades[tradeCounter] = {
+              ...trades[tradeCounter],
+              exit: { price: candle.close, time: candle.date },
+            };
+          }
+          if (
+            longPosition &&
+            candle.close < sma10 &&
+            candle.close < longEntryPrice
+          ) {
+            above20SmaHigh = 0;
+            longPosition = false;
+            longEntryPrice = 0;
+            longExitPrice = candle.close;
+            trades[tradeCounter] = {
+              ...trades[tradeCounter],
+              exit: { price: candle.close, time: candle.date },
+            };
+          }
+
+          if (
+            longPosition &&
+            longEntryPrice > 0 &&
+            candle.high - longEntryPrice >= tgtPoitns
+          ) {
+            trades[tradeCounter] = {
+              ...trades[tradeCounter],
+              exit: { price: longEntryPrice + tgtPoitns, time: candle.date },
+            };
+            above20SmaHigh = 0;
+            retracementCandleCountLong = 0;
+            longPosition = false;
+            longEntryPrice = 0;
+            longExitPrice = candle.close;
+          }
+          if (
+            longPosition &&
+            longEntryPrice > 0 &&
+            candle.low - longEntryPrice <= slPoints
+          ) {
+            trades[tradeCounter] = {
+              ...trades[tradeCounter],
+              exit: { price: longEntryPrice + slPoints, time: candle.date },
+            };
+            above20SmaHigh = 0;
+            retracementCandleCountLong = 0;
+            longPosition = false;
+            longEntryPrice = 0;
+            longExitPrice = candle.close;
+          }
+          if (longPosition && candleHour == 15) {
+            above20SmaHigh = 0;
+            retracementCandleCountLong = 0;
+            longPosition = false;
+            longEntryPrice = 0;
+            longExitPrice = candle.close;
+            trades[tradeCounter] = {
+              ...trades[tradeCounter],
+              exit: { price: candle.close, time: candle.date },
+            };
+          }
+
           if (
             longPosition === false &&
             above20SmaHigh > 0 &&
             retracementCandleCountLong >= 3 &&
             candle.close > sma20 &&
             candleHour < 15 &&
-            candle.close > above20SmaHigh
+            candle.close > above20SmaHigh + 5
           ) {
             longPosition = true;
             longEntryPrice = candle.close;
             longExitPrice = 0;
             tradeCounter = tradeCounter + 1;
             trades[tradeCounter] = {
-              entry: { price: candle.close, time: candle.date },
+              entry: { price: candle.close, time: candle.date, sma: sma20 },
             };
           } else if (
             longPosition === false &&
@@ -155,75 +242,6 @@ function BacktestFiveMin() {
           ) {
             retracementCandleCountLong = retracementCandleCountLong + 1;
           }
-
-          if (
-            longPosition === true &&
-            candle.high - longEntryPrice > -slPoints
-          ) {
-            slPoints = slPoints / 2;
-          }
-
-          if (
-            longPosition === true &&
-            candle.high - longEntryPrice > -(slPoints * 1.5)
-          ) {
-            slPoints = 1;
-          }
-
-          if (candle.close < sma20) {
-            above20SmaHigh = 0;
-            retracementCandleCountLong = 0;
-            longPosition = false;
-            longEntryPrice = 0;
-            longExitPrice = candle.close;
-            trades[tradeCounter] = {
-              ...trades[tradeCounter],
-              exit: { price: candle.close, time: candle.date },
-            };
-          }
-          if (candle.close < sma10 && candle.close < longEntryPrice) {
-            above20SmaHigh = 0;
-            longPosition = false;
-            longEntryPrice = 0;
-            longExitPrice = candle.close;
-            trades[tradeCounter] = {
-              ...trades[tradeCounter],
-              exit: { price: candle.close, time: candle.date },
-            };
-          }
-          if (candleHour == 15) {
-            above20SmaHigh = 0;
-            retracementCandleCountLong = 0;
-            longPosition = false;
-            longEntryPrice = 0;
-            longExitPrice = candle.close;
-            trades[tradeCounter] = {
-              ...trades[tradeCounter],
-              exit: { price: candle.close, time: candle.date },
-            };
-          }
-          if (longEntryPrice > 0 && candle.high - longEntryPrice >= tgtPoitns) {
-            above20SmaHigh = 0;
-            retracementCandleCountLong = 0;
-            longPosition = false;
-            longEntryPrice = 0;
-            longExitPrice = candle.close;
-            trades[tradeCounter] = {
-              ...trades[tradeCounter],
-              exit: { price: candle.close, time: candle.date },
-            };
-          }
-          if (longEntryPrice > 0 && candle.low - longEntryPrice <= slPoints) {
-            above20SmaHigh = 0;
-            retracementCandleCountLong = 0;
-            longPosition = false;
-            longEntryPrice = 0;
-            longExitPrice = candle.close;
-            trades[tradeCounter] = {
-              ...trades[tradeCounter],
-              exit: { price: candle.close, time: candle.date },
-            };
-          }
         }
 
         if (longPosition) {
@@ -235,6 +253,42 @@ function BacktestFiveMin() {
     });
     console.log(btResults);
     console.timeEnd("backtest");
+  };
+
+  const calculatePoints = () => {
+    let pnl = 0;
+    let wins = 0;
+    let losses = 0;
+    let averageWins = 0;
+    let averageLosses = 0;
+    btResults?.[0]?.trades?.forEach((trade) => {
+      let entry = trade.entry.price;
+      let exit = trade.exit.price;
+
+      if (exit - entry > 0) {
+        wins = wins + 1;
+        averageWins = averageWins + (exit - entry);
+        // console.log(exit - entry);
+      }
+
+      if (exit - entry < 0) {
+        losses = losses + 1;
+        averageLosses = averageLosses + (exit - entry);
+        // console.log(averageLosses);
+      }
+
+      // console.log(averageWins, averageLosses);
+
+      pnl = pnl + (exit - entry);
+      console.log(pnl);
+    });
+
+    console.log(pnl);
+    console.log("wins", wins);
+    console.log("losses", losses);
+
+    console.log("Avg. wins", averageWins / wins);
+    console.log("Avg. losses", averageLosses / losses);
   };
 
   useEffect(() => {
@@ -252,11 +306,18 @@ function BacktestFiveMin() {
       >
         Get Hist Data
       </button>
-
       <button
         className="btn"
         onClick={() => {
           backtest();
+        }}
+      >
+        Backtest
+      </button>
+      <button
+        className="btn"
+        onClick={() => {
+          calculatePoints();
         }}
       >
         Backtest
