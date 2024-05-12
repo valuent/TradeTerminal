@@ -43,7 +43,7 @@ function BacktestFiveMin() {
       let toDate = new Date();
       let fromDate = new Date(new Date().getTime() - 100 * 24 * 60 * 60 * 1000);
 
-      let loopCount = 20;
+      let loopCount = 3;
       let dataArray = [];
       console.time("save data");
       for (let i = 0; i < loopCount; i++) {
@@ -136,32 +136,6 @@ function BacktestFiveMin() {
             retracementCandleCountLong = 0;
           }
 
-          if (longPosition && candle.close < sma20) {
-            above20SmaHigh = 0;
-            retracementCandleCountLong = 0;
-            longPosition = false;
-            longEntryPrice = 0;
-            longExitPrice = candle.close;
-            trades[tradeCounter] = {
-              ...trades[tradeCounter],
-              exit: { price: candle.close, time: candle.date },
-            };
-          }
-          if (
-            longPosition &&
-            candle.close < sma10 &&
-            candle.close < longEntryPrice
-          ) {
-            above20SmaHigh = 0;
-            longPosition = false;
-            longEntryPrice = 0;
-            longExitPrice = candle.close;
-            trades[tradeCounter] = {
-              ...trades[tradeCounter],
-              exit: { price: candle.close, time: candle.date },
-            };
-          }
-
           if (
             longPosition &&
             longEntryPrice > 0 &&
@@ -192,6 +166,33 @@ function BacktestFiveMin() {
             longEntryPrice = 0;
             longExitPrice = candle.close;
           }
+
+          if (longPosition && candle.close < sma20) {
+            above20SmaHigh = 0;
+            retracementCandleCountLong = 0;
+            longPosition = false;
+            longEntryPrice = 0;
+            longExitPrice = candle.close;
+            trades[tradeCounter] = {
+              ...trades[tradeCounter],
+              exit: { price: candle.close, time: candle.date },
+            };
+          }
+          if (
+            longPosition &&
+            candle.close < sma10 &&
+            candle.close < longEntryPrice
+          ) {
+            above20SmaHigh = 0;
+            longPosition = false;
+            longEntryPrice = 0;
+            longExitPrice = candle.close;
+            trades[tradeCounter] = {
+              ...trades[tradeCounter],
+              exit: { price: candle.close, time: candle.date },
+            };
+          }
+
           if (longPosition && candleHour == 15) {
             above20SmaHigh = 0;
             retracementCandleCountLong = 0;

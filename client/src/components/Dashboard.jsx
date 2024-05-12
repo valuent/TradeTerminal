@@ -775,6 +775,7 @@ function Dashboard() {
       arrayOfPnl.push(currentPnl);
     });
     const pnlArray = arrayOfPnl.reverse();
+    let arrayOfDD = [];
     for (let pnl of pnlArray) {
       cumulativePnl += pnl;
 
@@ -785,8 +786,12 @@ function Dashboard() {
       if (equityHigh > cumulativePnl && equityLow > cumulativePnl) {
         equityLow = equityHigh - cumulativePnl;
       }
+      arrayOfDD.push(-equityLow);
     }
-    return -equityLow;
+
+    equityLow = Math.min(...arrayOfDD);
+
+    return equityLow;
   };
 
   const calculateDDCurve = () => {
