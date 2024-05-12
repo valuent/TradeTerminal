@@ -7,12 +7,16 @@ import FutTrading from "../components/FutTrading";
 // import Supertrend from "../components/Supertrend";
 import FutTradingThreeMins from "../components/FutTradingThreeMins";
 import Dashboard from "../components/Dashboard";
+import BacktestFiveMin from "../components/BacktestFiveMin";
 
 function Terminal() {
   return (
     <div className="overflow-x-hidden">
       <Dashboard />
       <SaveExpiries />
+
+      <BacktestFiveMin />
+
       <FutTrading />
       <hr className="my-5" />
 

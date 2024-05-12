@@ -152,18 +152,27 @@ app.get("/api/orderInfo", async (req, res) => {
 });
 
 app.get("/api/histData", async (req, res) => {
+  let fetchData = {
+    insToken: req.query.insToken,
+    interval: req.query.interval,
+    from: req.query.fromDate,
+    to: req.query.toDate,
+  };
   try {
     let data = await kite.getHistoricalData(
-      "13368322",
-      "5minute",
-      "2024-04-03",
-      "2024-04-04"
+      fetchData?.insToken,
+      fetchData?.interval,
+      fetchData?.from,
+      fetchData?.to
     );
     res.send(data);
   } catch (error) {
     res.send(error.message);
   }
 });
+
+// NIFTY INDEX 256265
+// BNF INDEX 260105
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
