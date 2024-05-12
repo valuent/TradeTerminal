@@ -30,8 +30,8 @@ function BacktestFiveMin() {
     isSuccess,
   } = useContext(DataContext);
 
-  const [tokens, setTokens] = useState([256265, 260105]);
-  // const [tokens, setTokens] = useState([256265]);
+  // const [tokens, setTokens] = useState([256265, 260105]);
+  const [tokens, setTokens] = useState([256265]);
 
   const btResults = [];
 
@@ -93,6 +93,7 @@ function BacktestFiveMin() {
       let longPosition = false;
       let longEntryPrice = 0;
       let longExitPrice = 0;
+
       let tradeCounter = 0;
 
       let trades = [];
@@ -115,12 +116,13 @@ function BacktestFiveMin() {
 
         let tradeKey = "trade_" + tradeCounter;
 
-        if (candleHour >= 9 && candleHour < 15) {
+        if (candleHour >= 9 && candleHour <= 15) {
           if (
             longPosition === false &&
             above20SmaHigh > 0 &&
             retracementCandleCountLong >= 3 &&
             candle.close > sma20 &&
+            candleHour < 15 &&
             candle.close > above20SmaHigh
           ) {
             longPosition = true;
@@ -154,6 +156,20 @@ function BacktestFiveMin() {
             retracementCandleCountLong = retracementCandleCountLong + 1;
           }
 
+          if (
+            longPosition === true &&
+            candle.high - longEntryPrice > -slPoints
+          ) {
+            slPoints = slPoints / 2;
+          }
+
+          if (
+            longPosition === true &&
+            candle.high - longEntryPrice > -(slPoints * 1.5)
+          ) {
+            slPoints = 1;
+          }
+
           if (candle.close < sma20) {
             above20SmaHigh = 0;
             retracementCandleCountLong = 0;
@@ -165,7 +181,6 @@ function BacktestFiveMin() {
               exit: { price: candle.close, time: candle.date },
             };
           }
-
           if (candle.close < sma10 && candle.close < longEntryPrice) {
             above20SmaHigh = 0;
             longPosition = false;
@@ -176,8 +191,7 @@ function BacktestFiveMin() {
               exit: { price: candle.close, time: candle.date },
             };
           }
-
-          if (candleHour >= 15 && candleMinute >= 10) {
+          if (candleHour == 15) {
             above20SmaHigh = 0;
             retracementCandleCountLong = 0;
             longPosition = false;
@@ -188,15 +202,6 @@ function BacktestFiveMin() {
               exit: { price: candle.close, time: candle.date },
             };
           }
-
-          if (candle.high - longEntryPrice > -slPoints) {
-            slPoints = slPoints / 2;
-          }
-
-          if (candle.high - longEntryPrice > -(slPoints * 1.5)) {
-            slPoints = 1;
-          }
-
           if (longEntryPrice > 0 && candle.high - longEntryPrice >= tgtPoitns) {
             above20SmaHigh = 0;
             retracementCandleCountLong = 0;
@@ -208,7 +213,6 @@ function BacktestFiveMin() {
               exit: { price: candle.close, time: candle.date },
             };
           }
-
           if (longEntryPrice > 0 && candle.low - longEntryPrice <= slPoints) {
             above20SmaHigh = 0;
             retracementCandleCountLong = 0;
