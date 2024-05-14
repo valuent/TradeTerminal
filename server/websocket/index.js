@@ -358,9 +358,9 @@ io.on("connection", (socket) => {
       });
     });
 
-    // startFetchJob(data);
-    // startFiveFetchJob(data);
-    // startThreeFetchJob(data);
+    startFetchJob(data);
+    startFiveFetchJob(data);
+    startThreeFetchJob(data);
     // startThirtyFetchJob(data);
     fetchFiveCandleFromDB(data);
     fetchThreeCandleFromDB(data);

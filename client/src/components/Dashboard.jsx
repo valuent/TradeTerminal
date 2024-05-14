@@ -1319,28 +1319,10 @@ function Dashboard() {
                 <tbody>
                   {/* row 1 */}
                   {tableData?.map((trade) => {
-                    let date =
-                      new Date(trade.entry.entryTime.seconds * 1000).getDate() +
-                      "/" +
-                      new Date(
-                        trade.entry.entryTime.seconds * 1000
-                      ).getMonth() +
-                      "/" +
-                      new Date(
-                        trade.entry.entryTime.seconds * 1000
-                      ).getFullYear() +
-                      " " +
-                      new Date(
-                        trade.entry.entryTime.seconds * 1000
-                      ).getHours() +
-                      ":" +
-                      new Date(
-                        trade.entry.entryTime.seconds * 1000
-                      ).getMinutes() +
-                      ":" +
-                      new Date(
-                        trade.entry.entryTime.seconds * 1000
-                      ).getSeconds();
+                    let date = new Date(
+                      trade.entry.entryTime.seconds * 1000
+                    ).toLocaleString();
+
                     let indexPoints;
                     if (trade?.entry?.putLong) {
                       indexPoints = (

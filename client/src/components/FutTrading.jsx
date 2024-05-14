@@ -3095,7 +3095,7 @@ function FutTrading() {
                             {(
                               (niftyLongCallLtp -
                                 niftyLongOrderId?.callLong?.average_price) *
-                              niftyQty
+                              niftyLongOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3109,7 +3109,7 @@ function FutTrading() {
                             {(
                               (niftyLongOrderId?.putShort?.average_price -
                                 niftyShortPutLtp) *
-                              niftyQty
+                              niftyLongOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3123,7 +3123,7 @@ function FutTrading() {
                                 niftyLongOrderId?.callLong?.average_price +
                                 niftyLongOrderId?.putShort?.average_price -
                                 niftyShortPutLtp) *
-                              niftyQty
+                              niftyLongOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3135,7 +3135,7 @@ function FutTrading() {
                                 niftyLongOrderId?.callLong?.average_price +
                                 niftyLongOrderId?.putShort?.average_price -
                                 niftyShortPutLtp) *
-                              niftyQty *
+                              niftyLongOrderId?.qty *
                               30
                             ).toFixed(2)}
                           </div>
@@ -3173,7 +3173,7 @@ function FutTrading() {
                             {(
                               (niftyLongPutLtp -
                                 niftyShortOrderId?.putLong?.average_price) *
-                              niftyQty
+                              niftyShortOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3187,7 +3187,7 @@ function FutTrading() {
                             {(
                               (niftyShortOrderId?.callShort?.average_price -
                                 niftyShortCallLtp) *
-                              niftyQty
+                              niftyShortOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3201,7 +3201,7 @@ function FutTrading() {
                                 niftyShortOrderId?.putLong?.average_price +
                                 niftyShortOrderId?.callShort?.average_price -
                                 niftyShortCallLtp) *
-                              niftyQty
+                              niftyShortOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3213,7 +3213,7 @@ function FutTrading() {
                                 niftyShortOrderId?.putLong?.average_price +
                                 niftyShortOrderId?.callShort?.average_price -
                                 niftyShortCallLtp) *
-                              niftyQty *
+                              niftyShortOrderId?.qty *
                               30
                             ).toFixed(2)}
                           </div>
@@ -3496,7 +3496,7 @@ function FutTrading() {
                             {(
                               (bnfLongCallLtp -
                                 bnfLongOrderId?.callLong?.average_price) *
-                              bnfQty
+                              bnfLongOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3510,7 +3510,7 @@ function FutTrading() {
                             {(
                               (bnfLongOrderId?.putShort?.average_price -
                                 bnfShortPutLtp) *
-                              bnfQty
+                              bnfLongOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3524,7 +3524,7 @@ function FutTrading() {
                                 bnfLongOrderId?.callLong?.average_price +
                                 bnfLongOrderId?.putShort?.average_price -
                                 bnfShortPutLtp) *
-                              bnfQty
+                              bnfLongOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3536,7 +3536,7 @@ function FutTrading() {
                                 bnfLongOrderId?.callLong?.average_price +
                                 bnfLongOrderId?.putShort?.average_price -
                                 bnfShortPutLtp) *
-                              bnfQty *
+                              bnfLongOrderId?.qty *
                               30
                             ).toFixed(2)}
                           </div>
@@ -3574,7 +3574,7 @@ function FutTrading() {
                             {(
                               (bnfLongPutLtp -
                                 bnfShortOrderId?.putLong?.average_price) *
-                              bnfQty
+                              bnfShortOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3588,7 +3588,7 @@ function FutTrading() {
                             {(
                               (bnfShortOrderId?.callShort?.average_price -
                                 bnfShortCallLtp) *
-                              bnfQty
+                              bnfShortOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3602,7 +3602,7 @@ function FutTrading() {
                                 bnfShortOrderId?.putLong?.average_price +
                                 bnfShortOrderId?.callShort?.average_price -
                                 bnfShortCallLtp) *
-                              bnfQty
+                              bnfShortOrderId?.qty
                             ).toFixed(2)}
                           </div>
                         </div>
@@ -3614,7 +3614,7 @@ function FutTrading() {
                                 bnfShortOrderId?.putLong?.average_price +
                                 bnfShortOrderId?.callShort?.average_price -
                                 bnfShortCallLtp) *
-                              bnfQty *
+                              bnfShortOrderId?.qty *
                               30
                             ).toFixed(2)}
                           </div>
