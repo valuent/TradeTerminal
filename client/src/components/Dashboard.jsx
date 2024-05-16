@@ -12,7 +12,7 @@ import {
   LineElement,
   PointElement,
 } from "chart.js";
-import { Doughnut, Line } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import {
   doc,
   updateDoc,
@@ -128,7 +128,7 @@ function Dashboard() {
         new Date(b.entry.entryTime.seconds * 1000) -
         new Date(a.entry.entryTime.seconds * 1000)
     );
-    setNumOfTrades(sortedArrayTrades.length);
+    setNumOfTrades(sortedArrayTrades?.length);
     return sortedArrayTrades;
   };
 
@@ -173,8 +173,8 @@ function Dashboard() {
         indexData = "bnfFutLongALLEXEC";
       }
       if (
-        LongCallEntry.length > 0 &&
-        LongPutEntry.length > 0 &&
+        LongCallEntry?.length > 0 &&
+        LongPutEntry?.length > 0 &&
         LongCallExit?.length > 0 &&
         LongPutExit?.length > 0
       ) {
@@ -247,8 +247,8 @@ function Dashboard() {
       }
 
       if (
-        ShortCallEntry.length > 0 &&
-        ShortPutEntry.length > 0 &&
+        ShortCallEntry?.length > 0 &&
+        ShortPutEntry?.length > 0 &&
         ShortCallExit?.length > 0 &&
         ShortPutExit?.length > 0
       ) {
@@ -322,8 +322,8 @@ function Dashboard() {
       }
 
       if (
-        LongCallEntry.length > 0 &&
-        LongPutEntry.length > 0 &&
+        LongCallEntry?.length > 0 &&
+        LongPutEntry?.length > 0 &&
         LongCallExit?.length > 0 &&
         LongPutExit?.length > 0
       ) {
@@ -396,8 +396,8 @@ function Dashboard() {
       }
 
       if (
-        ShortCallEntry.length > 0 &&
-        ShortPutEntry.length > 0 &&
+        ShortCallEntry?.length > 0 &&
+        ShortPutEntry?.length > 0 &&
         ShortCallExit?.length > 0 &&
         ShortPutExit?.length > 0
       ) {
@@ -503,7 +503,7 @@ function Dashboard() {
             trade?.entry?.qty
           ).toFixed(2);
         }
-        if (totalPnlArray.length > 0) {
+        if (totalPnlArray?.length > 0) {
           totalPnlArray.push(
             parseFloat(currentPnl) +
               parseFloat(totalPnlArray[totalPnlArray?.length - 1])
@@ -564,7 +564,7 @@ function Dashboard() {
       (accumulator, currentValue) => accumulator + currentValue,
       0
     );
-    let averageProfit = totalProfits / arrayOfProfits.length;
+    let averageProfit = totalProfits / arrayOfProfits?.length;
 
     return averageProfit;
   };
@@ -598,7 +598,7 @@ function Dashboard() {
       (accumulator, currentValue) => accumulator + currentValue,
       0
     );
-    let averageLoss = totalLosses / arrayOfLosses.length;
+    let averageLoss = totalLosses / arrayOfLosses?.length;
 
     return averageLoss;
   };
@@ -924,11 +924,11 @@ function Dashboard() {
       (accumulator, currentValue) => accumulator + currentValue,
       0
     );
-    averageDailyPnlData = averageDailyPnlData / dailyPnlArray.length;
+    averageDailyPnlData = averageDailyPnlData / dailyPnlArray?.length;
 
     return {
       averageDailyPnlData: averageDailyPnlData,
-      dayCount: dailyPnlArray.length,
+      dayCount: dailyPnlArray?.length,
     };
   };
 
@@ -988,11 +988,11 @@ function Dashboard() {
       (accumulator, currentValue) => accumulator + currentValue,
       0
     );
-    averageDailyProfitData = averageDailyProfitData / dailyProfitArray.length;
+    averageDailyProfitData = averageDailyProfitData / dailyProfitArray?.length;
 
     return {
       averageDailyProfitData: averageDailyProfitData,
-      winDayCount: dailyProfitArray.length,
+      winDayCount: dailyProfitArray?.length,
     };
   };
 
@@ -1052,11 +1052,11 @@ function Dashboard() {
       (accumulator, currentValue) => accumulator + currentValue,
       0
     );
-    averageDailyLossData = averageDailyLossData / dailyLossArray.length;
+    averageDailyLossData = averageDailyLossData / dailyLossArray?.length;
 
     return {
       averageDailyLossData: averageDailyLossData,
-      lossDayCount: dailyLossArray.length,
+      lossDayCount: dailyLossArray?.length,
     };
   };
 
@@ -1437,7 +1437,7 @@ function Dashboard() {
               <div className="stat place-items-center">
                 <div className="stat-title">Avg. PnL</div>
                 <div className="stat-value">
-                  {(calculateTotalPnl() / tableData.length).toFixed(2)}
+                  {(calculateTotalPnl() / tableData?.length).toFixed(2)}
                 </div>
               </div>
               <div className="stat place-items-center">
