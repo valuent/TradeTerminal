@@ -2338,7 +2338,7 @@ function FutTrading() {
           (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
           bnfFutLtp > bnf20SMA
         ) {
-          bnfShortExit(parseInt(bnfLongOrderId?.qty));
+          bnfShortExit(parseInt(bnfShortOrderId?.qty));
           toastHandler(`Bank Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Bank Nifty short TSL Not reached`);

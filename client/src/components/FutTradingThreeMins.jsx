@@ -2359,7 +2359,7 @@ function FutTradingThreeMins() {
           (bnfFutLtp > bnf10SMA && bnfFutLtp >= bnfShortOrderId?.entryPrice) ||
           bnfFutLtp > bnf20SMA
         ) {
-          bnfShortExit(parseInt(bnfLongOrderId?.qty));
+          bnfShortExit(parseInt(bnfShortOrderId?.qty));
           toastHandler(`Three Mins Bank Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Three Mins Bank Nifty short TSL Not reached`);
