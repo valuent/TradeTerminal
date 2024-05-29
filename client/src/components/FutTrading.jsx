@@ -88,6 +88,11 @@ function FutTrading() {
   const [bnfShortCallLtp, setBnfShortCallLtp] = useState();
   const [bnfShortPutLtp, setBnfShortPutLtp] = useState();
 
+  let niftyLongFlag = false;
+  let niftyShortFlag = false;
+  let bnfLongFlag = false;
+  let bnfShortFlag = false;
+
   const [niftyFutLongALLEXEC, setNiftyFutLongALLEXEC] = useState();
   const [niftyFutShortALLEXEC, setNiftyFutShortALLEXEC] = useState();
   const [bnfFutLongALLEXEC, setBnfFutLongALLEXEC] = useState();
@@ -555,6 +560,7 @@ function FutTrading() {
             );
           });
         });
+      niftyLongFlag = true;
     }
   };
 
@@ -676,6 +682,7 @@ function FutTrading() {
             });
           }
         });
+      niftyLongFlag = false;
     } else {
       toastHandler(`Nifty long no positions Found`);
     }
@@ -892,6 +899,7 @@ function FutTrading() {
             );
           });
         });
+      niftyShortFlag = true;
     }
   };
 
@@ -1015,6 +1023,7 @@ function FutTrading() {
             });
           }
         });
+      niftyShortFlag = false;
     } else {
       toastHandler(`Nifty Short no positions Found`);
     }
@@ -1222,7 +1231,8 @@ function FutTrading() {
         niftyLongOrderId?.putShort?.trading_symbol &&
         niftyLongOrderId?.slPoints &&
         niftyLongOrderId?.tgtPoints &&
-        niftyLongOrderId?.entryPrice
+        niftyLongOrderId?.entryPrice &&
+        niftyLongFlag === true
       ) {
         let sl_level =
           niftyLongOrderId?.entryPrice - niftyLongOrderId?.slPoints;
@@ -1239,7 +1249,7 @@ function FutTrading() {
 
         if (niftyFutLtp >= tgt_level || mtm >= niftyLongOrderId?.tgtPoints) {
           await niftyLongExit(parseInt(niftyLongOrderId?.qty));
-
+          niftyLongFlag = false;
           toastHandler(`Nifty long TGT reached`);
         }
 
@@ -1272,6 +1282,7 @@ function FutTrading() {
         }
         if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
           await niftyLongExit(parseInt(niftyLongOrderId?.qty));
+          niftyLongFlag = false;
           toastHandler(`Nifty long SL reached`);
         }
       }
@@ -1286,7 +1297,8 @@ function FutTrading() {
         niftyShortOrderId?.callShort?.trading_symbol &&
         niftyShortOrderId?.slPoints &&
         niftyShortOrderId?.tgtPoints &&
-        niftyShortOrderId?.entryPrice
+        niftyShortOrderId?.entryPrice &&
+        niftyShortFlag === true
       ) {
         let sl_level =
           niftyShortOrderId?.entryPrice + niftyShortOrderId?.slPoints;
@@ -1308,6 +1320,7 @@ function FutTrading() {
 
         if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
           await niftyShortExit(parseInt(niftyShortOrderId?.qty));
+          niftyShortFlag = false;
           toastHandler(`Nifty short TGT reached`);
         }
 
@@ -1340,6 +1353,7 @@ function FutTrading() {
         }
         if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
           await niftyShortExit(parseInt(niftyShortOrderId?.qty));
+          niftyShortFlag = false;
           toastHandler(`Nifty short SL reached`);
         }
       }
@@ -1511,6 +1525,8 @@ function FutTrading() {
             );
           });
         });
+
+      bnfLongFlag = true;
     }
   };
 
@@ -1632,6 +1648,7 @@ function FutTrading() {
             });
           }
         });
+      bnfLongFlag = false;
     } else {
       toastHandler(`Bank Nifty long no positions Found`);
     }
@@ -1818,6 +1835,7 @@ function FutTrading() {
             );
           });
         });
+      bnfShortFlag = true;
     }
   };
 
@@ -1941,6 +1959,7 @@ function FutTrading() {
             });
           }
         });
+      bnfShortFlag = false;
     } else {
       toastHandler(`Bank Nifty long no positions Found`);
     }
@@ -2167,7 +2186,8 @@ function FutTrading() {
         bnfLongOrderId?.putShort?.trading_symbol &&
         bnfLongOrderId?.slPoints &&
         bnfLongOrderId?.tgtPoints &&
-        bnfLongOrderId?.entryPrice
+        bnfLongOrderId?.entryPrice &&
+        bnfLongFlag === true
       ) {
         let sl_level = bnfLongOrderId?.entryPrice - bnfLongOrderId?.slPoints;
         let tgt_level = bnfLongOrderId?.entryPrice + bnfLongOrderId?.tgtPoints;
@@ -2180,6 +2200,7 @@ function FutTrading() {
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           await bnfLongExit(parseInt(bnfLongOrderId?.qty));
+          bnfLongFlag = false;
           toastHandler(`Bank Nifty long TGT reached`);
         }
         if (
@@ -2211,6 +2232,8 @@ function FutTrading() {
         }
         if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
           await bnfLongExit(parseInt(bnfLongOrderId?.qty));
+          bnfLongFlag = false;
+
           toastHandler(`Bank Nifty long SL reached`);
         }
       }
@@ -2225,7 +2248,8 @@ function FutTrading() {
         bnfShortOrderId?.callShort?.trading_symbol &&
         bnfShortOrderId?.slPoints &&
         bnfShortOrderId?.tgtPoints &&
-        bnfShortOrderId?.entryPrice
+        bnfShortOrderId?.entryPrice &&
+        bnfShortFlag === true
       ) {
         let sl_level = bnfShortOrderId?.entryPrice + bnfShortOrderId?.slPoints;
         let tgt_level =
@@ -2241,6 +2265,7 @@ function FutTrading() {
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
           await bnfShortExit(parseInt(bnfShortOrderId?.qty));
+          bnfShortFlag = false;
           toastHandler(`Bank Nifty short TGT reached`);
         }
         if (
@@ -2272,6 +2297,7 @@ function FutTrading() {
         }
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
           await bnfShortExit(parseInt(bnfShortOrderId?.qty));
+          bnfShortFlag = false;
           toastHandler(`Bank Nifty short SL reached`);
         }
       }
@@ -2289,6 +2315,7 @@ function FutTrading() {
         niftyShortOrderId?.putLong?.trading_symbol &&
         niftyShortOrderId?.callShort?.trading_symbol &&
         niftyShortOrderId?.entryPrice &&
+        niftyShortFlag === true &&
         nextCheck !== null
       ) {
         if (
@@ -2297,6 +2324,7 @@ function FutTrading() {
           niftyFutLtp > nifty20SMA
         ) {
           await niftyShortExit(parseInt(niftyShortOrderId?.qty));
+          niftyShortFlag = false;
           toastHandler(`Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Nifty short TSL Not reached`);
@@ -2310,6 +2338,7 @@ function FutTrading() {
         niftyLongOrderId?.callLong?.trading_symbol &&
         niftyLongOrderId?.putShort?.trading_symbol &&
         niftyLongOrderId?.entryPrice &&
+        niftyLongFlag === true &&
         nextCheck !== null
       ) {
         if (
@@ -2318,6 +2347,7 @@ function FutTrading() {
           niftyFutLtp < nifty20SMA
         ) {
           await niftyLongExit(parseInt(niftyLongOrderId?.qty));
+          niftyLongFlag = false;
           toastHandler(`Nifty long Trailing SL reached`);
         } else {
           toastHandler(`Nifty long TSL Not reached`);
@@ -2332,6 +2362,7 @@ function FutTrading() {
         bnfShortOrderId?.putLong?.trading_symbol &&
         bnfShortOrderId?.callShort?.trading_symbol &&
         bnfShortOrderId?.entryPrice &&
+        bnfShortFlag === true &&
         nextCheck !== null
       ) {
         if (
@@ -2339,6 +2370,7 @@ function FutTrading() {
           bnfFutLtp > bnf20SMA
         ) {
           bnfShortExit(parseInt(bnfShortOrderId?.qty));
+          bnfShortFlag = false;
           toastHandler(`Bank Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Bank Nifty short TSL Not reached`);
@@ -2352,6 +2384,7 @@ function FutTrading() {
         bnfLongOrderId?.callLong?.trading_symbol &&
         bnfLongOrderId?.putShort?.trading_symbol &&
         bnfLongOrderId?.entryPrice &&
+        bnfLongFlag === true &&
         nextCheck !== null
       ) {
         if (
@@ -2359,6 +2392,7 @@ function FutTrading() {
           bnfFutLtp < bnf20SMA
         ) {
           await bnfLongExit(parseInt(bnfLongOrderId?.qty));
+          bnfLongFlag = false;
           toastHandler(`Bank Nifty long Trailing SL reached`);
         } else {
           toastHandler(`Bank Nifty long TSL Not reached`);

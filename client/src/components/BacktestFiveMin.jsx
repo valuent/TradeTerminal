@@ -43,7 +43,7 @@ function BacktestFiveMin() {
       let toDate = new Date();
       let fromDate = new Date(new Date().getTime() - 100 * 24 * 60 * 60 * 1000);
 
-      let loopCount = 3;
+      let loopCount = 20;
       let dataArray = [];
       console.time("save data");
       for (let i = 0; i < loopCount; i++) {
@@ -109,7 +109,6 @@ function BacktestFiveMin() {
         sma20 = sma20Total / 20;
 
         let candleHour = new Date(candle.date).getHours();
-        let candleMinute = new Date(candle.date).getMinutes();
 
         let slPoints = -85;
         let tgtPoitns = 177;
