@@ -88,10 +88,10 @@ function FutTrading() {
   const [bnfShortCallLtp, setBnfShortCallLtp] = useState();
   const [bnfShortPutLtp, setBnfShortPutLtp] = useState();
 
-  let niftyLongFlag = false;
-  let niftyShortFlag = false;
-  let bnfLongFlag = false;
-  let bnfShortFlag = false;
+  const [niftyLongFlag, setNiftyLongFlag] = useState(false);
+  const [niftyShortFlag, setNiftyShortFlag] = useState(false);
+  const [bnfLongFlag, setBnfLongFlag] = useState(false);
+  const [bnfShortFlag, setBnfShortFlag] = useState(false);
 
   const [niftyFutLongALLEXEC, setNiftyFutLongALLEXEC] = useState();
   const [niftyFutShortALLEXEC, setNiftyFutShortALLEXEC] = useState();
@@ -560,7 +560,7 @@ function FutTrading() {
             );
           });
         });
-      niftyLongFlag = true;
+      setNiftyLongFlag(true);
     }
   };
 
@@ -682,7 +682,7 @@ function FutTrading() {
             });
           }
         });
-      niftyLongFlag = false;
+      setNiftyLongFlag(false);
     } else {
       toastHandler(`Nifty long no positions Found`);
     }
@@ -718,6 +718,12 @@ function FutTrading() {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutLong"), (doc) => {
       setNiftyLongOrderId(doc.data());
+
+      if (doc?.data()?.callLong && doc?.data()?.putShort) {
+        setNiftyLongFlag(true);
+      } else {
+        setNiftyLongFlag(false);
+      }
 
       socket?.emit("niftyFutToken", [
         doc?.data()?.callLong?.instrument_token,
@@ -899,7 +905,7 @@ function FutTrading() {
             );
           });
         });
-      niftyShortFlag = true;
+      setNiftyShortFlag(true);
     }
   };
 
@@ -1023,7 +1029,7 @@ function FutTrading() {
             });
           }
         });
-      niftyShortFlag = false;
+      setNiftyShortFlag(false);
     } else {
       toastHandler(`Nifty Short no positions Found`);
     }
@@ -1032,6 +1038,13 @@ function FutTrading() {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "niftyFutShort"), (doc) => {
       setNiftyShortOrderId(doc.data());
+
+      if (doc?.data()?.putLong && doc?.data()?.callShort) {
+        setNiftyShortFlag(true);
+      } else {
+        setNiftyShortFlag(false);
+      }
+
       socket?.emit("niftyFutToken", [
         doc?.data()?.putLong?.instrument_token,
         doc?.data()?.callShort?.instrument_token,
@@ -1249,7 +1262,7 @@ function FutTrading() {
 
         if (niftyFutLtp >= tgt_level || mtm >= niftyLongOrderId?.tgtPoints) {
           await niftyLongExit(parseInt(niftyLongOrderId?.qty));
-          niftyLongFlag = false;
+          setNiftyLongFlag(false);
           toastHandler(`Nifty long TGT reached`);
         }
 
@@ -1282,7 +1295,7 @@ function FutTrading() {
         }
         if (niftyFutLtp <= sl_level || mtm <= -niftyLongOrderId?.slPoints) {
           await niftyLongExit(parseInt(niftyLongOrderId?.qty));
-          niftyLongFlag = false;
+          setNiftyLongFlag(false);
           toastHandler(`Nifty long SL reached`);
         }
       }
@@ -1320,7 +1333,7 @@ function FutTrading() {
 
         if (niftyFutLtp <= tgt_level || mtm >= niftyShortOrderId?.tgtPoints) {
           await niftyShortExit(parseInt(niftyShortOrderId?.qty));
-          niftyShortFlag = false;
+          setNiftyShortFlag(false);
           toastHandler(`Nifty short TGT reached`);
         }
 
@@ -1353,7 +1366,7 @@ function FutTrading() {
         }
         if (niftyFutLtp >= sl_level || mtm <= -niftyShortOrderId?.slPoints) {
           await niftyShortExit(parseInt(niftyShortOrderId?.qty));
-          niftyShortFlag = false;
+          setNiftyShortFlag(false);
           toastHandler(`Nifty short SL reached`);
         }
       }
@@ -1525,8 +1538,7 @@ function FutTrading() {
             );
           });
         });
-
-      bnfLongFlag = true;
+      setBnfLongFlag(true);
     }
   };
 
@@ -1648,7 +1660,7 @@ function FutTrading() {
             });
           }
         });
-      bnfLongFlag = false;
+      setBnfLongFlag(false);
     } else {
       toastHandler(`Bank Nifty long no positions Found`);
     }
@@ -1657,6 +1669,12 @@ function FutTrading() {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "bnfFutLong"), (doc) => {
       setBnfLongOrderId(doc.data());
+
+      if (doc?.data()?.callLong && doc?.data()?.putShort) {
+        setBnfLongFlag(true);
+      } else {
+        setBnfLongFlag(false);
+      }
 
       socket?.emit("niftyFutToken", [
         doc?.data()?.callLong?.instrument_token,
@@ -1835,7 +1853,7 @@ function FutTrading() {
             );
           });
         });
-      bnfShortFlag = true;
+      setBnfShortFlag(true);
     }
   };
 
@@ -1959,7 +1977,7 @@ function FutTrading() {
             });
           }
         });
-      bnfShortFlag = false;
+      setBnfShortFlag(false);
     } else {
       toastHandler(`Bank Nifty long no positions Found`);
     }
@@ -1968,6 +1986,11 @@ function FutTrading() {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "futFiveMin", "bnfFutShort"), (doc) => {
       setBnfShortOrderId(doc.data());
+      if (doc?.data()?.putLong && doc?.data()?.callShort) {
+        setBnfShortFlag(true);
+      } else {
+        setBnfShortFlag(false);
+      }
       socket?.emit("bnfFutToken", [
         doc?.data()?.putLong?.instrument_token,
         doc?.data()?.callShort?.instrument_token,
@@ -2200,7 +2223,7 @@ function FutTrading() {
 
         if (bnfFutLtp >= tgt_level || mtm >= bnfLongOrderId?.tgtPoints) {
           await bnfLongExit(parseInt(bnfLongOrderId?.qty));
-          bnfLongFlag = false;
+          setBnfLongFlag(false);
           toastHandler(`Bank Nifty long TGT reached`);
         }
         if (
@@ -2232,8 +2255,7 @@ function FutTrading() {
         }
         if (bnfFutLtp <= sl_level || mtm <= -bnfLongOrderId?.slPoints) {
           await bnfLongExit(parseInt(bnfLongOrderId?.qty));
-          bnfLongFlag = false;
-
+          setBnfLongFlag(false);
           toastHandler(`Bank Nifty long SL reached`);
         }
       }
@@ -2265,7 +2287,7 @@ function FutTrading() {
 
         if (bnfFutLtp <= tgt_level || mtm >= bnfShortOrderId?.tgtPoints) {
           await bnfShortExit(parseInt(bnfShortOrderId?.qty));
-          bnfShortFlag = false;
+          setBnfShortFlag(false);
           toastHandler(`Bank Nifty short TGT reached`);
         }
         if (
@@ -2297,7 +2319,7 @@ function FutTrading() {
         }
         if (bnfFutLtp >= sl_level || mtm <= -bnfShortOrderId?.slPoints) {
           await bnfShortExit(parseInt(bnfShortOrderId?.qty));
-          bnfShortFlag = false;
+          setBnfShortFlag(false);
           toastHandler(`Bank Nifty short SL reached`);
         }
       }
@@ -2324,7 +2346,7 @@ function FutTrading() {
           niftyFutLtp > nifty20SMA
         ) {
           await niftyShortExit(parseInt(niftyShortOrderId?.qty));
-          niftyShortFlag = false;
+          setNiftyShortFlag(false);
           toastHandler(`Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Nifty short TSL Not reached`);
@@ -2347,7 +2369,7 @@ function FutTrading() {
           niftyFutLtp < nifty20SMA
         ) {
           await niftyLongExit(parseInt(niftyLongOrderId?.qty));
-          niftyLongFlag = false;
+          setNiftyLongFlag(false);
           toastHandler(`Nifty long Trailing SL reached`);
         } else {
           toastHandler(`Nifty long TSL Not reached`);
@@ -2370,7 +2392,7 @@ function FutTrading() {
           bnfFutLtp > bnf20SMA
         ) {
           bnfShortExit(parseInt(bnfShortOrderId?.qty));
-          bnfShortFlag = false;
+          setBnfShortFlag(false);
           toastHandler(`Bank Nifty short Trailing SL reached`);
         } else {
           toastHandler(`Bank Nifty short TSL Not reached`);
@@ -2392,7 +2414,7 @@ function FutTrading() {
           bnfFutLtp < bnf20SMA
         ) {
           await bnfLongExit(parseInt(bnfLongOrderId?.qty));
-          bnfLongFlag = false;
+          setBnfLongFlag(false);
           toastHandler(`Bank Nifty long Trailing SL reached`);
         } else {
           toastHandler(`Bank Nifty long TSL Not reached`);
@@ -3117,6 +3139,12 @@ function FutTrading() {
                             {niftyLongOrderId?.entryPrice}
                           </div>
                         </div>
+                        <div className="stat">
+                          <div className="stat-title">Monitoring</div>
+                          <div className="text-xl font-bold">
+                            {niftyLongFlag == true ? "True" : "False"}
+                          </div>
+                        </div>
                       </div>
                       <div className="mb-3 shadow stats">
                         <div className="stat">
@@ -3193,6 +3221,12 @@ function FutTrading() {
                           <div className="stat-title">Entry Price</div>
                           <div className="text-xl font-bold">
                             {niftyShortOrderId?.entryPrice}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Monitoring</div>
+                          <div className="text-xl font-bold">
+                            {niftyShortFlag == true ? "True" : "False"}
                           </div>
                         </div>
                       </div>
@@ -3518,6 +3552,12 @@ function FutTrading() {
                             {bnfLongOrderId?.entryPrice}
                           </div>
                         </div>
+                        <div className="stat">
+                          <div className="stat-title">Monitoring</div>
+                          <div className="text-xl font-bold">
+                            {bnfLongFlag == true ? "True" : "False"}
+                          </div>
+                        </div>
                       </div>
                       <div className="mb-3 shadow stats">
                         <div className="stat">
@@ -3594,6 +3634,12 @@ function FutTrading() {
                           <div className="stat-title">Entry Price</div>
                           <div className="text-xl font-bold">
                             {bnfShortOrderId?.entryPrice}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Monitoring</div>
+                          <div className="text-xl font-bold">
+                            {bnfShortFlag == true ? "True" : "False"}
                           </div>
                         </div>
                       </div>
