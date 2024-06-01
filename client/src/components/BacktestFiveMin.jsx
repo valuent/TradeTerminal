@@ -43,7 +43,7 @@ function BacktestFiveMin() {
       let toDate = new Date();
       let fromDate = new Date(new Date().getTime() - 100 * 24 * 60 * 60 * 1000);
 
-      let loopCount = 20;
+      let loopCount = 2;
       let dataArray = [];
       console.time("save data");
       for (let i = 0; i < loopCount; i++) {
