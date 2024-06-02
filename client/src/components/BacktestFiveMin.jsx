@@ -1,37 +1,9 @@
-import React from "react";
-import { DataContext } from "../utils/DataContext";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { db } from "../utils/config";
-import {
-  doc,
-  updateDoc,
-  setDoc,
-  onSnapshot,
-  deleteDoc,
-  deleteField,
-  documentId,
-} from "firebase/firestore";
 
 function BacktestFiveMin() {
-  const {
-    expiries,
-    niftyOptChainData,
-    bnfOptChainData,
-    fnfOptChainData,
-    socket,
-    tickerData,
-    niftyFutData,
-    bnfFutData,
-    fnfFutData,
-    niftySpotData,
-    bnfSpotData,
-    fnfSpotData,
-    isSuccess,
-  } = useContext(DataContext);
-
   // const [tokens, setTokens] = useState([256265, 260105]);
-  const [tokens, setTokens] = useState([260105]);
+  const [tokens] = useState([260105]);
 
   const btResults = [];
 
@@ -112,8 +84,6 @@ function BacktestFiveMin() {
 
         let slPoints = -85;
         let tgtPoitns = 177;
-
-        let tradeKey = "trade_" + tradeCounter;
 
         if (candleHour >= 9 && candleHour <= 15) {
           if (

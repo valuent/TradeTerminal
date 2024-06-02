@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { db } from "../utils/config";
 import {
@@ -13,15 +12,7 @@ import {
   PointElement,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import {
-  doc,
-  updateDoc,
-  setDoc,
-  onSnapshot,
-  deleteDoc,
-  deleteField,
-  documentId,
-} from "firebase/firestore";
+import { doc, setDoc, onSnapshot } from "firebase/firestore";
 
 ChartJS.register(
   Tooltip,
@@ -51,57 +42,33 @@ function Dashboard() {
   const [onDisplay, setOnDisplay] = useState("table");
 
   useEffect(() => {
-    const unsub = onSnapshot(
-      doc(db, "futThreeMin", "niftyFutLongALLEXEC"),
-      (doc) => {
-        setNiftyThreeMinLong(doc.data());
-      }
-    );
-    const unsub2 = onSnapshot(
-      doc(db, "futThreeMin", "niftyFutShortALLEXEC"),
-      (doc) => {
-        setNiftyThreeMinShort(doc.data());
-      }
-    );
-    const unsub3 = onSnapshot(
-      doc(db, "futThreeMin", "bnfFutLongALLEXEC"),
-      (doc) => {
-        setBnfThreeMinLong(doc.data());
-      }
-    );
-    const unsub4 = onSnapshot(
-      doc(db, "futThreeMin", "bnfFutShortALLEXEC"),
-      (doc) => {
-        setBnfThreeMinShort(doc.data());
-      }
-    );
+    onSnapshot(doc(db, "futThreeMin", "niftyFutLongALLEXEC"), (doc) => {
+      setNiftyThreeMinLong(doc.data());
+    });
+    onSnapshot(doc(db, "futThreeMin", "niftyFutShortALLEXEC"), (doc) => {
+      setNiftyThreeMinShort(doc.data());
+    });
+    onSnapshot(doc(db, "futThreeMin", "bnfFutLongALLEXEC"), (doc) => {
+      setBnfThreeMinLong(doc.data());
+    });
+    onSnapshot(doc(db, "futThreeMin", "bnfFutShortALLEXEC"), (doc) => {
+      setBnfThreeMinShort(doc.data());
+    });
   }, []);
 
   useEffect(() => {
-    const unsub = onSnapshot(
-      doc(db, "futFiveMin", "niftyFutLongALLEXEC"),
-      (doc) => {
-        setNiftyFiveMinLong(doc.data());
-      }
-    );
-    const unsub2 = onSnapshot(
-      doc(db, "futFiveMin", "niftyFutShortALLEXEC"),
-      (doc) => {
-        setNiftyFiveMinShort(doc.data());
-      }
-    );
-    const unsub3 = onSnapshot(
-      doc(db, "futFiveMin", "bnfFutLongALLEXEC"),
-      (doc) => {
-        setBnfFiveMinLong(doc.data());
-      }
-    );
-    const unsub4 = onSnapshot(
-      doc(db, "futFiveMin", "bnfFutShortALLEXEC"),
-      (doc) => {
-        setBnfFiveMinShort(doc.data());
-      }
-    );
+    onSnapshot(doc(db, "futFiveMin", "niftyFutLongALLEXEC"), (doc) => {
+      setNiftyFiveMinLong(doc.data());
+    });
+    onSnapshot(doc(db, "futFiveMin", "niftyFutShortALLEXEC"), (doc) => {
+      setNiftyFiveMinShort(doc.data());
+    });
+    onSnapshot(doc(db, "futFiveMin", "bnfFutLongALLEXEC"), (doc) => {
+      setBnfFiveMinLong(doc.data());
+    });
+    onSnapshot(doc(db, "futFiveMin", "bnfFutShortALLEXEC"), (doc) => {
+      setBnfFiveMinShort(doc.data());
+    });
   }, []);
 
   const tradesToArray = (data) => {
@@ -1215,7 +1182,6 @@ function Dashboard() {
                   ]);
                 }
                 setTableData(selectedStratData);
-                setIndex(e.target.value);
               }}
             >
               <option disabled selected>
@@ -1354,7 +1320,7 @@ function Dashboard() {
                     }
 
                     return (
-                      <tr>
+                      <tr key={trade}>
                         <th>{date}</th>
                         <td>{trade?.entry?.index}</td>
                         <td>{trade?.entry?.putLong ? "Short" : "Long"}</td>

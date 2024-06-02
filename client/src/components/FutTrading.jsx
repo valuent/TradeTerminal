@@ -1,4 +1,4 @@
-import React from "react";
+
 import { DataContext } from "../utils/DataContext";
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
@@ -8,9 +8,7 @@ import {
   updateDoc,
   setDoc,
   onSnapshot,
-  deleteDoc,
   deleteField,
-  documentId,
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 

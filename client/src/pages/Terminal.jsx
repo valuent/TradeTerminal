@@ -1,4 +1,3 @@
-import React from "react";
 import SaveExpiries from "../components/SaveExpiries";
 // import Strangle from "../components/Strangle";
 import FutTrading from "../components/FutTrading";
