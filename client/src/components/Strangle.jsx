@@ -34,11 +34,12 @@ function Strangle() {
   const [currentIndex, setCurrentIndex] = useState();
 
   const [indexLtp, setIndexLtp] = useState();
-  const [indexQuantity, setIndexQuantity] = useState({
+
+  const indexQuantity = {
     NIFTY: 500,
     BANKNIFTY: 240,
     FINNIFTY: 480,
-  });
+  };
 
   const [roundedLtp, setRoundedLtp] = useState();
 
@@ -93,9 +94,6 @@ function Strangle() {
   const [rollOnSL, setRollOnSL] = useState(true);
 
   const [selectedStrategy, setSelectedStrategy] = useState();
-  const [selectedStrategyQty, setSelectedStrategyQty] = useState(
-    indexQuantity?.[currentIndex]
-  );
 
   const toastHandler = (message) => {
     toast(message, {

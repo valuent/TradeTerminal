@@ -98,15 +98,6 @@ function FutTradingThreeMins() {
   const [bnfFutLongALLEXEC, setBnfFutLongALLEXEC] = useState();
   const [bnfFutShortALLEXEC, setBnfFutShortALLEXEC] = useState();
 
-  const [enable20SmaNiftyMonitorLong, setEnable20SmaNiftyMonitorLong] =
-    useState(false);
-  const [enable20SmaNiftyMonitorShort, setEnable20SmaNiftyMonitorShort] =
-    useState(false);
-  const [enable20SmaBnfMonitorLong, setEnable20SmaBnfMonitorLong] =
-    useState(false);
-  const [enable20SmaBnfMonitorShort, setEnable20SmaBnfMonitorShort] =
-    useState(false);
-
   const [refreshExistingOrder, setRefreshExistingOrder] = useState();
 
   const refreshOpenPos = () => {
@@ -3167,6 +3158,12 @@ function FutTradingThreeMins() {
                             {niftyLongOrderId?.entryPrice}
                           </div>
                         </div>
+                        <div className="stat">
+                          <div className="stat-title">Monitoring</div>
+                          <div className="text-xl font-bold">
+                            {niftyLongFlag == true ? "True" : "False"}
+                          </div>
+                        </div>
                       </div>
                       <div className="mb-3 shadow stats">
                         <div className="stat">
@@ -3243,6 +3240,12 @@ function FutTradingThreeMins() {
                           <div className="stat-title">Entry Price</div>
                           <div className="text-xl font-bold">
                             {niftyShortOrderId?.entryPrice}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Monitoring</div>
+                          <div className="text-xl font-bold">
+                            {niftyShortFlag == true ? "True" : "False"}
                           </div>
                         </div>
                       </div>
@@ -3570,6 +3573,12 @@ function FutTradingThreeMins() {
                             {bnfLongOrderId?.entryPrice}
                           </div>
                         </div>
+                        <div className="stat">
+                          <div className="stat-title">Monitoring</div>
+                          <div className="text-xl font-bold">
+                            {bnfLongFlag == true ? "True" : "False"}
+                          </div>
+                        </div>
                       </div>
                       <div className="mb-3 shadow stats">
                         <div className="stat">
@@ -3646,6 +3655,12 @@ function FutTradingThreeMins() {
                           <div className="stat-title">Entry Price</div>
                           <div className="text-xl font-bold">
                             {bnfShortOrderId?.entryPrice}
+                          </div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-title">Monitoring</div>
+                          <div className="text-xl font-bold">
+                            {bnfShortFlag == true ? "True" : "False"}
                           </div>
                         </div>
                       </div>

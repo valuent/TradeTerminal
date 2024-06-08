@@ -1,4 +1,3 @@
-
 import { DataContext } from "../utils/DataContext";
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
@@ -17,7 +16,6 @@ function FutTrading() {
     expiries,
     niftyOptChainData,
     bnfOptChainData,
-    fnfOptChainData,
     socket,
     tickerData,
     niftyFutData,

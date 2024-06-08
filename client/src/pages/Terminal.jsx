@@ -26,9 +26,7 @@ function Terminal() {
       {/* <div className="text-lg text-center title">FUT 1 MINUTE</div>
       <FutTradingOneMin /> */}
 
-      {/* <div id="tabpanel">
-        <Strangle />
-      </div> */}
+      <div id="tabpanel">{/* <Strangle /> */}</div>
       {/* <div className="m-5 mt-10 text-xl text-center">
         5 Mins Super Trend Trades
       </div>

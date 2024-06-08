@@ -8,9 +8,7 @@ import {
   updateDoc,
   setDoc,
   onSnapshot,
-  deleteDoc,
   deleteField,
-  documentId,
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 
@@ -19,15 +17,15 @@ function FutTradingOneMin() {
     expiries,
     niftyOptChainData,
     bnfOptChainData,
-    fnfOptChainData,
+
     socket,
     tickerData,
     niftyFutData,
     bnfFutData,
-    fnfFutData,
+
     niftySpotData,
     bnfSpotData,
-    fnfSpotData,
+
     isSuccess,
   } = useContext(DataContext);
 
